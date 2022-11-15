@@ -63,12 +63,8 @@ body {
 }
 
 .login-box form a {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 10px 20px;
-  color: #03e9f4;
-  font-size: 16px;
+  position: relative;
+  display: inline-block;
   text-decoration: none;
   text-transform: uppercase;
   overflow: hidden;
@@ -87,7 +83,24 @@ body {
 
 .login-box a span {
   position: absolute;
-  display: flex;
+  display: block;
+}
+
+.login-box a button {
+  color: #03e9f4;
+  font-size: 16px;
+  text-decoration: none;
+  text-transform: uppercase;
+  overflow: hidden;
+  transition: 0.5s;
+  display: block;
+  padding: 15px 120px;
+  letter-spacing: 4px;
+  border: none;
+  font: inherit;
+  background: none;
+  cursor: pointer;
+  outline: inherit;
 }
 
 .login-box a span:nth-child(1) {
