@@ -103,6 +103,10 @@ body {
   outline: inherit;
 }
 
+.login-box a button:hover {
+  color: #fff;
+}
+
 .login-box a span:nth-child(1) {
   top: 0;
   left: -100%;
