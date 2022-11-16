@@ -18,9 +18,12 @@ function Login() {
       <span></span>
       <span></span>
       <span></span>
-      <button class="button">Submit</button>
+      <button class="submit-button">Submit</button>
     </a>
   </form>
+    <div class="signup">
+      New here? <a href="#">SIGN UP!</a>
+    </div>
 </div>
   );
 }
