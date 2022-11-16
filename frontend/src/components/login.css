@@ -126,7 +126,29 @@ body {
   outline: inherit;
 }
 
+
 .login-box a .submit-button:hover {
+  color: #fff;
+}
+
+.login-box a .register-button {
+  color: #03e9f4;
+  font-size: 16px;
+  text-decoration: none;
+  text-transform: uppercase;
+  overflow: hidden;
+  transition: 0.5s;
+  display: block;
+  padding: 15px 100px;
+  letter-spacing: 4px;
+  border: none;
+  font: inherit;
+  background: none;
+  cursor: pointer;
+  outline: inherit;
+}
+
+.login-box a .register-button:hover {
   color: #fff;
 }
 
