@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import './login.css';
 
 function Login() {
@@ -22,7 +23,7 @@ function Login() {
     </a>
   </form>
     <div class="signup">
-      New here? <a href="#">SIGN UP!</a>
+      New here? <Link to="/register">Sign Up!</Link>
     </div>
 </div>
   );

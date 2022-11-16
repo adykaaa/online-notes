@@ -37,8 +37,11 @@ body {
   color: #03e9f4;
 }
 
-.login-box .signup:hover {
-  background: none;
+.login-box .signup a:hover {
+  all: unset;
+  cursor: pointer;
+  color: white;
+  text-decoration: underline;
 }
 
 .login-box h2 {
