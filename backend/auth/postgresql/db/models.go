@@ -2,7 +2,7 @@
 // versions:
 //   sqlc v1.15.0
 
-package auth_db
+package db
 
 import ()
 

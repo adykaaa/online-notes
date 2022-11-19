@@ -5,5 +5,5 @@ sql:
     schema: "schema.sql"
     gen:
       go:
-        package: "auth_db"
-        out: "authdb"
+        package: "db"
+        out: "db"
