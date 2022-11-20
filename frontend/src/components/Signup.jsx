@@ -6,11 +6,7 @@ function SignUp() {
   <form>
     <div class="user-box">
       <input type="text" name="firstname" required=""/>
-      <label>First Name</label>
-    </div>
-    <div class="user-box">
-      <input type="text" name="lastname" required=""/>
-      <label>Last Name</label>
+      <label>E-mail address</label>
     </div>
     <div class="user-box">
       <input type="text" name="username" required=""/>
