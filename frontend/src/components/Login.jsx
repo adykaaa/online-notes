@@ -4,7 +4,7 @@ import './login.css';
 function Login() {
   return (
   <div class="login-box">
-  <h2>Login to MovieBox!</h2>
+  <h2>Login to OnlineNotes!</h2>
   <form>
     <div class="user-box">
       <input type="text" name="username" required=""/>
