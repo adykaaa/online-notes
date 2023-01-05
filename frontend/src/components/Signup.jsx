@@ -1,6 +1,6 @@
 import { Axios } from "axios";
 import { useState } from "react";
-
+import axios from "axios";
 
 function SignUp() {
 
@@ -9,13 +9,12 @@ function SignUp() {
   const [passwordReg, setPasswordReg] = useState("")
 
   const register = () => {
-    Axios.post(`http://localhost:8080/register` , {email: emailReg, username: usernameReg, password: passwordReg})
+    axios.post(`http://localhost:8080/register` , {email: emailReg, username: usernameReg, password: passwordReg})
   }
 
   return (
   <div class="login-box">
   <h2>Register</h2>
-  <form>
     <div class="user-box">
       <input type="text" name="email" required="" onChange={(e) => setEmailReg(e.target.value)}/>
       <label>E-mail address</label>
@@ -31,7 +30,6 @@ function SignUp() {
     <a>
       <button class="register-button" onClick={register}>Register!</button>
     </a>
-  </form>
 </div>
   );
 }

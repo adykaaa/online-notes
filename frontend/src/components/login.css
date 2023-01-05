@@ -85,7 +85,7 @@ body {
   font-size: 12px;
 }
 
-.login-box form a {
+.login-box .inputs a {
   position: relative;
   display: inline-block;
   text-decoration: none;
