@@ -8,6 +8,6 @@ services:
     environment:
       POSTGRES_USER: "user"
       POSTGRES_PASSWORD: "password"
-      POSTGRES_DB: "postgres"
+      POSTGRES_DB: "notes"
     ports:
       - 5432:5432
