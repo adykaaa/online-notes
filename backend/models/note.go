@@ -9,12 +9,12 @@ import (
 )
 
 type Note struct {
-	ID        int    `json:"id" gorm:"primaryKey"`
-	Title     string `json:"title"`
-	User      string `json:"user"`
-	Text      string `json:"text"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        uuid.UUID `json:"id" gorm:"primaryKey"`
+	Title     string    `json:"title"`
+	User      string    `json:"user"`
+	Text      string    `json:"text"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 func (n *Note) Validate() error {
@@ -39,6 +39,7 @@ func NewNote(title string, text string, user string) (*Note, error) {
 	}
 
 	err := n.Validate()
+
 	if err != nil {
 		return nil, fmt.Errorf("Error validating node! %v", err)
 	}
