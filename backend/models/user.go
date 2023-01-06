@@ -54,7 +54,7 @@ func HashUserPassword(password string) (string, error) {
 func (u *User) ValidateUserPassword(password string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 	if err != nil {
-		return err
+		return fmt.Errorf("Error while comparing the current and hashed password! %v", err)
 	}
 	return nil
 }
