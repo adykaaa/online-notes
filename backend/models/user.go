@@ -37,6 +37,9 @@ func NewUser(email string, username string, password string) (*User, error) {
 		Username: username,
 		Password: password,
 	}
+	if err := u.ValidateUser(); err != nil {
+		return nil, fmt.Errorf("Error validating the User! %v", err)
+	}
 	return u, nil
 }
 
