@@ -41,5 +41,6 @@ func NewNote(title string, text string, user string) (*Note, error) {
 	if err := n.Validate(); err != nil {
 		return nil, fmt.Errorf("Error validating Node! %v", err)
 	}
+
 	return n, nil
 }
