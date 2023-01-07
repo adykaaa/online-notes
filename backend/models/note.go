@@ -9,7 +9,7 @@ import (
 )
 
 type Note struct {
-	ID        uuid.UUID `json:"id" gorm:"primaryKey"`
+	ID        uuid.UUID `json:"id"`
 	Title     string    `json:"title"`
 	User      string    `json:"user"`
 	Text      string    `json:"text"`
