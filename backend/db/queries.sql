@@ -1,6 +1,6 @@
 -- name: RegisterUser :exec
-INSERT INTO users (email, username, password)
-VALUES ($1,$2,$3,$4)
+INSERT INTO users (username, password, email)
+VALUES ($1,$2,$3)
 
 -- name: GetUserID :one
 SELECT id
@@ -27,7 +27,13 @@ WHERE username = $1;
 INSERT INTO notes (title, user, text, created_at, updated_at)
 VALUES ($1,$2,$3,$4,$5)
 
+-- name: GetNote :one
+SELECT id
+FROM notes
+WHERE user = $1 AND title = $2
+LIMIT 1;
+
 -- name: DeleteNote :exec
 DELETE 
 FROM notes
-WHERE id = $1;
+WHERE user = $1 AND title = $2;
