@@ -21,13 +21,11 @@ func NewServer(handler http.Handler, addr string) *Server {
 		notify:          make(chan error, 1),
 		shutdownTimeout: 5 * time.Second,
 	}
-
-	s.start()
-
+	s.Start()
 	return s
 }
 
-func (s *Server) start() {
+func (s *Server) Start() {
 	go func() {
 		s.notify <- s.server.ListenAndServe()
 		close(s.notify)
