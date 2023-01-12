@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/adykaaa/online-notes/api/http"
+	"github.com/adykaaa/online-notes/http"
 	"github.com/go-chi/chi/v5"
 )
 
