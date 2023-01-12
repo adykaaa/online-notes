@@ -15,9 +15,19 @@ type Router interface {
 	Delete(path string, handlerFunc func(w http.ResponseWriter, r *http.Request))
 }
 
+func NewChiRouter() *chi.Mux {
+	r := chi.NewRouter()
+	RegisterChiMiddlewares(r)
+	RegisterChiRoutes(r)
+
+	return r
+}
+
+// TODO: set strict CORS when everything's gucci
 func RegisterChiMiddlewares(r *chi.Mux) {
 	r.Use(middleware.Logger)
 	r.Use(middleware.RequestID)
+	r.Use(middleware.Recoverer)
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"https://*", "http://*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -29,4 +39,5 @@ func RegisterChiMiddlewares(r *chi.Mux) {
 }
 
 func RegisterChiRoutes(r *chi.Mux) {
+	r.Get("/", HomeHandler())
 }

@@ -7,11 +7,10 @@ import (
 	"syscall"
 
 	"github.com/adykaaa/online-notes/http"
-	"github.com/go-chi/chi/v5"
 )
 
 func main() {
-	r := chi.NewRouter()
+	r := http.NewChiRouter()
 	httpServer := http.NewServer(r, ":8080")
 
 	// Waiting signal
