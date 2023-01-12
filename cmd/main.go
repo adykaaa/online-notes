@@ -12,7 +12,7 @@ import (
 
 func main() {
 	r := chi.NewRouter()
-	httpServer := http.NewServer(r, ":80")
+	httpServer := http.NewServer(r, ":8080")
 
 	// Waiting signal
 	interrupt := make(chan os.Signal, 1)
@@ -22,7 +22,7 @@ func main() {
 	case s := <-interrupt:
 		fmt.Printf("Server run interrupted by signal %s", s.String())
 	case err := <-httpServer.Notify():
-		l.Error(fmt.Errorf("app - Run - httpServer.Notify: %w", err))
+		fmt.Printf("Server run interrupted by signal %v", err)
 	}
 
 	// Shutdown
