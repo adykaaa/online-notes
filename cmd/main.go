@@ -6,10 +6,12 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/adykaaa/online-notes/db"
 	"github.com/adykaaa/online-notes/http"
 )
 
 func main() {
+	db.MigrateDB()
 	r := http.NewChiRouter()
 	httpServer := http.NewServer(r, ":8080")
 
@@ -21,12 +23,12 @@ func main() {
 	case s := <-interrupt:
 		fmt.Printf("Server run interrupted by signal %s", s.String())
 	case err := <-httpServer.Notify():
-		fmt.Printf("Server run interrupted by signal %v", err)
+		fmt.Printf("Server connection error %v", err)
 	}
 
 	// Shutdown
 	err := httpServer.Shutdown()
 	if err != nil {
-		fmt.Errorf("app - Run - httpServer.Shutdown: %w", err)
+		fmt.Errorf("app - Run - httpServer.Shutdown: %v", err)
 	}
 }

@@ -1,4 +1,4 @@
-include .env.example
+include .env.development
 export
 
 help:
@@ -6,6 +6,6 @@ help:
 .PHONY: help
 
 pg-up:
-	docker run -e POSTGRES_USER=user -e POSTGRES_PASSWORD=password -e POSTGRES_DB=postgres -p 5432:5432 -d --name postgres-dev postgres
+	docker run -e POSTGRES_USER=user -e POSTGRES_PASSWORD=pgpass123 -e POSTGRES_DB=notes -p 5432:5432 -d --name postgres-dev postgres
 .PHONY: pg-up
 
