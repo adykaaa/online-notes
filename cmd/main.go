@@ -6,12 +6,19 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/adykaaa/online-notes/db"
+	"github.com/adykaaa/online-notes/db/migrations"
 	"github.com/adykaaa/online-notes/http"
+	"github.com/adykaaa/online-notes/utils"
 )
 
 func main() {
-	db.MigrateDB()
+	config, err := utils.LoadConfig(".")
+	if err != nil {
+		fmt.Errorf("Could not load config. %v", err)
+	}
+
+	migrations.MigrateDB(config.DBConnString)
+
 	r := http.NewChiRouter()
 	httpServer := http.NewServer(r, ":8080")
 

@@ -1,13 +1,11 @@
-package db
+package migrations
 
 import (
 	"errors"
 	"log"
-	"os"
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
-	// migrate tools
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
@@ -17,12 +15,7 @@ const (
 	defaultTimeout  = time.Second
 )
 
-func MigrateDB() {
-	databaseURL, ok := os.LookupEnv("PG_URL")
-	if !ok || len(databaseURL) == 0 {
-		log.Fatalf("migrate: environment variable not declared: PG_URL")
-	}
-
+func MigrateDB(db_url string) {
 	var (
 		attempts = defaultAttempts
 		err      error
@@ -30,7 +23,7 @@ func MigrateDB() {
 	)
 
 	for attempts > 0 {
-		m, err = migrate.New("file://db/migrations/", databaseURL)
+		m, err = migrate.New("file://db/migrations/", db_url)
 		if err == nil {
 			break
 		}
