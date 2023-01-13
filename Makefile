@@ -1,4 +1,4 @@
-include .env.development
+include development.env
 export
 
 help:
