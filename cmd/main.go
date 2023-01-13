@@ -34,7 +34,7 @@ func main() {
 	}
 
 	// Shutdown
-	err := httpServer.Shutdown()
+	err = httpServer.Shutdown()
 	if err != nil {
 		fmt.Errorf("app - Run - httpServer.Shutdown: %v", err)
 	}
