@@ -12,7 +12,7 @@ import (
 
 const (
 	defaultAttempts = 5
-	defaultTimeout  = time.Second
+	defaultTimeout  = 2 * time.Second
 )
 
 func MigrateDB(db_url string) {

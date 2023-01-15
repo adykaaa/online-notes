@@ -19,10 +19,10 @@ type Note struct {
 
 func (n *Note) Validate() error {
 	if n.Title == "" {
-		return errors.New("Note is missing a title!")
+		return errors.New("note is missing a title")
 	}
 	if n.User == "" {
-		return errors.New("Note is missing the author!")
+		return errors.New("note is missing the author")
 	}
 
 	return nil
@@ -39,7 +39,7 @@ func NewNote(title string, text string, user string) (*Note, error) {
 	}
 
 	if err := n.Validate(); err != nil {
-		return nil, fmt.Errorf("Error validating Node! %v", err)
+		return nil, fmt.Errorf("error validating note. %v", err)
 	}
 
 	return n, nil

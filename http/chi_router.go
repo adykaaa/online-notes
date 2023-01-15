@@ -39,5 +39,5 @@ func RegisterChiMiddlewares(r *chi.Mux) {
 }
 
 func RegisterChiRoutes(r *chi.Mux) {
-	r.Get("/", HomeHandler())
+	r.Get("/", Home())
 }
