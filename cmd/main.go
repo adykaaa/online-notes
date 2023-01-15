@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/adykaaa/online-notes/db"
 	"github.com/adykaaa/online-notes/db/migrations"
 	"github.com/adykaaa/online-notes/http"
 	"github.com/adykaaa/online-notes/utils"
@@ -15,6 +16,11 @@ func main() {
 	config, err := utils.LoadConfig(".")
 	if err != nil {
 		fmt.Errorf("Could not load config. %v", err)
+	}
+
+	pg, err := db.NewPostgresDB(config.DBConnString)
+	if err != nil {
+		fmt.Errorf("error trying to connect to postgres. %v", err)
 	}
 
 	migrations.MigrateDB(config.DBConnString)

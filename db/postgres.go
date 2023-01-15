@@ -26,13 +26,14 @@ func NewPostgresDB(url string) (*postgres, error) {
 	for pg.connAttempts > 0 {
 		pg.db, err = sql.Open("postgres", string(url))
 		if err != nil {
-			fmt.Printf("Error trying to connect to the postgres DB on %s. %v.  Attempts left: %v", url, err, pg.connAttempts)
+			fmt.Printf("error trying to connect to the postgres DB on %s. %v.  Attempts left: %v", url, err, pg.connAttempts)
 			break
 		}
 		time.Sleep(pg.connTimeout)
 		pg.connAttempts--
 	}
 
+	fmt.Print("connection to Postgres was successful")
 	return pg, nil
 }
 
@@ -44,7 +45,7 @@ func (p *postgres) Close() {
 	if p.db != nil {
 		err := p.db.Close()
 		if err != nil {
-			fmt.Printf("Error closing the Postgre DB connection!")
+			fmt.Printf("error closing the Postgre DB connection")
 		}
 	}
 }
