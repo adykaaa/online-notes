@@ -15,7 +15,7 @@ const (
 	defaultTimeout  = 2 * time.Second
 )
 
-func MigrateDB(db_url string) {
+func MigrateDB(db_url string) error {
 	var (
 		attempts = defaultAttempts
 		err      error
@@ -28,13 +28,13 @@ func MigrateDB(db_url string) {
 			break
 		}
 
-		log.Printf("Migrate: postgres is trying to connect, attempts left: %d", attempts)
+		log.Printf("Migrate: DB is trying to connect, attempts left: %d", attempts)
 		time.Sleep(defaultTimeout)
 		attempts--
 	}
 
 	if err != nil {
-		log.Fatalf("Migrate: postgres connect error: %s", err)
+		log.Fatalf("Migrate: DB connect error: %s", err)
 	}
 
 	err = m.Up()
@@ -46,7 +46,7 @@ func MigrateDB(db_url string) {
 
 	if errors.Is(err, migrate.ErrNoChange) {
 		log.Printf("Migrate: no change")
-		return
+		return nil
 	}
 
 	log.Printf("Migrate: up success")

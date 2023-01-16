@@ -18,12 +18,17 @@ func main() {
 		fmt.Errorf("Could not load config. %v", err)
 	}
 
-	pg, err := db.NewPostgresDB(config.DBConnString)
+	pg, err := db.NewSqlDB("postgres", config.DBConnString)
 	if err != nil {
 		fmt.Errorf("error trying to connect to postgres. %v", err)
 	}
 
+	db = db.New(pg.GetDB())
+
 	migrations.MigrateDB(config.DBConnString)
+	if err != nil {
+		fmt.Errorf("Database migration failure! %v", err)
+	}
 
 	r := http.NewChiRouter()
 	httpServer := http.NewServer(r, ":8080")
