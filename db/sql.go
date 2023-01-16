@@ -21,14 +21,14 @@ type sqlDB struct {
 	connTimeout  time.Duration
 }
 
-func NewSQLdb(url string, driver string) (*sqlDB, error) {
+func NewSQLdb(driver string, url string) (*sqlDB, error) {
 	sqlDB := &sqlDB{
 		connAttempts: defaultConnAttempts,
 		connTimeout:  defaultConnTimeout,
 	}
 	var err error
 	for sqlDB.connAttempts > 0 {
-		sqlDB.db, err = sql.Open(driver, string(url))
+		sqlDB.db, err = sql.Open(driver, url)
 		if err != nil {
 			fmt.Printf("error trying to connect to the database on %s. %v.  Attempts left: %v", url, err, sqlDB.connAttempts)
 			break
