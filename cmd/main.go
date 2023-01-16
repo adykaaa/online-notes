@@ -18,12 +18,10 @@ func main() {
 		fmt.Errorf("Could not load config. %v", err)
 	}
 
-	pg, err := db.NewSqlDB("postgres", config.DBConnString)
+	db, err := db.NewSQLdb("postgres", config.DBConnString)
 	if err != nil {
-		fmt.Errorf("error trying to connect to postgres. %v", err)
+		fmt.Errorf("error initializing SQL db. %v", err)
 	}
-
-	db = db.New(pg.GetDB())
 
 	migrations.MigrateDB(config.DBConnString)
 	if err != nil {

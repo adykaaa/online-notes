@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"time"
+
+	sqlc "github.com/adykaaa/online-notes/db/sqlc"
 )
 
 const (
@@ -11,39 +13,41 @@ const (
 	defaultConnTimeout  = 2 * time.Second
 )
 
-// SQLdb struct provides all functions to execute SQL queries
-type SQLdb struct {
-	db *sql.DB
-	*Queries
+// sqlDB struct provides all functions to execute SQL queries using composition with the sqlc.Queries struct.
+type sqlDB struct {
+	*sqlc.Queries
+	db           *sql.DB
 	connAttempts int
 	connTimeout  time.Duration
 }
 
-func NewSqlDB(url string, driver string) (*SQLdb, error) {
-	SQLdb := &SQLdb{
+func NewSQLdb(url string, driver string) (*sqlDB, error) {
+	sqlDB := &sqlDB{
 		connAttempts: defaultConnAttempts,
 		connTimeout:  defaultConnTimeout,
 	}
 	var err error
-	for SQLdb.connAttempts > 0 {
-		SQLdb.db, err = sql.Open(driver, string(url))
+	for sqlDB.connAttempts > 0 {
+		sqlDB.db, err = sql.Open(driver, string(url))
 		if err != nil {
-			fmt.Printf("error trying to connect to the database on %s. %v.  Attempts left: %v", url, err, SQLdb.connAttempts)
+			fmt.Printf("error trying to connect to the database on %s. %v.  Attempts left: %v", url, err, sqlDB.connAttempts)
 			break
 		}
-		time.Sleep(SQLdb.connTimeout)
-		SQLdb.connAttempts--
+		time.Sleep(sqlDB.connTimeout)
+		sqlDB.connAttempts--
 	}
 
+	sqlDB.Queries = sqlc.New(sqlDB.db)
+
 	fmt.Print("connection to DB was successful")
-	return SQLdb, nil
+	return sqlDB, nil
 }
 
-func (db *SQLdb) GetDB() *sql.DB {
+func (db *sqlDB) GetDB() *sql.DB {
 	return db.db
 }
 
-func (db *SQLdb) Close() {
+func (db *sqlDB) Close() {
 	if db.db != nil {
 		err := db.db.Close()
 		if err != nil {
