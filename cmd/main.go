@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -15,22 +16,28 @@ import (
 func main() {
 	config, err := utils.LoadConfig(".")
 	if err != nil {
-		fmt.Errorf("Could not load config. %v", err)
+		log.Fatalf("could not load configuration. %v", err)
 	}
 
-	db, err := db.NewSQLdb("postgres", config.DBConnString)
+	sqldb, err := db.NewSQLdb("postgres", config.DBConnString)
 	if err != nil {
-		fmt.Errorf("error initializing SQL db. %v", err)
+		log.Fatalf("error initializing SQL db. %v", err)
 	}
 
-	migrations.MigrateDB(config.DBConnString)
+	err = migrations.MigrateDB(config.DBConnString)
 	if err != nil {
-		fmt.Errorf("Database migration failure! %v", err)
+		log.Fatalf("database migration failure! %v", err)
 	}
 
-	r := http.NewChiRouter()
-	httpServer := http.NewServer(r, ":8080")
+	repo := db.NewRepository(sqldb)
+	r := http.NewChiRouter(repo)
 
+	httpServer, err := http.NewServer(r, ":8080")
+	if err != nil {
+		log.Fatalf("error during server initialization! %v", err)
+	}
+
+	log.Printf("HTTP server is now listening on %v")
 	// Waiting signal
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
