@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -12,7 +13,10 @@ type Server struct {
 	shutdownTimeout time.Duration
 }
 
-func NewServer(handler http.Handler, addr string) *Server {
+func NewServer(handler http.Handler, addr string) (*Server, error) {
+	if addr == "" {
+		fmt.Errorf("Address of the server must be specified!")
+	}
 	s := &Server{
 		server: &http.Server{
 			Handler: handler,
@@ -22,7 +26,7 @@ func NewServer(handler http.Handler, addr string) *Server {
 		shutdownTimeout: 5 * time.Second,
 	}
 	s.Start()
-	return s
+	return s, nil
 }
 
 func (s *Server) Start() {

@@ -9,9 +9,10 @@ import (
 
 type Config struct {
 	Environment          string        `mapstructure:"ENV"`
+	LogLevel             string        `mapstructure:"LOG_LEVEL"`
 	DBConnString         string        `mapstructure:"DB_CONN_STRING"`
 	HTTPServerAddress    string        `mapstructure:"HTTP_SERVER_ADDRESS"`
-	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
+	JWTSecret            string        `mapstructure:"JWT_SECRET"`
 	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
 }

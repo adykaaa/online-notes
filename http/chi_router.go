@@ -1,26 +1,18 @@
 package http
 
 import (
-	"net/http"
-
+	"github.com/adykaaa/online-notes/db"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 )
 
-// TODO: move this interface away from here where it's used
-type Router interface {
-	Get(path string, handlerFunc func(w http.ResponseWriter, r *http.Request))
-	Post(path string, handlerFunc func(w http.ResponseWriter, r *http.Request))
-	Delete(path string, handlerFunc func(w http.ResponseWriter, r *http.Request))
-}
+func NewChiRouter(repo *db.Repository) *chi.Mux {
+	router := chi.NewRouter()
+	RegisterChiMiddlewares(router)
+	RegisterChiHandlers(router, repo)
 
-func NewChiRouter() *chi.Mux {
-	r := chi.NewRouter()
-	RegisterChiMiddlewares(r)
-	RegisterChiRoutes(r)
-
-	return r
+	return router
 }
 
 // TODO: set strict CORS when everything's gucci
@@ -33,11 +25,12 @@ func RegisterChiMiddlewares(r *chi.Mux) {
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "Bearer"},
 		ExposedHeaders:   []string{"Link"},
-		AllowCredentials: false,
+		AllowCredentials: true,
 		MaxAge:           300,
 	}))
 }
 
-func RegisterChiRoutes(r *chi.Mux) {
-	r.Get("/", Home())
+func RegisterChiHandlers(router *chi.Mux, repo *db.Repository) {
+	router.Get("/", Home(repo))
+	router.Post("/register", RegisterUser(repo))
 }
