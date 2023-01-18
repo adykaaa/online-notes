@@ -10,13 +10,13 @@ import (
 	"github.com/adykaaa/online-notes/domain"
 )
 
-func Home(sqlc.Querier) http.HandlerFunc {
+func Home(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("you hit the server!"))
 	}
 }
 
-func RegisterUser(ra sqlc.Querier) http.HandlerFunc {
+func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var user domain.User
 
@@ -25,8 +25,7 @@ func RegisterUser(ra sqlc.Querier) http.HandlerFunc {
 			fmt.Errorf("Could not decode response body into User! %v", err)
 		}
 
-		fmt.Print(ra)
-		err = ra.RegisterUser(r.Context(), sqlc.RegisterUserParams{
+		err = q.RegisterUser(r.Context(), sqlc.RegisterUserParams{
 			Username: user.Username,
 			Password: user.Password,
 			Email:    user.Email,
@@ -39,43 +38,43 @@ func RegisterUser(ra sqlc.Querier) http.HandlerFunc {
 	}
 }
 
-func LoginUser(sqlc.Querier) http.HandlerFunc {
+func LoginUser(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 	}
 }
 
-func ListUsers(sqlc.Querier) http.HandlerFunc {
+func ListUsers(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 	}
 }
 
-func DeleteUser(sqlc.Querier) http.HandlerFunc {
+func DeleteUser(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 	}
 }
 
-func CreateNote(sqlc.Querier) http.HandlerFunc {
+func CreateNote(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 	}
 }
 
-func GetNoteByID(sqlc.Querier) http.HandlerFunc {
+func GetNoteByID(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 	}
 }
 
-func GetAllNotesFromUser(sqlc.Querier) http.HandlerFunc {
+func GetAllNotesFromUser(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 	}
 }
 
-func DeleteNote(sqlc.Querier) http.HandlerFunc {
+func DeleteNote(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 	}

@@ -14,10 +14,13 @@ import (
 )
 
 func main() {
+
 	config, err := utils.LoadConfig(".")
 	if err != nil {
 		log.Fatalf("could not load configuration. %v", err)
 	}
+
+	logger := utils.NewLogger(config.LogLevel)
 
 	sqldb, err := db.NewSQLdb("postgres", config.DBConnString)
 	if err != nil {
