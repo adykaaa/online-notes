@@ -6,18 +6,17 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/adykaaa/online-notes/db"
 	sqlc "github.com/adykaaa/online-notes/db/sqlc"
 	"github.com/adykaaa/online-notes/domain"
 )
 
-func Home(repo *db.Repository) http.HandlerFunc {
+func Home(sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("you hit the server!"))
 	}
 }
 
-func RegisterUser(repo *db.Repository) http.HandlerFunc {
+func RegisterUser(ra sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var user domain.User
 
@@ -26,7 +25,8 @@ func RegisterUser(repo *db.Repository) http.HandlerFunc {
 			fmt.Errorf("Could not decode response body into User! %v", err)
 		}
 
-		err = repo.RegisterUser(r.Context(), sqlc.RegisterUserParams{
+		fmt.Print(ra)
+		err = ra.RegisterUser(r.Context(), sqlc.RegisterUserParams{
 			Username: user.Username,
 			Password: user.Password,
 			Email:    user.Email,
@@ -39,43 +39,43 @@ func RegisterUser(repo *db.Repository) http.HandlerFunc {
 	}
 }
 
-func LoginUser(repo *db.Repository) http.HandlerFunc {
+func LoginUser(sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 	}
 }
 
-func ListUsers(repo *db.Repository) http.HandlerFunc {
+func ListUsers(sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 	}
 }
 
-func DeleteUser(repo *db.Repository) http.HandlerFunc {
+func DeleteUser(sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 	}
 }
 
-func CreateNote(repo *db.Repository) http.HandlerFunc {
+func CreateNote(sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 	}
 }
 
-func GetNoteByID(repo *db.Repository) http.HandlerFunc {
+func GetNoteByID(sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 	}
 }
 
-func GetAllNotesFromUser(repo *db.Repository) http.HandlerFunc {
+func GetAllNotesFromUser(sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 	}
 }
 
-func DeleteNote(repo *db.Repository) http.HandlerFunc {
+func DeleteNote(sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 	}

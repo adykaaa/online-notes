@@ -28,18 +28,18 @@ func MigrateDB(db_url string) error {
 			break
 		}
 
-		log.Printf("Migration: DB is trying to connect, attempts left: %d", attempts)
+		log.Printf("DB Migration failed, attempts left: %d", attempts)
 		time.Sleep(defaultTimeout)
 		attempts--
 	}
 
 	if err != nil {
-		log.Fatalf("Migrate: DB connect error: %s", err)
+		log.Fatalf("Migration error: %v", err)
 	}
 
 	err = m.Up()
 	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		log.Fatalf("Migrate: up error: %s", err)
+		log.Fatalf("Migrate: up error: %v", err)
 	}
 
 	defer m.Close()
@@ -48,6 +48,7 @@ func MigrateDB(db_url string) error {
 		log.Printf("Migrate: no change")
 		return nil
 	}
+
 	log.Printf("Migrate: up success")
 	return nil
 }

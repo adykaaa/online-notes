@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"time"
 
 	sqlc "github.com/adykaaa/online-notes/db/sqlc"
@@ -27,19 +28,34 @@ func NewSQLdb(driver string, url string) (*sqlDB, error) {
 		connTimeout:  defaultConnTimeout,
 	}
 	var err error
+
 	for sqlDB.connAttempts > 0 {
+
 		sqlDB.db, err = sql.Open(driver, url)
 		if err != nil {
-			fmt.Printf("error trying to connect to the database on %s. %v.  Attempts left: %v", url, err, sqlDB.connAttempts)
+			log.Printf("error trying to open DB. %v  Attempt: %v", err, sqlDB.connAttempts)
+		}
+
+		err = sqlDB.db.Ping()
+		if err != nil {
+			log.Printf("error trying to connect to the DB: %v. Attempt: %d", err, sqlDB.connAttempts)
+		}
+
+		//if we could create the DB object and connect to the DB, we exit the loop
+		if err == nil {
 			break
 		}
+
 		time.Sleep(sqlDB.connTimeout)
 		sqlDB.connAttempts--
+
+		if sqlDB.connAttempts == 0 {
+			log.Fatalf("Could not establish DB connection, exiting...")
+		}
 	}
 
 	sqlDB.Queries = sqlc.New(sqlDB.db)
-
-	fmt.Print("connection to DB was successful")
+	log.Println("DB connection is successful.")
 	return sqlDB, nil
 }
 

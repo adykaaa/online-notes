@@ -29,15 +29,14 @@ func main() {
 		log.Fatalf("database migration failure! %v", err)
 	}
 
-	repo := db.NewRepository(sqldb)
-	r := http.NewChiRouter(repo)
+	r := http.NewChiRouter(sqldb)
 
 	httpServer, err := http.NewServer(r, ":8080")
 	if err != nil {
 		log.Fatalf("error during server initialization! %v", err)
 	}
 
-	log.Printf("HTTP server is now listening on %v")
+	log.Printf("HTTP server is now running...")
 	// Waiting signal
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)

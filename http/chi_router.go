@@ -1,16 +1,16 @@
 package http
 
 import (
-	"github.com/adykaaa/online-notes/db"
+	sqlc "github.com/adykaaa/online-notes/db/sqlc"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 )
 
-func NewChiRouter(repo *db.Repository) *chi.Mux {
+func NewChiRouter(q sqlc.Querier) *chi.Mux {
 	router := chi.NewRouter()
 	RegisterChiMiddlewares(router)
-	RegisterChiHandlers(router, repo)
+	RegisterChiHandlers(router, q)
 
 	return router
 }
@@ -30,7 +30,7 @@ func RegisterChiMiddlewares(r *chi.Mux) {
 	}))
 }
 
-func RegisterChiHandlers(router *chi.Mux, repo *db.Repository) {
-	router.Get("/", Home(repo))
-	router.Post("/register", RegisterUser(repo))
+func RegisterChiHandlers(router *chi.Mux, q sqlc.Querier) {
+	router.Get("/", Home(q))
+	router.Post("/register", RegisterUser(q))
 }
