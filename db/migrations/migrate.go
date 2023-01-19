@@ -2,12 +2,12 @@ package migrations
 
 import (
 	"errors"
-	"log"
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/rs/zerolog"
 )
 
 const (
@@ -15,7 +15,7 @@ const (
 	defaultTimeout  = 2 * time.Second
 )
 
-func MigrateDB(db_url string) error {
+func MigrateDB(db_url string, logger *zerolog.Logger) error {
 	var (
 		attempts = defaultAttempts
 		err      error
@@ -28,27 +28,29 @@ func MigrateDB(db_url string) error {
 			break
 		}
 
-		log.Printf("DB Migration failed, attempts left: %d", attempts)
+		logger.Error().Msgf("db migration failed, attempts left: %d", attempts)
 		time.Sleep(defaultTimeout)
 		attempts--
 	}
 
 	if err != nil {
-		log.Fatalf("Migration error: %v", err)
+		logger.Error().Msgf("db migration failed, exiting...")
+		return err
 	}
 
 	err = m.Up()
 	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		log.Fatalf("Migrate: up error: %v", err)
+		logger.Error().Msgf("migrate up error")
+		return err
 	}
 
 	defer m.Close()
 
 	if errors.Is(err, migrate.ErrNoChange) {
-		log.Printf("Migrate: no change")
+		logger.Info().Msgf("there were no changes since the last migration, continuing...", attempts)
 		return nil
 	}
 
-	log.Printf("Migrate: up success")
+	logger.Info().Msg("migrating the DB was successful")
 	return nil
 }

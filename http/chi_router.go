@@ -5,12 +5,13 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/rs/zerolog"
 )
 
-func NewChiRouter(q sqlc.Querier) *chi.Mux {
+func NewChiRouter(q sqlc.Querier, logger *zerolog.Logger) *chi.Mux {
 	router := chi.NewRouter()
 	RegisterChiMiddlewares(router)
-	RegisterChiHandlers(router, q)
+	RegisterChiHandlers(router, q, logger)
 
 	return router
 }
@@ -30,7 +31,7 @@ func RegisterChiMiddlewares(r *chi.Mux) {
 	}))
 }
 
-func RegisterChiHandlers(router *chi.Mux, q sqlc.Querier) {
+func RegisterChiHandlers(router *chi.Mux, q sqlc.Querier, logger *zerolog.Logger) {
 	router.Get("/", Home(q))
 	router.Post("/register", RegisterUser(q))
 }

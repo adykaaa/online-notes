@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/adykaaa/online-notes/db"
@@ -14,32 +13,30 @@ func main() {
 
 	config, err := utils.LoadConfig(".")
 	if err != nil {
-		log.Fatalf("could not load configuration. %v", err)
+		log.Fatal(err)
 	}
 
 	logger := utils.NewLogger(config.LogLevel)
 
-	sqldb, err := db.NewSQLdb("postgres", config.DBConnString)
+	sqldb, err := db.NewSQLdb("postgres", config.DBConnString, &logger)
 	if err != nil {
-		log.Fatalf("error initializing SQL db. %v", err)
+		logger.Fatal().Err(err).Stack().Send()
 	}
 
-	err = migrations.MigrateDB(config.DBConnString)
+	err = migrations.MigrateDB(config.DBConnString, &logger)
 	if err != nil {
-		log.Fatalf("database migration failure! %v", err)
+		logger.Fatal().Err(err).Send()
 	}
 
-	r := http.NewChiRouter(sqldb)
+	router := http.NewChiRouter(sqldb, &logger)
 
-	httpServer, err := http.NewServer(r, config.HTTPServerAddress)
+	httpServer, err := http.NewServer(router, config.HTTPServerAddress, &logger)
 	if err != nil {
-		log.Fatalf("error during server initialization! %v", err)
+		logger.Fatal().Err(err).Send()
 	}
-	logger.Info().Msg("szevasz")
 
-	// Shutdown
 	err = httpServer.Shutdown()
 	if err != nil {
-		fmt.Errorf("app - Run - httpServer.Shutdown: %v", err)
+		logger.Fatal().Err(err).Send()
 	}
 }

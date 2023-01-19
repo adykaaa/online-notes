@@ -2,28 +2,23 @@ package http
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/rs/zerolog"
 )
 
 type Server struct {
+	logger          *zerolog.Logger
 	server          *http.Server
 	notify          chan error
 	shutdownTimeout time.Duration
 }
 
-func NewServer(handler http.Handler, addr string) (*Server, error) {
-
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
-
-	if addr == "" {
-		fmt.Errorf("Address of the server must be specified!")
-	}
+func NewServer(handler http.Handler, addr string, logger *zerolog.Logger) (*Server, error) {
 
 	s := &Server{
 		server: &http.Server{
@@ -32,6 +27,11 @@ func NewServer(handler http.Handler, addr string) (*Server, error) {
 		},
 		notify:          make(chan error, 1),
 		shutdownTimeout: 5 * time.Second,
+		logger:          logger,
+	}
+
+	if addr == "" {
+		s.logger.Error().Msg("Server address cannot be empty!")
 	}
 
 	s.Start()
@@ -48,10 +48,10 @@ func (s *Server) Start() {
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 
 	select {
-	case s := <-interrupt:
-		fmt.Printf("Server run interrupted by OS signal %s", s.String())
+	case sig := <-interrupt:
+		s.logger.Info().Msgf("Server run interrupted by OS signal %s", sig.String())
 	case err := <-s.Notify():
-		fmt.Printf("Server connection error %v", err)
+		s.logger.Info().Msgf("Server connection error %v", err)
 	}
 }
 
