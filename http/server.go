@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -14,9 +17,14 @@ type Server struct {
 }
 
 func NewServer(handler http.Handler, addr string) (*Server, error) {
+
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+
 	if addr == "" {
 		fmt.Errorf("Address of the server must be specified!")
 	}
+
 	s := &Server{
 		server: &http.Server{
 			Handler: handler,
@@ -25,6 +33,7 @@ func NewServer(handler http.Handler, addr string) (*Server, error) {
 		notify:          make(chan error, 1),
 		shutdownTimeout: 5 * time.Second,
 	}
+
 	s.Start()
 	return s, nil
 }
@@ -34,6 +43,16 @@ func (s *Server) Start() {
 		s.notify <- s.server.ListenAndServe()
 		close(s.notify)
 	}()
+
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+
+	select {
+	case s := <-interrupt:
+		fmt.Printf("Server run interrupted by OS signal %s", s.String())
+	case err := <-s.Notify():
+		fmt.Printf("Server connection error %v", err)
+	}
 }
 
 func (s *Server) Notify() <-chan error {

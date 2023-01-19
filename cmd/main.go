@@ -3,9 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/adykaaa/online-notes/db"
 	"github.com/adykaaa/online-notes/db/migrations"
@@ -34,22 +31,11 @@ func main() {
 
 	r := http.NewChiRouter(sqldb)
 
-	httpServer, err := http.NewServer(r, ":8080")
+	httpServer, err := http.NewServer(r, config.HTTPServerAddress)
 	if err != nil {
 		log.Fatalf("error during server initialization! %v", err)
 	}
-
-	log.Printf("HTTP server is now running...")
-	// Waiting signal
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
-
-	select {
-	case s := <-interrupt:
-		fmt.Printf("Server run interrupted by signal %s", s.String())
-	case err := <-httpServer.Notify():
-		fmt.Printf("Server connection error %v", err)
-	}
+	logger.Info().Msg("szevasz")
 
 	// Shutdown
 	err = httpServer.Shutdown()
