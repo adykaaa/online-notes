@@ -17,13 +17,15 @@ func NewLogger(level string) zerolog.Logger {
 	if err != nil {
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
-
 	zerolog.SetGlobalLevel(loglevel)
 
 	logger = zerolog.New(os.Stdout).
 		With().
 		Timestamp().
+		CallerWithSkipFrameCount(2).
 		Logger()
+
+	zerolog.DefaultContextLogger = &logger
 
 	return logger
 }

@@ -8,6 +8,7 @@ import (
 
 	sqlc "github.com/adykaaa/online-notes/db/sqlc"
 	"github.com/adykaaa/online-notes/domain"
+	"github.com/rs/zerolog"
 )
 
 func Home(q sqlc.Querier) http.HandlerFunc {
@@ -19,6 +20,8 @@ func Home(q sqlc.Querier) http.HandlerFunc {
 func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var user domain.User
+		l := zerolog.Ctx(r.Context())
+		l.Info().Msg("SZEVASZ FROM KONTEXT LOGGER!")
 
 		err := json.NewDecoder(r.Body).Decode(&user)
 		if err != nil {

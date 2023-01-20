@@ -28,7 +28,7 @@ func main() {
 		logger.Fatal().Err(err).Send()
 	}
 
-	router := http.NewChiRouter(sqldb, &logger)
+	router := http.NewChiRouter(sqldb, logger)
 
 	httpServer, err := http.NewServer(router, config.HTTPServerAddress, &logger)
 	if err != nil {

@@ -47,7 +47,7 @@ func MigrateDB(db_url string, logger *zerolog.Logger) error {
 	defer m.Close()
 
 	if errors.Is(err, migrate.ErrNoChange) {
-		logger.Info().Msgf("there were no changes since the last migration, continuing...", attempts)
+		logger.Info().Msg("there were no changes since the last migration, continuing...")
 		return nil
 	}
 
