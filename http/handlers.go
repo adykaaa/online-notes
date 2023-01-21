@@ -21,11 +21,10 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var user domain.User
 		l := zerolog.Ctx(r.Context())
-		l.Info().Msg("SZEVASZ FROM KONTEXT LOGGER!")
 
 		err := json.NewDecoder(r.Body).Decode(&user)
 		if err != nil {
-			fmt.Errorf("Could not decode response body into User! %v", err)
+			l.Info().Err(err).Msg("Error decoding the User into JSON during registration!")
 		}
 
 		err = q.RegisterUser(r.Context(), sqlc.RegisterUserParams{

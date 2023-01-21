@@ -20,7 +20,7 @@ func main() {
 
 	sqldb, err := db.NewSQLdb("postgres", config.DBConnString, &logger)
 	if err != nil {
-		logger.Fatal().Err(err).Stack().Send()
+		logger.Fatal().Err(err).Send()
 	}
 
 	err = migrations.MigrateDB(config.DBConnString, &logger)
