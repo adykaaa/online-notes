@@ -12,11 +12,6 @@ DELETE
 FROM users
 WHERE username = $1;
 
--- name: LoginUser :exec
-UPDATE users
-SET logged_in = TRUE
-WHERE username = $1;
-
 -- name: CreateNote :exec
 INSERT INTO notes (title, username, text, created_at, updated_at)
 VALUES ($1,$2,$3,$4,$5);

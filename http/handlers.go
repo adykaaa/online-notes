@@ -7,6 +7,7 @@ import (
 	sqlc "github.com/adykaaa/online-notes/db/sqlc"
 	models "github.com/adykaaa/online-notes/http/models"
 	"github.com/adykaaa/online-notes/utils"
+	"github.com/go-playground/validator/v10"
 	"github.com/rs/zerolog"
 )
 
@@ -27,6 +28,13 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 			return
 		}
 
+		validate := validator.New()
+		err = validate.Struct(&user)
+		if err != nil {
+			http.Error(w, "failed to validate submitted user creds!", 400)
+			return
+		}
+
 		hashedPassword, err := utils.HashUserPassword(user.Password)
 		if err != nil {
 			l.Error().Err(err).Msgf("error during password hashing", err)
@@ -43,7 +51,7 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 			return
 		}
 
-		l.Info().Msgf("User registration for %v was successful!", err)
+		l.Info().Msgf("User registration for %v was successful!", user.Username)
 	}
 }
 

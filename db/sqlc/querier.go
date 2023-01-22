@@ -18,7 +18,6 @@ type Querier interface {
 	GetAllNotesFromUser(ctx context.Context, username sql.NullString) ([]Note, error)
 	GetNoteByID(ctx context.Context, arg GetNoteByIDParams) (uuid.UUID, error)
 	ListUsers(ctx context.Context) ([]User, error)
-	LoginUser(ctx context.Context, username string) error
 	RegisterUser(ctx context.Context, arg RegisterUserParams) error
 }
 

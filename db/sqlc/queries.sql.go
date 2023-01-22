@@ -118,7 +118,7 @@ func (q *Queries) GetNoteByID(ctx context.Context, arg GetNoteByIDParams) (uuid.
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT username, password, email, logged_in
+SELECT username, password, email
 FROM users
 ORDER BY username
 `
@@ -132,12 +132,7 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 	var items []User
 	for rows.Next() {
 		var i User
-		if err := rows.Scan(
-			&i.Username,
-			&i.Password,
-			&i.Email,
-			&i.LoggedIn,
-		); err != nil {
+		if err := rows.Scan(&i.Username, &i.Password, &i.Email); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -149,17 +144,6 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 		return nil, err
 	}
 	return items, nil
-}
-
-const loginUser = `-- name: LoginUser :exec
-UPDATE users
-SET logged_in = TRUE
-WHERE username = $1
-`
-
-func (q *Queries) LoginUser(ctx context.Context, username string) error {
-	_, err := q.db.ExecContext(ctx, loginUser, username)
-	return err
 }
 
 const registerUser = `-- name: RegisterUser :exec
