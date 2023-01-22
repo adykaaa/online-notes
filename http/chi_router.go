@@ -10,7 +10,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func NewChiRouter(q sqlc.Querier, logger zerolog.Logger) *chi.Mux {
+func NewChiRouter(q sqlc.Querier, logger *zerolog.Logger) *chi.Mux {
 	router := chi.NewRouter()
 	RegisterChiMiddlewares(router, logger)
 	RegisterChiHandlers(router, q)
@@ -19,11 +19,11 @@ func NewChiRouter(q sqlc.Querier, logger zerolog.Logger) *chi.Mux {
 }
 
 // TODO: set strict CORS when everything's gucci
-func RegisterChiMiddlewares(r *chi.Mux, logger zerolog.Logger) {
+func RegisterChiMiddlewares(r *chi.Mux, logger *zerolog.Logger) {
 
 	//Request logger has middleware.Recoverer and RequestID baked into it.
 	r.Use(render.SetContentType(render.ContentTypeJSON),
-		httplog.RequestLogger(&logger),
+		httplog.RequestLogger(logger),
 		middleware.Heartbeat("/ping"),
 		middleware.RedirectSlashes,
 		cors.Handler(cors.Options{
