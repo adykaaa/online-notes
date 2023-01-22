@@ -1,12 +1,18 @@
 package http
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/aead/chacha20poly1305"
 	"github.com/google/uuid"
 	"github.com/o1egl/paseto"
+)
+
+var (
+	ErrTokenExpired = errors.New("the PASETO has expired")
+	ErrTokenInvalid = errors.New("the PASETO is not valid")
 )
 
 type PasetoPayload struct {
@@ -65,11 +71,11 @@ func (maker *Paseto) VerifyToken(token string) (*PasetoPayload, error) {
 
 	err := maker.paseto.Decrypt(token, maker.key, payload, nil)
 	if err != nil {
-		return nil, fmt.Errorf("the PASETO is invalid!")
+		return nil, fmt.Errorf("the PASETO is invalid!", ErrTokenInvalid)
 	}
 
 	if time.Now().After(payload.ExpiresAt) {
-		return nil, fmt.Errorf("the PASETO has expired")
+		return nil, fmt.Errorf("the PASETO has expired", ErrTokenExpired)
 	}
 
 	return payload, nil
