@@ -2,12 +2,11 @@ package http
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
 
 	sqlc "github.com/adykaaa/online-notes/db/sqlc"
-	"github.com/adykaaa/online-notes/domain"
+	models "github.com/adykaaa/online-notes/http/models"
+	"github.com/adykaaa/online-notes/utils"
 	"github.com/rs/zerolog"
 )
 
@@ -19,24 +18,32 @@ func Home(q sqlc.Querier) http.HandlerFunc {
 
 func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var user domain.User
+		var user models.User
 		l := zerolog.Ctx(r.Context())
 
 		err := json.NewDecoder(r.Body).Decode(&user)
 		if err != nil {
-			l.Info().Err(err).Msg("Error decoding the User into JSON during registration!")
+			l.Error().Err(err).Msgf("error decoding the User into JSON during registration!", err)
+			return
+		}
+
+		hashedPassword, err := utils.HashUserPassword(user.Password)
+		if err != nil {
+			l.Error().Err(err).Msgf("error during password hashing", err)
+			return
 		}
 
 		err = q.RegisterUser(r.Context(), sqlc.RegisterUserParams{
 			Username: user.Username,
-			Password: user.Password,
+			Password: hashedPassword,
 			Email:    user.Email,
 		})
 		if err != nil {
-			fmt.Errorf("Error during user registration! %v", err)
+			l.Error().Err(err).Msgf("Error during user registration to DB! %v", err)
+			return
 		}
 
-		log.Printf("User registration for %s was successful!", user.Username)
+		l.Info().Msgf("User registration for %v was successful!", err)
 	}
 }
 
