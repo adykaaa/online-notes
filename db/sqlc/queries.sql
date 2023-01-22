@@ -7,6 +7,10 @@ SELECT *
 FROM users
 ORDER BY username;
 
+-- name: GetUser :one
+SELECT * FROM users
+WHERE username = $1 LIMIT 1;
+
 -- name: DeleteUser :exec
 DELETE
 FROM users

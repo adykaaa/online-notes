@@ -117,6 +117,18 @@ func (q *Queries) GetNoteByID(ctx context.Context, arg GetNoteByIDParams) (uuid.
 	return id, err
 }
 
+const getUser = `-- name: GetUser :one
+SELECT username, password, email FROM users
+WHERE username = $1 LIMIT 1
+`
+
+func (q *Queries) GetUser(ctx context.Context, username string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUser, username)
+	var i User
+	err := row.Scan(&i.Username, &i.Password, &i.Email)
+	return i, err
+}
+
 const listUsers = `-- name: ListUsers :many
 SELECT username, password, email
 FROM users
