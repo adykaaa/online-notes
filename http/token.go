@@ -40,8 +40,8 @@ func NewPasetoPayload(username string) (*PasetoPayload, error) {
 }
 
 type PasetoCreator struct {
-	key    []byte
-	paseto *paseto.V2
+	symmetricKey []byte
+	paseto       *paseto.V2
 }
 
 func NewPasetoCreator(symmetricKey string) (*PasetoCreator, error) {
@@ -50,8 +50,8 @@ func NewPasetoCreator(symmetricKey string) (*PasetoCreator, error) {
 	}
 
 	paseto := &PasetoCreator{
-		key:    []byte(symmetricKey),
-		paseto: paseto.NewV2(),
+		symmetricKey: []byte(symmetricKey),
+		paseto:       paseto.NewV2(),
 	}
 	return paseto, nil
 }
@@ -62,14 +62,14 @@ func (c *PasetoCreator) CreateToken(username string) (string, *PasetoPayload, er
 		return "", payload, err
 	}
 
-	token, err := c.paseto.Encrypt(c.key, payload, nil)
+	token, err := c.paseto.Encrypt(c.symmetricKey, payload, nil)
 	return token, payload, err
 }
 
 func (c *PasetoCreator) VerifyToken(token string) (*PasetoPayload, error) {
 	payload := &PasetoPayload{}
 
-	err := c.paseto.Decrypt(token, c.key, payload, nil)
+	err := c.paseto.Decrypt(token, c.symmetricKey, payload, nil)
 	if err != nil {
 		return nil, fmt.Errorf("the PASETO is invalid!", ErrTokenInvalid)
 	}
