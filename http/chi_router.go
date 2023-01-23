@@ -10,18 +10,23 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func NewChiRouter(q sqlc.Querier, logger *zerolog.Logger) *chi.Mux {
+func NewChiRouter(q sqlc.Querier, symmetricKey string, logger *zerolog.Logger) *chi.Mux {
+
+	tokenCreator, err := NewPasetoCreator(symmetricKey)
+	if err != nil {
+		logger.Err(err).Msgf("could not create a new PasetoCreator. %v", err)
+	}
+
 	router := chi.NewRouter()
 	RegisterChiMiddlewares(router, logger)
-	RegisterChiHandlers(router, q)
+	RegisterChiHandlers(router, q, tokenCreator)
 
 	return router
 }
 
 // TODO: set strict CORS when everything's gucci
 func RegisterChiMiddlewares(r *chi.Mux, logger *zerolog.Logger) {
-
-	//Request logger has middleware.Recoverer and RequestID baked into it.
+	// Request logger has middleware.Recoverer and RequestID baked into it.
 	r.Use(render.SetContentType(render.ContentTypeJSON),
 		httplog.RequestLogger(logger),
 		middleware.Heartbeat("/ping"),
@@ -36,7 +41,7 @@ func RegisterChiMiddlewares(r *chi.Mux, logger *zerolog.Logger) {
 		}))
 }
 
-func RegisterChiHandlers(router *chi.Mux, q sqlc.Querier) {
+func RegisterChiHandlers(router *chi.Mux, q sqlc.Querier, c *PasetoCreator) {
 	router.Get("/", Home(q))
 	router.Post("/register", RegisterUser(q))
 }

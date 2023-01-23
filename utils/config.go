@@ -12,7 +12,7 @@ type Config struct {
 	LogLevel             string        `mapstructure:"LOG_LEVEL"`
 	DBConnString         string        `mapstructure:"DB_CONN_STRING"`
 	HTTPServerAddress    string        `mapstructure:"HTTP_SERVER_ADDRESS"`
-	JWTSecret            string        `mapstructure:"JWT_SECRET"`
+	PASETOSecret         string        `mapstructure:"PASETO_SYMMETRIC_KEY"`
 	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
 }

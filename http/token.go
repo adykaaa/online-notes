@@ -39,37 +39,37 @@ func NewPasetoPayload(username string) (*PasetoPayload, error) {
 	return payload, nil
 }
 
-type Paseto struct {
+type PasetoCreator struct {
 	key    []byte
 	paseto *paseto.V2
 }
 
-func NewPaseto(symmetricKey string) (*Paseto, error) {
+func NewPasetoCreator(symmetricKey string) (*PasetoCreator, error) {
 	if len(symmetricKey) != chacha20poly1305.KeySize {
 		return nil, fmt.Errorf("invalid key size, must be %d bytes", chacha20poly1305.KeySize)
 	}
 
-	paseto := &Paseto{
+	paseto := &PasetoCreator{
 		key:    []byte(symmetricKey),
 		paseto: paseto.NewV2(),
 	}
 	return paseto, nil
 }
 
-func (maker *Paseto) CreateToken(username string) (string, *PasetoPayload, error) {
+func (c *PasetoCreator) CreateToken(username string) (string, *PasetoPayload, error) {
 	payload, err := NewPasetoPayload(username)
 	if err != nil {
 		return "", payload, err
 	}
 
-	token, err := maker.paseto.Encrypt(maker.key, payload, nil)
+	token, err := c.paseto.Encrypt(c.key, payload, nil)
 	return token, payload, err
 }
 
-func (maker *Paseto) VerifyToken(token string) (*PasetoPayload, error) {
+func (c *PasetoCreator) VerifyToken(token string) (*PasetoPayload, error) {
 	payload := &PasetoPayload{}
 
-	err := maker.paseto.Decrypt(token, maker.key, payload, nil)
+	err := c.paseto.Decrypt(token, c.key, payload, nil)
 	if err != nil {
 		return nil, fmt.Errorf("the PASETO is invalid!", ErrTokenInvalid)
 	}

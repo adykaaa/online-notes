@@ -18,7 +18,7 @@ type Note struct {
 	UpdatedAt time.Time `json:"updatedAt" validate:"required"`
 }
 
-func NewUser(email string, username string, password string, loggedIn bool) (*User, error) {
+func NewUser(email string, username string, password string) (*User, error) {
 	u := &User{
 		Email:    email,
 		Username: username,

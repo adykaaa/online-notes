@@ -37,7 +37,7 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 
 		hashedPassword, err := utils.HashUserPassword(user.Password)
 		if err != nil {
-			l.Error().Err(err).Msgf("error during password hashing", err)
+			l.Error().Err(err).Msgf("error during password hashing %v", err)
 			return
 		}
 
@@ -47,11 +47,11 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 			Email:    user.Email,
 		})
 		if err != nil {
-			l.Error().Err(err).Msgf("Error during user registration to DB! %v", err)
+			l.Error().Err(err).Msgf("Error during user registration to the DB! %v", err)
 			return
 		}
 
-		l.Info().Msgf("User registration for %v was successful!", user.Username)
+		l.Info().Msgf("User registration for %s was successful!", user.Username)
 	}
 }
 

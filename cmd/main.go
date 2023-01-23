@@ -13,7 +13,7 @@ func main() {
 
 	config, err := utils.LoadConfig(".")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Could not load config. %v", err)
 	}
 
 	logger := utils.NewLogger(config.LogLevel)
@@ -28,7 +28,7 @@ func main() {
 		logger.Fatal().Err(err).Send()
 	}
 
-	router := http.NewChiRouter(sqldb, &logger)
+	router := http.NewChiRouter(sqldb, config.PASETOSecret, &logger)
 
 	httpServer, err := http.NewServer(router, config.HTTPServerAddress, &logger)
 	if err != nil {
