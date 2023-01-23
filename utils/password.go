@@ -7,6 +7,10 @@ import (
 )
 
 func HashUserPassword(password string) (string, error) {
+	if len(password) < 5 {
+		return "", fmt.Errorf("password cannot be less than 5 chars long")
+	}
+
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), 10)
 	if err != nil {
 		return "", fmt.Errorf("could not hash user password! %v", err)
