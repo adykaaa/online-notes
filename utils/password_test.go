@@ -8,27 +8,38 @@ import (
 
 func TestHashUserPassword(t *testing.T) {
 	t.Run("hashes password OK", func(t *testing.T) {
-		hpw, err := HashUserPassword("abc123!")
+		hpw, err := HashPassword("abc123!")
 		require.NoError(t, err)
 		require.NotEmpty(t, hpw)
 	})
 	t.Run("fails if too short", func(t *testing.T) {
-		hpw, err := HashUserPassword("abc1")
+		hpw, err := HashPassword("abc1")
 		require.Error(t, err)
 		require.Empty(t, hpw)
 	})
 	t.Run("fails if empty", func(t *testing.T) {
-		hpw, err := HashUserPassword("")
+		hpw, err := HashPassword("")
 		require.Error(t, err)
 		require.Empty(t, hpw)
 	})
 	t.Run("fails if too long", func(t *testing.T) {
-		hpw, err := HashUserPassword(".vI(5dSO^hM)Q:>z.n'T?1mdzFQE2;UP5N-(q`NCkM=m'efZZ'JajBn№A)vU:84Mozt<G:vg*")
+		hpw, err := HashPassword(".vI(5dSO^hM)Q:>z.n'T?1mdzFQE2;UP5N-(q`NCkM=m'efZZ'JajBn№A)vU:84Mozt<G:vg*")
 		require.Error(t, err)
 		require.Empty(t, hpw)
 	})
 }
 
-func TestValidateUserPassword(t *testing.T) {
-
+func TestValidatePassword(t *testing.T) {
+	const pw1 = "abc123!"
+	const pw2 = "abc333!"
+	t.Run("password validation OK", func(t *testing.T) {
+		hpw, _ := HashPassword(pw1)
+		err := ValidatePassword(hpw, pw1)
+		require.NoError(t, err)
+	})
+	t.Run("fails with not same hash", func(t *testing.T) {
+		hpw, _ := HashPassword(pw1)
+		err := ValidatePassword(hpw, pw2)
+		require.Error(t, err)
+	})
 }

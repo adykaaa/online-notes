@@ -6,7 +6,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func HashUserPassword(password string) (string, error) {
+func HashPassword(password string) (string, error) {
 	if len(password) < 5 {
 		return "", fmt.Errorf("password cannot be less than 5 chars long")
 	}
@@ -18,7 +18,10 @@ func HashUserPassword(password string) (string, error) {
 	return string(hash), nil
 }
 
-func ValidateUserPassword(hashedPassword string, password string) error {
+func ValidatePassword(hashedPassword string, password string) error {
+	if len(password) < 5 {
+		return fmt.Errorf("password cannot be less than 5 chars long")
+	}
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	if err != nil {
 		return fmt.Errorf("error while comparing the current and hashed password! %v", err)
