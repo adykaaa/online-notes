@@ -7,25 +7,25 @@ import (
 )
 
 func TestHashUserPassword(t *testing.T) {
-	t.Run("should hash the password without error", func(t *testing.T) {
-		pw := "abc123!"
-		_, err := HashUserPassword(pw)
+	t.Run("hashes password OK", func(t *testing.T) {
+		hpw, err := HashUserPassword("abc123!")
 		require.NoError(t, err)
+		require.NotEmpty(t, hpw)
 	})
-	t.Run("should return error - too short password", func(t *testing.T) {
-		pw := "abc1"
-		_, err := HashUserPassword(pw)
+	t.Run("fails if too short", func(t *testing.T) {
+		hpw, err := HashUserPassword("abc1")
 		require.Error(t, err)
+		require.Empty(t, hpw)
 	})
-	t.Run("should return error - empty password", func(t *testing.T) {
-		pw := ""
-		_, err := HashUserPassword(pw)
+	t.Run("fails if empty", func(t *testing.T) {
+		hpw, err := HashUserPassword("")
 		require.Error(t, err)
+		require.Empty(t, hpw)
 	})
-	t.Run("should return error - too long password", func(t *testing.T) {
-		pw := ".vI(5dSO^hM)Q:>z.n'T?1mdzFQE2;UP5N-(q`NCkM=m'efZZ'JajBn№A)vU:84Mozt<G:vg*"
-		_, err := HashUserPassword(pw)
+	t.Run("fails if too long", func(t *testing.T) {
+		hpw, err := HashUserPassword(".vI(5dSO^hM)Q:>z.n'T?1mdzFQE2;UP5N-(q`NCkM=m'efZZ'JajBn№A)vU:84Mozt<G:vg*")
 		require.Error(t, err)
+		require.Empty(t, hpw)
 	})
 }
 
