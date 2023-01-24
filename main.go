@@ -23,7 +23,7 @@ func main() {
 		logger.Fatal().Err(err).Send()
 	}
 
-	err = migrations.MigrateDB(config.DBConnString, &logger)
+	err = migrations.MigrateDB(config.DBConnString, "file://db/migrations/", &logger)
 	if err != nil {
 		logger.Fatal().Err(err).Send()
 	}

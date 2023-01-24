@@ -35,7 +35,7 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 			return
 		}
 
-		hashedPassword, err := utils.HashUserPassword(user.Password)
+		hashedPassword, err := utils.HashPassword(user.Password)
 		if err != nil {
 			l.Error().Err(err).Msgf("error during password hashing %v", err)
 			return

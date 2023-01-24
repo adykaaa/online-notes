@@ -35,6 +35,7 @@ func TestHashUserPassword(t *testing.T) {
 		require.Error(t, err)
 		require.Empty(t, hpw)
 	})
+
 }
 
 func TestValidatePassword(t *testing.T) {

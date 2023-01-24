@@ -2,6 +2,8 @@ package migrations
 
 import (
 	"errors"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -15,15 +17,25 @@ const (
 	defaultTimeout  = 2 * time.Second
 )
 
-func MigrateDB(db_url string, logger *zerolog.Logger) error {
+func MigrateDB(dbURL string, source string, logger *zerolog.Logger) error {
 	var (
 		attempts = defaultAttempts
-		err      error
 		m        *migrate.Migrate
 	)
 
+	if dbURL == "" || source == "" {
+		logger.Error().Msg("DB URL and migration source cannot be empty!")
+		return errors.New("migration error: empty param")
+	}
+
+	_, err := os.Stat(strings.TrimPrefix(source, "file://"))
+	if err != nil {
+		logger.Error().Msgf("migration folder cannot be reached! %v", err)
+		return err
+	}
+
 	for attempts > 0 {
-		m, err = migrate.New("file://db/migrations/", db_url)
+		m, err = migrate.New(source, dbURL)
 		if err == nil {
 			break
 		}
