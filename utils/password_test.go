@@ -7,10 +7,18 @@ import (
 )
 
 func TestHashUserPassword(t *testing.T) {
-	t.Run("hashes password OK", func(t *testing.T) {
+	t.Run("password hashing OK", func(t *testing.T) {
 		hpw, err := HashPassword("abc123!")
 		require.NoError(t, err)
 		require.NotEmpty(t, hpw)
+	})
+
+	t.Run("different hash for different passwords", func(t *testing.T) {
+		hpw1, err := HashPassword("abc123!")
+		require.NoError(t, err)
+		hpw2, err := HashPassword("abc321!")
+		require.NoError(t, err)
+		require.NotEqual(t, hpw1, hpw2)
 	})
 	t.Run("fails if too short", func(t *testing.T) {
 		hpw, err := HashPassword("abc1")
@@ -31,7 +39,7 @@ func TestHashUserPassword(t *testing.T) {
 
 func TestValidatePassword(t *testing.T) {
 	const pw1 = "abc123!"
-	const pw2 = "abc333!"
+	const pw2 = "abc321!"
 	t.Run("password validation OK", func(t *testing.T) {
 		hpw, _ := HashPassword(pw1)
 		err := ValidatePassword(hpw, pw1)

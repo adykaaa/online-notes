@@ -34,20 +34,20 @@ func MigrateDB(db_url string, logger *zerolog.Logger) error {
 	}
 
 	if err != nil {
-		logger.Error().Msgf("db migration failed, exiting...")
+		logger.Error().Msgf("db migration failed. %v", err)
 		return err
 	}
 
 	err = m.Up()
 	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		logger.Error().Msgf("migrate up error")
+		logger.Error().Msgf("migrate up error. %v", err)
 		return err
 	}
 
 	defer m.Close()
 
 	if errors.Is(err, migrate.ErrNoChange) {
-		logger.Info().Msg("there were no changes since the last migration, continuing...")
+		logger.Info().Msg("there were no changes since the last migration")
 		return nil
 	}
 
