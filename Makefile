@@ -9,3 +9,14 @@ pg-up:
 	docker run -e POSTGRES_USER=user -e POSTGRES_PASSWORD=pgpass123 -e POSTGRES_DB=notes -p 5432:5432 -d --name postgres-dev postgres
 .PHONY: pg-up
 
+sqlc:
+	sqlc generate
+.PHONY: sqlc
+
+test:
+	go test -v -cover ./...
+.PHONY: test
+
+mock:
+	mockgen -destination db/mock/querier.go  github.com/adykaaa/online-notes/db/sqlc Querier
+.PHONY: mock

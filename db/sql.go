@@ -61,16 +61,3 @@ func NewSQLdb(driver string, url string, logger *zerolog.Logger) (*sqlDB, error)
 
 	return sqlDB, nil
 }
-
-func (db *sqlDB) GetDB() *sql.DB {
-	return db.db
-}
-
-func (db *sqlDB) Close() {
-	if db.db != nil {
-		err := db.db.Close()
-		if err != nil {
-			db.logger.Error().Msgf("Could not establish connection to the database")
-		}
-	}
-}
