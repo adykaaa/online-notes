@@ -1,7 +1,7 @@
 -- name: RegisterUser :one
 INSERT INTO users (username, password, email)
 VALUES ($1,$2,$3)
-RETURNING *;
+RETURNING username;
 
 -- name: ListUsers :many
 SELECT *
@@ -21,7 +21,7 @@ RETURNING username;
 -- name: CreateNote :one
 INSERT INTO notes (title, username, text, created_at, updated_at)
 VALUES ($1,$2,$3,$4,$5)
-RETURNING *;
+RETURNING id;
 
 -- name: GetNoteByID :one
 SELECT id
