@@ -1,6 +1,7 @@
--- name: RegisterUser :exec
+-- name: RegisterUser :one
 INSERT INTO users (username, password, email)
-VALUES ($1,$2,$3) RETURNING *;
+VALUES ($1,$2,$3)
+RETURNING *;
 
 -- name: ListUsers :many
 SELECT *
@@ -11,13 +12,13 @@ ORDER BY username;
 SELECT * FROM users
 WHERE username = $1 LIMIT 1;
 
--- name: DeleteUser :exec
+-- name: DeleteUser :one
 DELETE
 FROM users
 WHERE username = $1
 RETURNING username;
 
--- name: CreateNote :exec
+-- name: CreateNote :one
 INSERT INTO notes (title, username, text, created_at, updated_at)
 VALUES ($1,$2,$3,$4,$5)
 RETURNING *;
@@ -32,7 +33,7 @@ SELECT *
 FROM notes
 WHERE username = $1; 
 
--- name: DeleteNote :exec
+-- name: DeleteNote :one
 DELETE 
 FROM notes
 WHERE username = $1 AND title = $2
