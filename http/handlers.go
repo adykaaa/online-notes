@@ -24,7 +24,7 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 
 		err := json.NewDecoder(r.Body).Decode(&user)
 		if err != nil {
-			l.Error().Err(err).Msgf("error decoding the User into JSON during registration!", err)
+			l.Error().Err(err).Msgf("error decoding the User into JSON during registration. %v", err)
 			return
 		}
 
