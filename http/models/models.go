@@ -2,6 +2,8 @@ package http
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type User struct {
@@ -11,6 +13,7 @@ type User struct {
 }
 
 type Note struct {
+	ID        uuid.UUID `json:"id" validate:"required"`
 	Title     string    `json:"title" validate:"required"`
 	User      string    `json:"user" validate:"required"`
 	Text      string    `json:"text"`
@@ -29,7 +32,9 @@ func NewUser(email string, username string, password string) (*User, error) {
 }
 
 func NewNote(title string, text string, user string) (*Note, error) {
+
 	n := &Note{
+		ID:        uuid.New(),
 		Title:     title,
 		User:      user,
 		Text:      text,

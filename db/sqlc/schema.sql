@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS notes (
- id UUID DEFAULT gen_random_uuid(),
+ id UUID,
  title TEXT NOT NULL,
  username VARCHAR(30) references users(username) ON DELETE CASCADE,
  text TEXT,
