@@ -18,5 +18,5 @@ test:
 .PHONY: test
 
 mock:
-	mockgen -destination db/mock/querier.go  github.com/adykaaa/online-notes/db/sqlc Querier
+	mockgen -package mockdb -destination db/mock/querier.go  github.com/adykaaa/online-notes/db/sqlc Querier
 .PHONY: mock
