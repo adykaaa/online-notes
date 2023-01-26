@@ -38,11 +38,12 @@ func (m *MockQuerier) EXPECT() *MockQuerierMockRecorder {
 }
 
 // CreateNote mocks base method.
-func (m *MockQuerier) CreateNote(arg0 context.Context, arg1 db.CreateNoteParams) error {
+func (m *MockQuerier) CreateNote(arg0 context.Context, arg1 db.CreateNoteParams) (uuid.UUID, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateNote", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(uuid.UUID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // CreateNote indicates an expected call of CreateNote.
@@ -52,11 +53,12 @@ func (mr *MockQuerierMockRecorder) CreateNote(arg0, arg1 interface{}) *gomock.Ca
 }
 
 // DeleteNote mocks base method.
-func (m *MockQuerier) DeleteNote(arg0 context.Context, arg1 db.DeleteNoteParams) error {
+func (m *MockQuerier) DeleteNote(arg0 context.Context, arg1 db.DeleteNoteParams) (uuid.UUID, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteNote", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(uuid.UUID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // DeleteNote indicates an expected call of DeleteNote.
@@ -66,11 +68,12 @@ func (mr *MockQuerierMockRecorder) DeleteNote(arg0, arg1 interface{}) *gomock.Ca
 }
 
 // DeleteUser mocks base method.
-func (m *MockQuerier) DeleteUser(arg0 context.Context, arg1 string) error {
+func (m *MockQuerier) DeleteUser(arg0 context.Context, arg1 string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteUser", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // DeleteUser indicates an expected call of DeleteUser.
@@ -140,11 +143,12 @@ func (mr *MockQuerierMockRecorder) ListUsers(arg0 interface{}) *gomock.Call {
 }
 
 // RegisterUser mocks base method.
-func (m *MockQuerier) RegisterUser(arg0 context.Context, arg1 db.RegisterUserParams) error {
+func (m *MockQuerier) RegisterUser(arg0 context.Context, arg1 db.RegisterUserParams) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RegisterUser", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // RegisterUser indicates an expected call of RegisterUser.
