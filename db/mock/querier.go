@@ -38,10 +38,10 @@ func (m *MockQuerier) EXPECT() *MockQuerierMockRecorder {
 }
 
 // CreateNote mocks base method.
-func (m *MockQuerier) CreateNote(arg0 context.Context, arg1 db.CreateNoteParams) (uuid.UUID, error) {
+func (m *MockQuerier) CreateNote(arg0 context.Context, arg1 db.CreateNoteParams) (db.Note, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateNote", arg0, arg1)
-	ret0, _ := ret[0].(uuid.UUID)
+	ret0, _ := ret[0].(db.Note)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -155,4 +155,34 @@ func (m *MockQuerier) RegisterUser(arg0 context.Context, arg1 db.RegisterUserPar
 func (mr *MockQuerierMockRecorder) RegisterUser(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterUser", reflect.TypeOf((*MockQuerier)(nil).RegisterUser), arg0, arg1)
+}
+
+// UpdateNoteText mocks base method.
+func (m *MockQuerier) UpdateNoteText(arg0 context.Context, arg1 db.UpdateNoteTextParams) (db.Note, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateNoteText", arg0, arg1)
+	ret0, _ := ret[0].(db.Note)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateNoteText indicates an expected call of UpdateNoteText.
+func (mr *MockQuerierMockRecorder) UpdateNoteText(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNoteText", reflect.TypeOf((*MockQuerier)(nil).UpdateNoteText), arg0, arg1)
+}
+
+// UpdateNoteTitle mocks base method.
+func (m *MockQuerier) UpdateNoteTitle(arg0 context.Context, arg1 db.UpdateNoteTitleParams) (db.Note, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateNoteTitle", arg0, arg1)
+	ret0, _ := ret[0].(db.Note)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateNoteTitle indicates an expected call of UpdateNoteTitle.
+func (mr *MockQuerierMockRecorder) UpdateNoteTitle(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNoteTitle", reflect.TypeOf((*MockQuerier)(nil).UpdateNoteTitle), arg0, arg1)
 }

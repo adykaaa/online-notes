@@ -21,8 +21,13 @@ RETURNING username;
 -- name: CreateNote :one
 INSERT INTO notes (id,title, username, text, created_at, updated_at)
 VALUES ($1,$2,$3,$4,$5,$6)
-RETURNING id;
+RETURNING *;
 
+-- name: UpdateNoteTitle :one
+UPDATE notes SET title = $1, updated_at = $2 WHERE id = $3 RETURNING *;
+
+-- name: UpdateNoteText :one
+UPDATE notes SET text = $1, updated_at = $2 WHERE id = $3 RETURNING *;
 -- name: GetNoteByID :one
 SELECT id
 FROM notes

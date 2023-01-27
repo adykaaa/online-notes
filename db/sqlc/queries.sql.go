@@ -15,7 +15,7 @@ import (
 const createNote = `-- name: CreateNote :one
 INSERT INTO notes (id,title, username, text, created_at, updated_at)
 VALUES ($1,$2,$3,$4,$5,$6)
-RETURNING id
+RETURNING id, title, username, text, created_at, updated_at
 `
 
 type CreateNoteParams struct {
@@ -27,7 +27,7 @@ type CreateNoteParams struct {
 	UpdatedAt sql.NullTime
 }
 
-func (q *Queries) CreateNote(ctx context.Context, arg CreateNoteParams) (uuid.UUID, error) {
+func (q *Queries) CreateNote(ctx context.Context, arg CreateNoteParams) (Note, error) {
 	row := q.db.QueryRowContext(ctx, createNote,
 		arg.ID,
 		arg.Title,
@@ -36,9 +36,16 @@ func (q *Queries) CreateNote(ctx context.Context, arg CreateNoteParams) (uuid.UU
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
-	var id uuid.UUID
-	err := row.Scan(&id)
-	return id, err
+	var i Note
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Username,
+		&i.Text,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const deleteNote = `-- name: DeleteNote :one
@@ -185,4 +192,52 @@ func (q *Queries) RegisterUser(ctx context.Context, arg RegisterUserParams) (str
 	var username string
 	err := row.Scan(&username)
 	return username, err
+}
+
+const updateNoteText = `-- name: UpdateNoteText :one
+UPDATE notes SET text = $1, updated_at = $2 WHERE id = $3 RETURNING id, title, username, text, created_at, updated_at
+`
+
+type UpdateNoteTextParams struct {
+	Text      sql.NullString
+	UpdatedAt sql.NullTime
+	ID        uuid.UUID
+}
+
+func (q *Queries) UpdateNoteText(ctx context.Context, arg UpdateNoteTextParams) (Note, error) {
+	row := q.db.QueryRowContext(ctx, updateNoteText, arg.Text, arg.UpdatedAt, arg.ID)
+	var i Note
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Username,
+		&i.Text,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateNoteTitle = `-- name: UpdateNoteTitle :one
+UPDATE notes SET title = $1, updated_at = $2 WHERE id = $3 RETURNING id, title, username, text, created_at, updated_at
+`
+
+type UpdateNoteTitleParams struct {
+	Title     string
+	UpdatedAt sql.NullTime
+	ID        uuid.UUID
+}
+
+func (q *Queries) UpdateNoteTitle(ctx context.Context, arg UpdateNoteTitleParams) (Note, error) {
+	row := q.db.QueryRowContext(ctx, updateNoteTitle, arg.Title, arg.UpdatedAt, arg.ID)
+	var i Note
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Username,
+		&i.Text,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }

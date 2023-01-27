@@ -12,7 +12,7 @@ import (
 )
 
 type Querier interface {
-	CreateNote(ctx context.Context, arg CreateNoteParams) (uuid.UUID, error)
+	CreateNote(ctx context.Context, arg CreateNoteParams) (Note, error)
 	DeleteNote(ctx context.Context, arg DeleteNoteParams) (uuid.UUID, error)
 	DeleteUser(ctx context.Context, username string) (string, error)
 	GetAllNotesFromUser(ctx context.Context, username sql.NullString) ([]Note, error)
@@ -20,6 +20,8 @@ type Querier interface {
 	GetUser(ctx context.Context, username string) (User, error)
 	ListUsers(ctx context.Context) ([]User, error)
 	RegisterUser(ctx context.Context, arg RegisterUserParams) (string, error)
+	UpdateNoteText(ctx context.Context, arg UpdateNoteTextParams) (Note, error)
+	UpdateNoteTitle(ctx context.Context, arg UpdateNoteTitleParams) (Note, error)
 }
 
 var _ Querier = (*Queries)(nil)
