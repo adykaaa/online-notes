@@ -51,18 +51,12 @@ func (q *Queries) CreateNote(ctx context.Context, arg CreateNoteParams) (Note, e
 const deleteNote = `-- name: DeleteNote :one
 DELETE 
 FROM notes
-WHERE username = $1 AND title = $2
+WHERE id = $1
 RETURNING id
 `
 
-type DeleteNoteParams struct {
-	Username sql.NullString
-	Title    string
-}
-
-func (q *Queries) DeleteNote(ctx context.Context, arg DeleteNoteParams) (uuid.UUID, error) {
-	row := q.db.QueryRowContext(ctx, deleteNote, arg.Username, arg.Title)
-	var id uuid.UUID
+func (q *Queries) DeleteNote(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
+	row := q.db.QueryRowContext(ctx, deleteNote, id)
 	err := row.Scan(&id)
 	return id, err
 }

@@ -25,8 +25,6 @@ func TestDBMethods(t *testing.T) {
 	createdAt := sql.NullTime{Time: time.Now(), Valid: true}
 	updatedAt := sql.NullTime{Time: time.Now(), Valid: true}
 
-	randomNote := utils.NewRandomNote(id)
-
 	ctrl := gomock.NewController(t)
 	mockdb := mockdb.NewMockQuerier(ctrl)
 
@@ -65,18 +63,13 @@ func TestDBMethods(t *testing.T) {
 
 	})
 	t.Run("DeleteNote OK", func(t *testing.T) {
-		args := db.DeleteNoteParams{
-			Username: username,
-			Title:    title,
-		}
 
-		mockdb.EXPECT().DeleteNote(ctx, args).Return(id, nil)
-		retID, err := mockdb.DeleteNote(ctx, args)
+		mockdb.EXPECT().DeleteNote(ctx, id).Return(id, nil)
+		retID, err := mockdb.DeleteNote(ctx, id)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, id)
 		assert.Equal(t, id, retID)
-
 	})
 	t.Run("GetAllNotesFromUser OK", func(t *testing.T) {
 		randomNotes := []db.Note{

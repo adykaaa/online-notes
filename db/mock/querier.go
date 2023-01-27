@@ -53,7 +53,7 @@ func (mr *MockQuerierMockRecorder) CreateNote(arg0, arg1 interface{}) *gomock.Ca
 }
 
 // DeleteNote mocks base method.
-func (m *MockQuerier) DeleteNote(arg0 context.Context, arg1 db.DeleteNoteParams) (uuid.UUID, error) {
+func (m *MockQuerier) DeleteNote(arg0 context.Context, arg1 uuid.UUID) (uuid.UUID, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteNote", arg0, arg1)
 	ret0, _ := ret[0].(uuid.UUID)

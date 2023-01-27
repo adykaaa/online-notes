@@ -41,5 +41,5 @@ WHERE username = $1;
 -- name: DeleteNote :one
 DELETE 
 FROM notes
-WHERE username = $1 AND title = $2
+WHERE id = $1
 RETURNING id;
