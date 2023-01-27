@@ -13,12 +13,13 @@ import (
 )
 
 const createNote = `-- name: CreateNote :one
-INSERT INTO notes (title, username, text, created_at, updated_at)
-VALUES ($1,$2,$3,$4,$5)
-RETURNING id, title, username, text, created_at, updated_at
+INSERT INTO notes (id,title, username, text, created_at, updated_at)
+VALUES ($1,$2,$3,$4,$5,$6)
+RETURNING id
 `
 
 type CreateNoteParams struct {
+	ID        uuid.UUID
 	Title     string
 	Username  sql.NullString
 	Text      sql.NullString
@@ -26,24 +27,18 @@ type CreateNoteParams struct {
 	UpdatedAt sql.NullTime
 }
 
-func (q *Queries) CreateNote(ctx context.Context, arg CreateNoteParams) (Note, error) {
+func (q *Queries) CreateNote(ctx context.Context, arg CreateNoteParams) (uuid.UUID, error) {
 	row := q.db.QueryRowContext(ctx, createNote,
+		arg.ID,
 		arg.Title,
 		arg.Username,
 		arg.Text,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
-	var i Note
-	err := row.Scan(
-		&i.ID,
-		&i.Title,
-		&i.Username,
-		&i.Text,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const deleteNote = `-- name: DeleteNote :one

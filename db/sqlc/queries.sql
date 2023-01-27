@@ -19,9 +19,9 @@ WHERE username = $1
 RETURNING username;
 
 -- name: CreateNote :one
-INSERT INTO notes (title, username, text, created_at, updated_at)
-VALUES ($1,$2,$3,$4,$5)
-RETURNING *;
+INSERT INTO notes (id,title, username, text, created_at, updated_at)
+VALUES ($1,$2,$3,$4,$5,$6)
+RETURNING id;
 
 -- name: GetNoteByID :one
 SELECT id

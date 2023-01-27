@@ -41,7 +41,7 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 			return
 		}
 
-		err = q.RegisterUser(r.Context(), sqlc.RegisterUserParams{
+		uname, err := q.RegisterUser(r.Context(), sqlc.RegisterUserParams{
 			Username: user.Username,
 			Password: hashedPassword,
 			Email:    user.Email,
@@ -51,7 +51,7 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 			return
 		}
 
-		l.Info().Msgf("User registration for %s was successful!", user.Username)
+		l.Info().Msgf("User registration for %s was successful!", uname)
 	}
 }
 
