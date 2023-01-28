@@ -41,7 +41,7 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 			return
 		}
 
-		uname, err := q.RegisterUser(r.Context(), sqlc.RegisterUserParams{
+		uname, err := q.RegisterUser(r.Context(), &sqlc.RegisterUserParams{
 			Username: user.Username,
 			Password: hashedPassword,
 			Email:    user.Email,

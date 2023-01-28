@@ -38,7 +38,7 @@ func (m *MockQuerier) EXPECT() *MockQuerierMockRecorder {
 }
 
 // CreateNote mocks base method.
-func (m *MockQuerier) CreateNote(arg0 context.Context, arg1 db.CreateNoteParams) (db.Note, error) {
+func (m *MockQuerier) CreateNote(arg0 context.Context, arg1 *db.CreateNoteParams) (db.Note, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateNote", arg0, arg1)
 	ret0, _ := ret[0].(db.Note)
@@ -98,7 +98,7 @@ func (mr *MockQuerierMockRecorder) GetAllNotesFromUser(arg0, arg1 interface{}) *
 }
 
 // GetNoteByID mocks base method.
-func (m *MockQuerier) GetNoteByID(arg0 context.Context, arg1 db.GetNoteByIDParams) (uuid.UUID, error) {
+func (m *MockQuerier) GetNoteByID(arg0 context.Context, arg1 *db.GetNoteByIDParams) (uuid.UUID, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNoteByID", arg0, arg1)
 	ret0, _ := ret[0].(uuid.UUID)
@@ -143,7 +143,7 @@ func (mr *MockQuerierMockRecorder) ListUsers(arg0 interface{}) *gomock.Call {
 }
 
 // RegisterUser mocks base method.
-func (m *MockQuerier) RegisterUser(arg0 context.Context, arg1 db.RegisterUserParams) (string, error) {
+func (m *MockQuerier) RegisterUser(arg0 context.Context, arg1 *db.RegisterUserParams) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RegisterUser", arg0, arg1)
 	ret0, _ := ret[0].(string)
@@ -158,7 +158,7 @@ func (mr *MockQuerierMockRecorder) RegisterUser(arg0, arg1 interface{}) *gomock.
 }
 
 // UpdateNoteText mocks base method.
-func (m *MockQuerier) UpdateNoteText(arg0 context.Context, arg1 db.UpdateNoteTextParams) (db.Note, error) {
+func (m *MockQuerier) UpdateNoteText(arg0 context.Context, arg1 *db.UpdateNoteTextParams) (db.Note, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateNoteText", arg0, arg1)
 	ret0, _ := ret[0].(db.Note)
@@ -173,7 +173,7 @@ func (mr *MockQuerierMockRecorder) UpdateNoteText(arg0, arg1 interface{}) *gomoc
 }
 
 // UpdateNoteTitle mocks base method.
-func (m *MockQuerier) UpdateNoteTitle(arg0 context.Context, arg1 db.UpdateNoteTitleParams) (db.Note, error) {
+func (m *MockQuerier) UpdateNoteTitle(arg0 context.Context, arg1 *db.UpdateNoteTitleParams) (db.Note, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateNoteTitle", arg0, arg1)
 	ret0, _ := ret[0].(db.Note)

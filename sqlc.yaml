@@ -9,3 +9,6 @@ sql:
       out: "db/sqlc"
       emit_interface: true
       emit_empty_slices: true
+      emit_params_struct_pointers: true
+      json_tags_case_style: camel
+      

@@ -50,7 +50,7 @@ func TestDBMethods(t *testing.T) {
 		}
 
 		mockdb.EXPECT().CreateNote(ctx, args).Return(n, nil)
-		retNote, err := mockdb.CreateNote(ctx, args)
+		retNote, err := mockdb.CreateNote(ctx, &args)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, id)
@@ -98,7 +98,7 @@ func TestDBMethods(t *testing.T) {
 		}
 
 		mockdb.EXPECT().GetNoteByID(ctx, args).Return(id, nil)
-		retID, err := mockdb.GetNoteByID(ctx, args)
+		retID, err := mockdb.GetNoteByID(ctx, &args)
 
 		require.NoError(t, err)
 		require.Equal(t, retID.ID, id)
@@ -111,7 +111,7 @@ func TestDBMethods(t *testing.T) {
 		}
 
 		mockdb.EXPECT().UpdateNoteText(ctx, args).Return(id, nil)
-		retID, err := mockdb.UpdateNoteText(ctx, args)
+		retID, err := mockdb.UpdateNoteText(ctx, &args)
 
 		require.NoError(t, err)
 		require.Equal(t, retID.ID, id)

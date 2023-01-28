@@ -27,7 +27,7 @@ type CreateNoteParams struct {
 	UpdatedAt sql.NullTime
 }
 
-func (q *Queries) CreateNote(ctx context.Context, arg CreateNoteParams) (Note, error) {
+func (q *Queries) CreateNote(ctx context.Context, arg *CreateNoteParams) (Note, error) {
 	row := q.db.QueryRowContext(ctx, createNote,
 		arg.ID,
 		arg.Title,
@@ -121,7 +121,7 @@ type GetNoteByIDParams struct {
 	Title    string
 }
 
-func (q *Queries) GetNoteByID(ctx context.Context, arg GetNoteByIDParams) (uuid.UUID, error) {
+func (q *Queries) GetNoteByID(ctx context.Context, arg *GetNoteByIDParams) (uuid.UUID, error) {
 	row := q.db.QueryRowContext(ctx, getNoteByID, arg.Username, arg.Title)
 	var id uuid.UUID
 	err := row.Scan(&id)
@@ -181,7 +181,7 @@ type RegisterUserParams struct {
 	Email    string
 }
 
-func (q *Queries) RegisterUser(ctx context.Context, arg RegisterUserParams) (string, error) {
+func (q *Queries) RegisterUser(ctx context.Context, arg *RegisterUserParams) (string, error) {
 	row := q.db.QueryRowContext(ctx, registerUser, arg.Username, arg.Password, arg.Email)
 	var username string
 	err := row.Scan(&username)
@@ -198,7 +198,7 @@ type UpdateNoteTextParams struct {
 	ID        uuid.UUID
 }
 
-func (q *Queries) UpdateNoteText(ctx context.Context, arg UpdateNoteTextParams) (Note, error) {
+func (q *Queries) UpdateNoteText(ctx context.Context, arg *UpdateNoteTextParams) (Note, error) {
 	row := q.db.QueryRowContext(ctx, updateNoteText, arg.Text, arg.UpdatedAt, arg.ID)
 	var i Note
 	err := row.Scan(
@@ -222,7 +222,7 @@ type UpdateNoteTitleParams struct {
 	ID        uuid.UUID
 }
 
-func (q *Queries) UpdateNoteTitle(ctx context.Context, arg UpdateNoteTitleParams) (Note, error) {
+func (q *Queries) UpdateNoteTitle(ctx context.Context, arg *UpdateNoteTitleParams) (Note, error) {
 	row := q.db.QueryRowContext(ctx, updateNoteTitle, arg.Title, arg.UpdatedAt, arg.ID)
 	var i Note
 	err := row.Scan(
