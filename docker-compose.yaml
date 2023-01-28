@@ -1,8 +1,8 @@
 version: "3.9"
 services:
-  postgresql:
+  postgres:
     container_name: postgres
-    image: postgres
+    image: postgres:15
     volumes:
       - pg-data:/var/lib/postgresql/data
     environment:
@@ -11,3 +11,11 @@ services:
       POSTGRES_DB: "notes"
     ports:
       - 5432:5432
+  notes_backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
