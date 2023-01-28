@@ -165,7 +165,6 @@ func TestDBMethods(t *testing.T) {
 		require.Equal(t, retNote.Title, args.Title)
 		require.Equal(t, retNote.UpdatedAt, args.UpdatedAt)
 	})
-
 	t.Run("RegisterUser OK", func(t *testing.T) {
 		args := db.RegisterUserParams{
 			Username: randUsername.String,
@@ -177,7 +176,6 @@ func TestDBMethods(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, user, args.Username)
 	})
-
 	t.Run("DeleteUser OK", func(t *testing.T) {
 
 		mockdb.EXPECT().DeleteUser(ctx, randUsername.String).Return(randUsername.String, nil)
@@ -185,5 +183,4 @@ func TestDBMethods(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, username, randUsername.String)
 	})
-
 }
