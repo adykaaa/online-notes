@@ -16,16 +16,17 @@ import (
 
 func Home(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("you hit the server!"))
+		w.Write([]byte("home!"))
 	}
 }
 
 func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
 		var user models.User
 
-		w.Header().Set("Content-Type", "application/json")
-		ctx, cancel := context.WithTimeout(r.Context(), 500*time.Millisecond)
+		ctx, cancel := context.WithTimeout(r.Context(), 1*time.Second)
 		defer cancel()
 
 		l := zerolog.Ctx(ctx)
@@ -43,14 +44,15 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 		if err != nil {
 			l.Error().Err(err).Msgf("error during User struct validation %v", err)
 			w.WriteHeader(http.StatusBadRequest)
-			render.JSON(w, r, "bad or missing user parameter was provided")
+			w.Write([]byte("bad or missing user parameter"))
 			return
 		}
 
 		hashedPassword, err := utils.HashPassword(user.Password)
 		if err != nil {
 			l.Error().Err(err).Msgf("error during password hashing %v", err)
-			http.Error(w, err.Error(), 500)
+			w.WriteHeader(http.StatusInternalServerError)
+			render.JSON(w, r, "internal server error during user password hashing")
 			return
 		}
 
@@ -61,10 +63,12 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 		})
 		if err != nil {
 			l.Error().Err(err).Msgf("Error during user registration to the DB! %v", err)
-			http.Error(w, err.Error(), 500)
+			w.WriteHeader(http.StatusInternalServerError)
+			render.JSON(w, r, "internal server error during saving user to the database")
 			return
 		}
 
+		w.WriteHeader(http.StatusCreated)
 		render.JSON(w, r, "User registration successful!")
 		l.Info().Msgf("User registration for %s was successful!", uname)
 	}
