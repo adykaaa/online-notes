@@ -10,18 +10,19 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func NewChiRouter(q sqlc.Querier, symmetricKey string, logger *zerolog.Logger) *chi.Mux {
+func NewChiRouter(q sqlc.Querier, symmetricKey string, logger *zerolog.Logger) (*chi.Mux, error) {
 
 	tokenCreator, err := NewPasetoCreator(symmetricKey)
 	if err != nil {
 		logger.Err(err).Msgf("could not create a new PasetoCreator. %v", err)
+		return nil, err
 	}
 
 	router := chi.NewRouter()
 	RegisterChiMiddlewares(router, logger)
 	RegisterChiHandlers(router, q, tokenCreator)
 
-	return router
+	return router, nil
 }
 
 // TODO: set strict CORS when everything's gucci
