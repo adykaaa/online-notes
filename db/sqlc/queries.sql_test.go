@@ -19,11 +19,13 @@ func TestDBMethods(t *testing.T) {
 
 	ctx := context.Background()
 	id := uuid.New()
-	title := utils.NewRandomString(15)
-	username := sql.NullString{String: utils.NewRandomString(10), Valid: true}
-	text := sql.NullString{String: utils.NewRandomString(50), Valid: true}
-	createdAt := sql.NullTime{Time: time.Now(), Valid: true}
-	updatedAt := sql.NullTime{Time: time.Now(), Valid: true}
+	randTitle := utils.NewRandomString(15)
+	randUsername := sql.NullString{String: utils.NewRandomString(10), Valid: true}
+	randText := sql.NullString{String: utils.NewRandomString(50), Valid: true}
+	randCreatedAt := sql.NullTime{Time: time.Now(), Valid: true}
+	randUpdatedAt := sql.NullTime{Time: time.Now(), Valid: true}
+	randPassword := utils.NewRandomString(15)
+	randEmail := "random@random.com"
 
 	ctrl := gomock.NewController(t)
 	mockdb := mockdb.NewMockQuerier(ctrl)
@@ -33,23 +35,23 @@ func TestDBMethods(t *testing.T) {
 
 		n := db.Note{
 			ID:        id,
-			Title:     title,
-			Username:  username,
-			Text:      text,
-			CreatedAt: createdAt,
-			UpdatedAt: updatedAt,
+			Title:     randTitle,
+			Username:  randUsername,
+			Text:      randText,
+			CreatedAt: randCreatedAt,
+			UpdatedAt: randUpdatedAt,
 		}
 
 		args := db.CreateNoteParams{
 			ID:        id,
-			Title:     title,
-			Username:  username,
-			Text:      text,
-			CreatedAt: createdAt,
-			UpdatedAt: updatedAt,
+			Title:     randTitle,
+			Username:  randUsername,
+			Text:      randText,
+			CreatedAt: randCreatedAt,
+			UpdatedAt: randUpdatedAt,
 		}
 
-		mockdb.EXPECT().CreateNote(ctx, args).Return(n, nil)
+		mockdb.EXPECT().CreateNote(ctx, &args).Return(n, nil)
 		retNote, err := mockdb.CreateNote(ctx, &args)
 
 		assert.NoError(t, err)
@@ -73,14 +75,14 @@ func TestDBMethods(t *testing.T) {
 	})
 	t.Run("GetAllNotesFromUser OK", func(t *testing.T) {
 		randomNotes := []db.Note{
-			*utils.NewRandomNote(id),
-			*utils.NewRandomNote(id),
+			*utils.NewRandomDBNote(id),
+			*utils.NewRandomDBNote(id),
 		}
 
 		randomNotes[0].Username = randomNotes[1].Username
 
-		mockdb.EXPECT().GetAllNotesFromUser(ctx, username).Return(randomNotes, nil)
-		notes, err := mockdb.GetAllNotesFromUser(ctx, username)
+		mockdb.EXPECT().GetAllNotesFromUser(ctx, randUsername).Return(randomNotes, nil)
+		notes, err := mockdb.GetAllNotesFromUser(ctx, randUsername)
 
 		assert.NoError(t, err)
 		assert.NotEmpty(t, notes[0].Title)
@@ -93,28 +95,95 @@ func TestDBMethods(t *testing.T) {
 
 	t.Run("GetNoteByID OK", func(t *testing.T) {
 		args := db.GetNoteByIDParams{
-			Username: username,
-			Title:    title,
+			Username: randUsername,
+			Title:    randTitle,
 		}
 
-		mockdb.EXPECT().GetNoteByID(ctx, args).Return(id, nil)
+		mockdb.EXPECT().GetNoteByID(ctx, &args).Return(id, nil)
 		retID, err := mockdb.GetNoteByID(ctx, &args)
 
 		require.NoError(t, err)
-		require.Equal(t, retID.ID, id)
+		require.Equal(t, retID, id)
 	})
 	t.Run("UpdateNoteText OK", func(t *testing.T) {
 		args := db.UpdateNoteTextParams{
 			ID:        id,
-			Text:      text,
-			UpdatedAt: updatedAt,
+			Text:      randText,
+			UpdatedAt: randUpdatedAt,
 		}
 
-		mockdb.EXPECT().UpdateNoteText(ctx, args).Return(id, nil)
-		retID, err := mockdb.UpdateNoteText(ctx, &args)
+		mockdb.EXPECT().UpdateNoteText(ctx, &args).Return(db.Note{
+			ID:        id,
+			Text:      randText,
+			UpdatedAt: randUpdatedAt,
+		}, nil)
+
+		retNote, err := mockdb.UpdateNoteText(ctx, &args)
 
 		require.NoError(t, err)
-		require.Equal(t, retID.ID, id)
+		require.Equal(t, retNote.ID, args.ID)
+		require.Equal(t, retNote.Text, args.Text)
+		require.Equal(t, retNote.UpdatedAt, args.UpdatedAt)
+	})
+	t.Run("UpdateNoteTitle OK", func(t *testing.T) {
+		args := db.UpdateNoteTitleParams{
+			ID:        id,
+			Title:     randTitle,
+			UpdatedAt: randUpdatedAt,
+		}
+
+		mockdb.EXPECT().UpdateNoteTitle(ctx, &args).Return(db.Note{
+			ID:        id,
+			Title:     randTitle,
+			UpdatedAt: randUpdatedAt,
+		}, nil)
+
+		retNote, err := mockdb.UpdateNoteTitle(ctx, &args)
+
+		require.NoError(t, err)
+		require.Equal(t, retNote.ID, args.ID)
+		require.Equal(t, retNote.Title, args.Title)
+		require.Equal(t, retNote.UpdatedAt, args.UpdatedAt)
+	})
+	t.Run("UpdateNoteTitle OK", func(t *testing.T) {
+		args := db.UpdateNoteTitleParams{
+			ID:        id,
+			Title:     randTitle,
+			UpdatedAt: randUpdatedAt,
+		}
+
+		mockdb.EXPECT().UpdateNoteTitle(ctx, &args).Return(db.Note{
+			ID:        id,
+			Title:     randTitle,
+			UpdatedAt: randUpdatedAt,
+		}, nil)
+
+		retNote, err := mockdb.UpdateNoteTitle(ctx, &args)
+
+		require.NoError(t, err)
+		require.Equal(t, retNote.ID, args.ID)
+		require.Equal(t, retNote.Title, args.Title)
+		require.Equal(t, retNote.UpdatedAt, args.UpdatedAt)
+	})
+
+	t.Run("RegisterUser OK", func(t *testing.T) {
+		args := db.RegisterUserParams{
+			Username: randUsername.String,
+			Password: randPassword,
+			Email:    randEmail,
+		}
+		mockdb.EXPECT().RegisterUser(ctx, &args).Return(args.Username, nil)
+		user, err := mockdb.RegisterUser(ctx, &args)
+		require.NoError(t, err)
+		require.Equal(t, user, args.Username)
+	})
+
+	t.Run("DeleteUser OK", func(t *testing.T) {
+
+		mockdb.EXPECT().DeleteUser(ctx, randUsername.String).Return(randUsername.String, nil)
+		username, err := mockdb.DeleteUser(ctx, randUsername.String)
+		require.NoError(t, err)
+		require.Equal(t, username, randUsername.String)
 	})
 
 }

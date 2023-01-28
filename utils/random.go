@@ -24,7 +24,7 @@ func NewRandomString(n int) string {
 	return sb.String()
 }
 
-func NewRandomNote(id uuid.UUID) *db.Note {
+func NewRandomDBNote(id uuid.UUID) *db.Note {
 	note := db.Note{
 		ID:        id,
 		Title:     NewRandomString(15),
@@ -35,4 +35,13 @@ func NewRandomNote(id uuid.UUID) *db.Note {
 	}
 
 	return &note
+}
+
+func NewRandomDBUser(username string, password string, email string) *db.User {
+	u := db.User{
+		Username: username,
+		Password: password,
+		Email:    email,
+	}
+	return &u
 }

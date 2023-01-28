@@ -27,12 +27,10 @@ func NewUser(email string, username string, password string) (*User, error) {
 		Username: username,
 		Password: password,
 	}
-
 	return u, nil
 }
 
 func NewNote(title string, text string, user string) (*Note, error) {
-
 	n := &Note{
 		ID:        uuid.New(),
 		Title:     title,
@@ -41,6 +39,5 @@ func NewNote(title string, text string, user string) (*Note, error) {
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-
 	return n, nil
 }
