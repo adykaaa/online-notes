@@ -1,6 +1,7 @@
 package http
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 
@@ -28,7 +29,7 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 		err = validate.Struct(&user)
 		if err != nil {
 			l.Error().Err(err).Msgf("error during User struct validation %v", err)
-			http.Error(w, "invalid or missing User parameter", http.StatusBadRequest)
+			http.Error(w, "wrongly formatted or missing User parameter", http.StatusBadRequest)
 			return
 		}
 
@@ -61,12 +62,29 @@ func LoginUser(q sqlc.Querier) http.HandlerFunc {
 		l, ctx, cancel := SetupHandler(w, r.Context())
 		defer cancel()
 
-		var user *models.User
+		var userRequest *models.User
 
-		err := json.NewDecoder(r.Body).Decode(&user)
+		err := json.NewDecoder(r.Body).Decode(&userRequest)
 		if err != nil {
 			l.Error().Err(err).Msgf("error decoding the User into JSON during registration. %v", err)
 			http.Error(w, "internal error decoding User struct", http.StatusInternalServerError)
+			return
+		}
+
+		user, err := q.GetUser(ctx, userRequest.Username)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				l.Info().Err(err).Msgf("Requested user was not found in the database. %s", userRequest.Username)
+				http.Error(w, "User not found!", http.StatusNotFound)
+			}
+			http.Error(w, "interal error looking up user in the DB", http.StatusInternalServerError)
+			return
+		}
+
+		err = utils.ValidatePassword(user.Password, userRequest.Password)
+		if err != nil {
+			l.Info().Err(err).Msgf("Wrong password was provided for user %s", userRequest.Username)
+			http.Error(w, "wrong password was provided", http.StatusUnauthorized)
 			return
 		}
 
