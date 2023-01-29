@@ -17,6 +17,7 @@ var (
 
 type PasetoPayload struct {
 	ID        uuid.UUID `json:"id"`
+	Paseto    string    `json:"paseto"`
 	Username  string    `json:"username"`
 	IssuedAt  time.Time `json:"issuedAt"`
 	ExpiresAt time.Time `json:"expiresAt"`
@@ -33,7 +34,7 @@ func NewPasetoPayload(username string) (*PasetoPayload, error) {
 		ID:        tokenID,
 		Username:  username,
 		IssuedAt:  time.Now(),
-		ExpiresAt: time.Now().Add(5 * time.Minute),
+		ExpiresAt: time.Now().Add(30 * time.Minute),
 	}
 
 	return payload, nil

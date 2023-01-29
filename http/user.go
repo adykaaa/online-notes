@@ -16,7 +16,7 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 		l, ctx, cancel := SetupHandler(w, r.Context())
 		defer cancel()
 
-		var user *models.User
+		var user models.User
 
 		err := json.NewDecoder(r.Body).Decode(&user)
 		if err != nil {
@@ -77,7 +77,7 @@ func LoginUser(q sqlc.Querier, c *PasetoCreator) http.HandlerFunc {
 				l.Info().Err(err).Msgf("Requested user was not found in the database. %s", userRequest.Username)
 				http.Error(w, "User not found!", http.StatusNotFound)
 			}
-			http.Error(w, "interal error looking up user in the DB", http.StatusInternalServerError)
+			http.Error(w, "interal server error while looking up user in the DB", http.StatusInternalServerError)
 			return
 		}
 
@@ -87,6 +87,21 @@ func LoginUser(q sqlc.Querier, c *PasetoCreator) http.HandlerFunc {
 			http.Error(w, "wrong password was provided", http.StatusUnauthorized)
 			return
 		}
+
+		token, payload, err := c.CreateToken(user.Username)
+		if err != nil {
+			l.Info().Err(err).Msgf("Could not create PASETO for user. %v", err)
+			http.Error(w, "internal server error while creating the token", http.StatusInternalServerError)
+			return
+		}
+
+		http.SetCookie(w, &http.Cookie{
+			Name:     "PASETO",
+			Value:    token,
+			Expires:  payload.ExpiresAt,
+			HttpOnly: true,
+			Secure:   true,
+		})
 
 	}
 }

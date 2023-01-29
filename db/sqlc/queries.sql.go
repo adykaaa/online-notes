@@ -130,7 +130,7 @@ func (q *Queries) GetNoteByID(ctx context.Context, arg *GetNoteByIDParams) (uuid
 
 const getUser = `-- name: GetUser :one
 SELECT username, password, email FROM users
-WHERE username = $1 LIMIT 1
+WHERE username = $1
 `
 
 func (q *Queries) GetUser(ctx context.Context, username string) (User, error) {
