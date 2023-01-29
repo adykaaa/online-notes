@@ -1,28 +1,21 @@
 package http
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
-	"time"
 
 	sqlc "github.com/adykaaa/online-notes/db/sqlc"
 	models "github.com/adykaaa/online-notes/http/models"
 	"github.com/adykaaa/online-notes/utils"
 	"github.com/go-playground/validator/v10"
-	"github.com/rs/zerolog"
 )
 
 func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-
-		var user models.User
-
-		ctx, cancel := context.WithTimeout(r.Context(), 1*time.Second)
+		l, ctx, cancel := SetupHandler(w, r.Context())
 		defer cancel()
 
-		l := zerolog.Ctx(ctx)
+		var user *models.User
 
 		err := json.NewDecoder(r.Body).Decode(&user)
 		if err != nil {
@@ -65,6 +58,17 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 
 func LoginUser(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		l, ctx, cancel := SetupHandler(w, r.Context())
+		defer cancel()
+
+		var user *models.User
+
+		err := json.NewDecoder(r.Body).Decode(&user)
+		if err != nil {
+			l.Error().Err(err).Msgf("error decoding the User into JSON during registration. %v", err)
+			http.Error(w, "internal error decoding User struct", http.StatusInternalServerError)
+			return
+		}
 
 	}
 }

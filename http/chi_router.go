@@ -1,6 +1,10 @@
 package http
 
 import (
+	"context"
+	"net/http"
+	"time"
+
 	"github.com/adykaaa/httplog"
 	sqlc "github.com/adykaaa/online-notes/db/sqlc"
 	"github.com/go-chi/chi/v5"
@@ -39,6 +43,13 @@ func RegisterChiMiddlewares(r *chi.Mux, logger *zerolog.Logger) {
 			AllowCredentials: true,
 			MaxAge:           300,
 		}))
+}
+
+func SetupHandler(w http.ResponseWriter, ctx context.Context) (*zerolog.Logger, context.Context, context.CancelFunc) {
+	w.Header().Set("Content-Type", "application/json")
+	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
+	l := zerolog.Ctx(ctx)
+	return l, ctx, cancel
 }
 
 func RegisterChiHandlers(router *chi.Mux, q sqlc.Querier, c *PasetoCreator) {
