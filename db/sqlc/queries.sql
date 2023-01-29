@@ -10,7 +10,7 @@ ORDER BY username;
 
 -- name: GetUser :one
 SELECT * FROM users
-WHERE username = $1 LIMIT 1;
+WHERE username = $1;
 
 -- name: DeleteUser :one
 DELETE

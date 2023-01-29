@@ -9,7 +9,6 @@ import (
 	sqlc "github.com/adykaaa/online-notes/db/sqlc"
 	models "github.com/adykaaa/online-notes/http/models"
 	"github.com/adykaaa/online-notes/utils"
-	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
 	"github.com/rs/zerolog"
 )
@@ -34,8 +33,7 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 		err := json.NewDecoder(r.Body).Decode(&user)
 		if err != nil {
 			l.Error().Err(err).Msgf("error decoding the User into JSON during registration. %v", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			render.JSON(w, r, "internal server error during JSON decoding")
+			http.Error(w, "internal error decoding User struct", http.StatusInternalServerError)
 			return
 		}
 
@@ -43,16 +41,14 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 		err = validate.Struct(&user)
 		if err != nil {
 			l.Error().Err(err).Msgf("error during User struct validation %v", err)
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("bad or missing user parameter"))
+			http.Error(w, "invalid or missing User parameter", http.StatusBadRequest)
 			return
 		}
 
 		hashedPassword, err := utils.HashPassword(user.Password)
 		if err != nil {
 			l.Error().Err(err).Msgf("error during password hashing %v", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			render.JSON(w, r, "internal server error during user password hashing")
+			http.Error(w, "internal error during password hashing", http.StatusInternalServerError)
 			return
 		}
 
@@ -63,13 +59,12 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 		})
 		if err != nil {
 			l.Error().Err(err).Msgf("Error during user registration to the DB! %v", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			render.JSON(w, r, "internal server error during saving user to the database")
+			http.Error(w, "internal error during saving the user to the DB", http.StatusInternalServerError)
 			return
 		}
 
 		w.WriteHeader(http.StatusCreated)
-		render.JSON(w, r, "User registration successful!")
+		w.Write([]byte("User registration successful!"))
 		l.Info().Msgf("User registration for %s was successful!", uname)
 	}
 }

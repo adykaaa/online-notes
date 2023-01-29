@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"os"
 	"os/signal"
@@ -31,7 +32,8 @@ func NewServer(handler http.Handler, addr string, logger *zerolog.Logger) (*Serv
 	}
 
 	if addr == "" {
-		s.logger.Error().Msg("Server address cannot be empty!")
+		s.logger.Error().Msg("server address is empty")
+		return nil, errors.New("server address cannot be empty")
 	}
 
 	s.Start()
