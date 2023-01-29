@@ -57,7 +57,7 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 	}
 }
 
-func LoginUser(q sqlc.Querier) http.HandlerFunc {
+func LoginUser(q sqlc.Querier, c *PasetoCreator) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := SetupHandler(w, r.Context())
 		defer cancel()

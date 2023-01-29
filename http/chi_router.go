@@ -54,5 +54,5 @@ func SetupHandler(w http.ResponseWriter, ctx context.Context) (*zerolog.Logger, 
 
 func RegisterChiHandlers(router *chi.Mux, q sqlc.Querier, c *PasetoCreator) {
 	router.Post("/register", RegisterUser(q))
-	router.Post("/login", LoginUser(q))
+	router.Post("/login", LoginUser(q, c))
 }
