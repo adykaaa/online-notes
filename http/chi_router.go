@@ -11,7 +11,6 @@ import (
 )
 
 func NewChiRouter(q sqlc.Querier, symmetricKey string, logger *zerolog.Logger) (*chi.Mux, error) {
-
 	tokenCreator, err := NewPasetoCreator(symmetricKey)
 	if err != nil {
 		logger.Err(err).Msgf("could not create a new PasetoCreator. %v", err)
@@ -43,6 +42,6 @@ func RegisterChiMiddlewares(r *chi.Mux, logger *zerolog.Logger) {
 }
 
 func RegisterChiHandlers(router *chi.Mux, q sqlc.Querier, c *PasetoCreator) {
-	router.Get("/", Home(q))
 	router.Post("/register", RegisterUser(q))
+	router.Post("/login", LoginUser(q))
 }

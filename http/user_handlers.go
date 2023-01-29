@@ -13,12 +13,6 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func Home(q sqlc.Querier) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("home!"))
-	}
-}
-
 func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -82,30 +76,6 @@ func ListUsers(q sqlc.Querier) http.HandlerFunc {
 }
 
 func DeleteUser(q sqlc.Querier) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-
-	}
-}
-
-func CreateNote(q sqlc.Querier) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-
-	}
-}
-
-func GetNoteByID(q sqlc.Querier) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-
-	}
-}
-
-func GetAllNotesFromUser(q sqlc.Querier) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-
-	}
-}
-
-func DeleteNote(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 	}
