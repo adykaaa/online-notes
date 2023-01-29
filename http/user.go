@@ -103,6 +103,10 @@ func LoginUser(q sqlc.Querier, c *PasetoCreator) http.HandlerFunc {
 			Secure:   true,
 		})
 
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("Successful login!"))
+		l.Info().Msgf("User login for %s was successful!", user.Username)
+
 	}
 }
 
