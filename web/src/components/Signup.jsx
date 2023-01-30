@@ -25,9 +25,39 @@ function SignUp() {
         })
         setSuccess(true)
       }
+
+      else if (response.status === 403) {
+        toast({
+          title: 'E-mail or username already in use',
+          description: "This e-mail or username is already in use, please use another one.",
+          status: 'error',
+          duration: 4000,
+          isClosable: true,
+          position: "top",
+        })
+      }
+
+      else {
+        toast({
+          title: 'Internal server error',
+          description: "There is an error with the server, please try again later.",
+          status: 'error',
+          duration: 4000,
+          isClosable: true,
+          position: "top",
+        })
+      }
     })
 
     .catch(function (error) {
+      toast({
+        title: 'Internal server error',
+        description: "There is an error with the server, please try again later.",
+        status: 'error',
+        duration: 4000,
+        isClosable: true,
+        position: "top",
+      })
       console.log(error);
     });
   }

@@ -3,12 +3,14 @@ package http
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 
 	sqlc "github.com/adykaaa/online-notes/db/sqlc"
 	models "github.com/adykaaa/online-notes/http/models"
 	"github.com/adykaaa/online-notes/utils"
 	"github.com/go-playground/validator/v10"
+	"github.com/lib/pq"
 )
 
 func RegisterUser(q sqlc.Querier) http.HandlerFunc {
@@ -46,6 +48,11 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 			Email:    user.Email,
 		})
 		if err != nil {
+			if postgreError, ok := err.(*pq.Error); ok {
+				if postgreError.Code.Name() == "unique_violation" {
+					http.Error(w, "username or email already in use", http.StatusForbidden)
+					l.Error().Err(err).Msgf("registration failed, username or email already in use for us %s", user.Username)
+					return
 			l.Error().Err(err).Msgf("Error during user registration to the DB! %v", err)
 			http.Error(w, "internal error during saving the user to the DB", http.StatusInternalServerError)
 			return
