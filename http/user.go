@@ -96,7 +96,7 @@ func LoginUser(q sqlc.Querier, c *PasetoCreator) http.HandlerFunc {
 		}
 
 		http.SetCookie(w, &http.Cookie{
-			Name:     "PASETO",
+			Name:     "authentication",
 			Value:    token,
 			Expires:  payload.ExpiresAt,
 			HttpOnly: true,

@@ -7,12 +7,23 @@ function Login() {
   
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+  const [success, setSuccess] = useState(false);
 
   const login = () => {
     axios.post("http://localhost:8080/login" , { username: username, password: password })
+    setSuccess(true)
   }
 
   return (
+<>
+    {success ? (
+      <div>
+          <h1>You are logged in!</h1>
+          <br />
+          <p>
+              <a href="#">Go to Home</a>
+          </p>
+      </div> ) : (
   <div class="login-box">
   <h2>Login to OnlineNoteZ!</h2>
   <div class="inputs">
@@ -36,8 +47,9 @@ function Login() {
       New here? <Link to="/register">Sign Up!</Link>
     </div>
 </div>
-  );
-}
+  )};
+  </>
+)}
 
 export default Login;
 
