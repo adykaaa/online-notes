@@ -18,14 +18,14 @@ function Login() {
 <>
     {success ? (
       <div>
-          <h1>You are logged in!</h1>
+          <h2>You are logged in!</h2>
           <br />
           <p>
               <a href="#">Go to Home</a>
           </p>
       </div> ) : (
   <div class="login-box">
-  <h1>Login to OnlineNoteZ!</h1>
+  <h2>Login to OnlineNoteZ!</h2>
   <div class="inputs">
     <div class="user-box">
       <input type="text" name="username" onChange={(e) => setUsername(e.target.value)}/>

@@ -1,11 +1,12 @@
 import { useState } from "react";
 import axios from "axios";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useToast,Button } from '@chakra-ui/react'
 import ShowToast from './Toast'
 
 function SignUp() {
   
+  const navigate = useNavigate()
   const toast = useToast()
   const [emailReg, setEmailReg] = useState("")
   const [usernameReg, setUsernameReg] = useState("")
@@ -19,6 +20,7 @@ function SignUp() {
       if (response.status === 201) {
         ShowToast(toast,"success","Your account has been successfully created!")
         setLogInSuccess(true)
+        navigate("/", { replace: true })
       }
 
       else if (response.status === 403) {
@@ -32,8 +34,10 @@ function SignUp() {
 
     .catch(function (error) {
       ShowToast(toast,"error","There is an error with the server, please try again later.")
+      setTimeout(navigate("/", { replace: true }), 3500)
       console.log(error);
     });
+
   }
 
   return (

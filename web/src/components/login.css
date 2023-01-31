@@ -140,7 +140,7 @@ body {
   transition: 0.5s;
   display: block;
   padding: 15px 100px;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   border: none;
   font: inherit;
   background: none;
