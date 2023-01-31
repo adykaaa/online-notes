@@ -9,7 +9,6 @@ import ShowToast from './Toast'
 function Login() {
   
   const toast = useToast()
-  const [logInSuccess,setLogInSuccess] = useState(false)
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [loginSuccess, setLoginSuccess] = useState(false);
@@ -17,24 +16,25 @@ function Login() {
   const login = () => {
     axios.post("http://localhost:8080/login" , { username: username, password: password })
     .then(response => {
-      switch (response.status) {
-        case "200":
+        if (response.status == 200) {
           ShowToast(toast,"success","Login successful!")
           setLoginSuccess(true)
-        case "401":
+        }
+    })
+    .catch(function (error) {
+      switch (error.response.status) {
+        case 401:
           ShowToast(toast,"error","Wrong password!")
-        case "404":
+          break
+        case 404:
           ShowToast(toast,"error","A user with this username and email has not been registered yet.")
+          break
         default:
           ShowToast(toast,"error","There is an error with the server, please try again later.")
       }
-    })
-    .catch(function (error) {
-      ShowToast(toast,"error","There is an error with the server, please try again later.")
-      console.log(error);
-      });
-
+    });
   }
+  
   return (
 <>
     {loginSuccess ?

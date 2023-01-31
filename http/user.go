@@ -3,6 +3,7 @@ package http
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	sqlc "github.com/adykaaa/online-notes/db/sqlc"
@@ -82,9 +83,10 @@ func LoginUser(q sqlc.Querier, c *PasetoCreator) http.HandlerFunc {
 
 		user, err := q.GetUser(ctx, userRequest.Username)
 		if err != nil {
-			if err == sql.ErrNoRows {
+			if errors.Is(err, sql.ErrNoRows) {
 				l.Info().Err(err).Msgf("Requested user was not found in the database. %s", userRequest.Username)
 				http.Error(w, "User not found!", http.StatusNotFound)
+				return
 			}
 			http.Error(w, "interal server error while looking up user in the DB", http.StatusInternalServerError)
 			return
