@@ -11,27 +11,23 @@ function SignUp() {
   const [emailReg, setEmailReg] = useState("")
   const [usernameReg, setUsernameReg] = useState("")
   const [passwordReg, setPasswordReg] = useState("")
-  const [logInSuccess,setLogInSuccess] = useState(false)
 
 
   const register = () => {
     axios.post(`http://localhost:8080/register` , {email: emailReg, username: usernameReg, password: passwordReg})
     .then(response => {
-      if (response.status === 201) {
-        ShowToast(toast,"success","Your account has been successfully created!")
-        setLogInSuccess(true)
-        navigate("/", { replace: true })
-      }
-
-      else if (response.status === 403) {
-        ShowToast(toast,"error","This e-mail or username is already in use, please use another one.")
-      }
-
-      else {
-        ShowToast(toast,"error","There is an error with the server, please try again later.")
+      switch (response.status) {
+        case "201":
+          ShowToast(toast,"success","Your account has been successfully created!")
+          setTimeout(navigate("/", { replace: true }), 5000)
+        case "400":
+          ShowToast(toast,"error","Wrongly formatted username or email!")
+        case "403":
+          ShowToast(toast,"error","This e-mail or username is already in use, please use another one.")
+        default:
+          ShowToast(toast,"error","There is an error with the server, please try again later.")
       }
     })
-
     .catch(function (error) {
       ShowToast(toast,"error","There is an error with the server, please try again later.")
       setTimeout(navigate("/", { replace: true }), 3500)

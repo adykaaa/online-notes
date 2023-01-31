@@ -1,29 +1,45 @@
 import { Link } from "react-router-dom";
 import './login.css';
 import { useState } from "react";
+import { useToast,Button } from '@chakra-ui/react'
 import axios from "axios";
+import TextEditor from "./Hero"
+import ShowToast from './Toast'
 
 function Login() {
   
+  const toast = useToast()
+  const [logInSuccess,setLogInSuccess] = useState(false)
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
-  const [success, setSuccess] = useState(false);
+  const [loginSuccess, setLoginSuccess] = useState(false);
 
   const login = () => {
     axios.post("http://localhost:8080/login" , { username: username, password: password })
-    setSuccess(true)
-  }
+    .then(response => {
+      switch (response.status) {
+        case "200":
+          ShowToast(toast,"success","Login successful!")
+          setLoginSuccess(true)
+        case "401":
+          ShowToast(toast,"error","Wrong password!")
+        case "404":
+          ShowToast(toast,"error","A user with this username and email has not been registered yet.")
+        default:
+          ShowToast(toast,"error","There is an error with the server, please try again later.")
+      }
+    })
+    .catch(function (error) {
+      ShowToast(toast,"error","There is an error with the server, please try again later.")
+      console.log(error);
+      });
 
+  }
   return (
 <>
-    {success ? (
-      <div>
-          <h2>You are logged in!</h2>
-          <br />
-          <p>
-              <a href="#">Go to Home</a>
-          </p>
-      </div> ) : (
+    {loginSuccess ?
+    (<TextEditor />) 
+    :(
   <div class="login-box">
   <h2>Login to OnlineNoteZ!</h2>
   <div class="inputs">
