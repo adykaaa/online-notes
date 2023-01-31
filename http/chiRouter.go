@@ -22,18 +22,19 @@ func NewChiRouter(q sqlc.Querier, symmetricKey string, logger *zerolog.Logger) (
 	}
 
 	router := chi.NewRouter()
-	RegisterChiMiddlewares(router, logger)
+	RegisterChiMiddlewares(router, logger, tokenCreator, symmetricKey)
 	RegisterChiHandlers(router, q, tokenCreator)
 
 	return router, nil
 }
 
 // TODO: set strict CORS when everything's gucci
-func RegisterChiMiddlewares(r *chi.Mux, logger *zerolog.Logger) {
+func RegisterChiMiddlewares(r *chi.Mux, logger *zerolog.Logger, c *PasetoCreator, symmetricKey string) {
 	// Request logger has middleware.Recoverer and RequestID baked into it.
 	r.Use(render.SetContentType(render.ContentTypeJSON),
 		httplog.RequestLogger(logger),
 		middleware.Heartbeat("/ping"),
+		PasetoAuth(c, symmetricKey, logger),
 		middleware.RedirectSlashes,
 		cors.Handler(cors.Options{
 			AllowedOrigins:   []string{"https://*", "http://*"},

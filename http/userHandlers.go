@@ -72,20 +72,12 @@ func LoginUser(q sqlc.Querier, c *PasetoCreator) http.HandlerFunc {
 		l, ctx, cancel := SetupHandler(w, r.Context())
 		defer cancel()
 
-		var userRequest *models.User
+		var userRequest models.User
 
 		err := json.NewDecoder(r.Body).Decode(&userRequest)
 		if err != nil {
 			l.Error().Err(err).Msgf("error decoding the User into JSON during registration. %v", err)
 			http.Error(w, "internal error decoding User struct", http.StatusInternalServerError)
-			return
-		}
-
-		validate := validator.New()
-		err = validate.Struct(&userRequest)
-		if err != nil {
-			l.Error().Err(err).Msgf("error during User struct validation %v", err)
-			http.Error(w, "wrongly formatted or missing User parameter", http.StatusBadRequest)
 			return
 		}
 

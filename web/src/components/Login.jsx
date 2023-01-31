@@ -35,7 +35,6 @@ function Login() {
             return
         }
       }
-      ShowToast(toast,"error","There is an error with the server, please try again later.")
     });
   }
   

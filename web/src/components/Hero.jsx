@@ -10,7 +10,7 @@ import axios from "axios";
 const TextEditor = ({ name, onChange, props }) => {
   const options = {
     plugins: plugins,
-    height: 1500,
+    minHeight: "400px",
     katex: katex,
     lang: en,
     buttonList: [
@@ -59,8 +59,6 @@ const TextEditor = ({ name, onChange, props }) => {
   };
 
   const handleImageUploadBefore = async (files, info, uploadHandler) => {
-    // uploadHandler is a function
-    // console.log(files, info)
 
     const KEY = "docs_upload_example_us_preset";
 

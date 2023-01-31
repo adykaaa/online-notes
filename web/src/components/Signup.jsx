@@ -16,7 +16,7 @@ function SignUp() {
   const register = () => {
     axios.post(`http://localhost:8080/register` , {email: emailReg, username: usernameReg, password: passwordReg})
     .then(response => {
-      if (response.status == 201) {
+      if (response.status === 201) {
         ShowToast(toast,"success","Your account has been successfully created!")
         setTimeout(navigate("/", { replace: true }), 5000)
       }
@@ -26,16 +26,15 @@ function SignUp() {
         switch (error.response.status) {
           case 400:
             ShowToast(toast,"error","Wrongly formatted username or email!")
-            break
+            return
           case 403:
             ShowToast(toast,"error","This e-mail or username is already in use, please try another one.")
-            break
+            return
           default:
             ShowToast(toast,"error","There is an error with the server, please try again later.")
             return
           }
-        }
-        ShowToast(toast,"error","There is an error with the server, please try again later.")
+      }
       });
   }
   
