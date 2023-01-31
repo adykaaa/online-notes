@@ -1,17 +1,13 @@
 import { useToast,Button } from '@chakra-ui/react'
 
-export const CustomToast = () => {
-    const toast = useToast();
+export default function ShowToast(toast,type,msg) {
     // types are: "success", "info", "warning", "error"
-
-    const addToast = (newRes) => {
         toast({
-            description:newRes.message, 
-            status: newRes.type, 
+            description:msg, 
+            status: type, 
             isClosable: true, 
             duration: 3500,
         })
-    }
     
-    return { addToast };
+    return toast;
 }

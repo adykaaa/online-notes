@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { Navigate } from "react-router-dom";
 import { useToast,Button } from '@chakra-ui/react'
+import ShowToast from './Toast'
 
 function SignUp() {
   
@@ -9,55 +10,28 @@ function SignUp() {
   const [emailReg, setEmailReg] = useState("")
   const [usernameReg, setUsernameReg] = useState("")
   const [passwordReg, setPasswordReg] = useState("")
-  const [success,setSuccess] = useState(false)
+  const [logInSuccess,setLogInSuccess] = useState(false)
 
 
   const register = () => {
     axios.post(`http://localhost:8080/register` , {email: emailReg, username: usernameReg, password: passwordReg})
     .then(response => {
       if (response.status === 201) {
-        toast({
-          title: 'Account created.',
-          description: "Your account has been successfully created.",
-          status: 'success',
-          duration: 4000,
-          isClosable: true,
-        })
-        setSuccess(true)
+        ShowToast(toast,"success","Your account has been successfully created!")
+        setLogInSuccess(true)
       }
 
       else if (response.status === 403) {
-        toast({
-          title: 'E-mail or username already in use',
-          description: "This e-mail or username is already in use, please use another one.",
-          status: 'error',
-          duration: 4000,
-          isClosable: true,
-          position: "top",
-        })
+        ShowToast(toast,"error","This e-mail or username is already in use, please use another one.")
       }
 
       else {
-        toast({
-          title: 'Internal server error',
-          description: "There is an error with the server, please try again later.",
-          status: 'error',
-          duration: 4000,
-          isClosable: true,
-          position: "top",
-        })
+        ShowToast(toast,"error","There is an error with the server, please try again later.")
       }
     })
 
     .catch(function (error) {
-      toast({
-        title: 'Internal server error',
-        description: "There is an error with the server, please try again later.",
-        status: 'error',
-        duration: 4000,
-        isClosable: true,
-        position: "top",
-      })
+      ShowToast(toast,"error","There is an error with the server, please try again later.")
       console.log(error);
     });
   }

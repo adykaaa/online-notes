@@ -3,7 +3,6 @@ package http
 import (
 	"database/sql"
 	"encoding/json"
-	"log"
 	"net/http"
 
 	sqlc "github.com/adykaaa/online-notes/db/sqlc"
@@ -53,6 +52,8 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 					http.Error(w, "username or email already in use", http.StatusForbidden)
 					l.Error().Err(err).Msgf("registration failed, username or email already in use for us %s", user.Username)
 					return
+				}
+			}
 			l.Error().Err(err).Msgf("Error during user registration to the DB! %v", err)
 			http.Error(w, "internal error during saving the user to the DB", http.StatusInternalServerError)
 			return
@@ -62,6 +63,7 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 		w.Write([]byte("User registration successful!"))
 		l.Info().Msgf("User registration for %s was successful!", uname)
 	}
+
 }
 
 func LoginUser(q sqlc.Querier, c *PasetoCreator) http.HandlerFunc {

@@ -25,7 +25,7 @@ function Login() {
           </p>
       </div> ) : (
   <div class="login-box">
-  <h2>Login to OnlineNoteZ!</h2>
+  <h1>Login to OnlineNoteZ!</h1>
   <div class="inputs">
     <div class="user-box">
       <input type="text" name="username" onChange={(e) => setUsername(e.target.value)}/>
