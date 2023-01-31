@@ -22,16 +22,20 @@ function Login() {
         }
     })
     .catch(function (error) {
-      switch (error.response.status) {
-        case 401:
-          ShowToast(toast,"error","Wrong password!")
-          break
-        case 404:
-          ShowToast(toast,"error","A user with this username and email has not been registered yet.")
-          break
-        default:
-          ShowToast(toast,"error","There is an error with the server, please try again later.")
+      if (error.response) {
+        switch (error.response.status) {
+          case 401:
+            ShowToast(toast,"error","Wrong password!")
+            break
+          case 404:
+            ShowToast(toast,"error","A user with this username and email has not been registered yet.")
+            break
+          default:
+            ShowToast(toast,"error","There is an error with the server, please try again later.")
+            return
+        }
       }
+      ShowToast(toast,"error","There is an error with the server, please try again later.")
     });
   }
   

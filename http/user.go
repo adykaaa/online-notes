@@ -81,6 +81,14 @@ func LoginUser(q sqlc.Querier, c *PasetoCreator) http.HandlerFunc {
 			return
 		}
 
+		validate := validator.New()
+		err = validate.Struct(&userRequest)
+		if err != nil {
+			l.Error().Err(err).Msgf("error during User struct validation %v", err)
+			http.Error(w, "wrongly formatted or missing User parameter", http.StatusBadRequest)
+			return
+		}
+
 		user, err := q.GetUser(ctx, userRequest.Username)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {

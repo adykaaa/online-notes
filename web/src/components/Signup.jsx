@@ -22,19 +22,23 @@ function SignUp() {
       }
     })
     .catch(function (error) {
-      switch (error.response.status) {
-        case 400:
-          ShowToast(toast,"error","Wrongly formatted username or email!")
-          break
-        case 403:
-          ShowToast(toast,"error","This e-mail or username is already in use, please try another one.")
-          break
-        default:
-          ShowToast(toast,"error","There is an error with the server, please try again later.")
-      }
-    });
+      if (error.response) {
+        switch (error.response.status) {
+          case 400:
+            ShowToast(toast,"error","Wrongly formatted username or email!")
+            break
+          case 403:
+            ShowToast(toast,"error","This e-mail or username is already in use, please try another one.")
+            break
+          default:
+            ShowToast(toast,"error","There is an error with the server, please try again later.")
+            return
+          }
+        }
+        ShowToast(toast,"error","There is an error with the server, please try again later.")
+      });
   }
-
+  
   return (
     <>
   <div class="login-box">
