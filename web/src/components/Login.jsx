@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
 import './login.css';
 import { useState } from "react";
-import { useToast,Button } from '@chakra-ui/react'
+import { useToast,Container } from '@chakra-ui/react'
 import axios from "axios";
-import TextEditor from "./Hero"
+import TextEditor from "./TextEditor"
+import ProSidebar from "./Sidebar"
 import ShowToast from './Toast'
 
 function Login() {
@@ -41,7 +42,12 @@ function Login() {
   return (
 <>
     {loginSuccess ?
-    (<TextEditor />) 
+    (<>
+    <Container  maxW='full' display="flex" >
+    <ProSidebar/>
+    <TextEditor/>
+    </Container>
+    </>) 
     :(
   <div class="login-box">
   <h2>Login to OnlineNoteZ!</h2>

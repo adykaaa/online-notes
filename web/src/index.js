@@ -4,6 +4,7 @@ import './components/login.css';
 import Login from './components/Login';
 import App from './App.jsx'; 
 import { BrowserRouter } from 'react-router-dom';
+import { ProSidebarProvider } from "react-pro-sidebar";
 import Context from "./components/UserContext";
 import { ChakraProvider,extendTheme } from '@chakra-ui/react';
 
@@ -20,6 +21,7 @@ const theme = extendTheme({
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
+    <ProSidebarProvider>
     <BrowserRouter>
     <ChakraProvider theme={theme}>
       <Context>
@@ -27,5 +29,6 @@ root.render(
       </Context>
     </ChakraProvider>
     </BrowserRouter>
+    </ProSidebarProvider>
   </React.StrictMode>
 );
