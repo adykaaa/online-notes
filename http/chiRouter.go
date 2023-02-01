@@ -22,19 +22,18 @@ func NewChiRouter(q sqlc.Querier, symmetricKey string, logger *zerolog.Logger) (
 	}
 
 	router := chi.NewRouter()
-	RegisterChiMiddlewares(router, logger, tokenCreator, symmetricKey)
-	RegisterChiHandlers(router, q, tokenCreator)
+	RegisterChiMiddlewares(router, logger)
+	RegisterChiHandlers(router, q, tokenCreator, symmetricKey, logger)
 
 	return router, nil
 }
 
 // TODO: set strict CORS when everything's gucci
-func RegisterChiMiddlewares(r *chi.Mux, logger *zerolog.Logger, c *PasetoCreator, symmetricKey string) {
+func RegisterChiMiddlewares(r *chi.Mux, logger *zerolog.Logger) {
 	// Request logger has middleware.Recoverer and RequestID baked into it.
 	r.Use(render.SetContentType(render.ContentTypeJSON),
 		httplog.RequestLogger(logger),
 		middleware.Heartbeat("/ping"),
-		PasetoAuth(c, symmetricKey, logger),
 		middleware.RedirectSlashes,
 		cors.Handler(cors.Options{
 			AllowedOrigins:   []string{"https://*", "http://*"},
@@ -48,12 +47,15 @@ func RegisterChiMiddlewares(r *chi.Mux, logger *zerolog.Logger, c *PasetoCreator
 
 func SetupHandler(w http.ResponseWriter, ctx context.Context) (*zerolog.Logger, context.Context, context.CancelFunc) {
 	w.Header().Set("Content-Type", "application/json")
-	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	l := zerolog.Ctx(ctx)
 	return l, ctx, cancel
 }
 
-func RegisterChiHandlers(router *chi.Mux, q sqlc.Querier, c *PasetoCreator) {
+func RegisterChiHandlers(router *chi.Mux, q sqlc.Querier, c *PasetoCreator, symmetricKey string, logger *zerolog.Logger) {
 	router.Post("/register", RegisterUser(q))
 	router.Post("/login", LoginUser(q, c))
+	router.Group(func(r chi.Router) {
+		r.Use(AuthMiddleware(c, symmetricKey, logger))
+	})
 }
