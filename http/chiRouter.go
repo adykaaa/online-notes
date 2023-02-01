@@ -14,18 +14,11 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func NewChiRouter(q sqlc.Querier, symmetricKey string, logger *zerolog.Logger) (*chi.Mux, error) {
-	tokenCreator, err := NewPasetoCreator(symmetricKey)
-	if err != nil {
-		logger.Err(err).Msgf("could not create a new PasetoCreator. %v", err)
-		return nil, err
-	}
-
-	router := chi.NewRouter()
-	RegisterChiMiddlewares(router, logger)
-	RegisterChiHandlers(router, q, tokenCreator, symmetricKey, logger)
-
-	return router, nil
+func SetupHandler(w http.ResponseWriter, ctx context.Context) (*zerolog.Logger, context.Context, context.CancelFunc) {
+	w.Header().Set("Content-Type", "application/json")
+	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	l := zerolog.Ctx(ctx)
+	return l, ctx, cancel
 }
 
 // TODO: set strict CORS when everything's gucci
@@ -45,17 +38,24 @@ func RegisterChiMiddlewares(r *chi.Mux, logger *zerolog.Logger) {
 		}))
 }
 
-func SetupHandler(w http.ResponseWriter, ctx context.Context) (*zerolog.Logger, context.Context, context.CancelFunc) {
-	w.Header().Set("Content-Type", "application/json")
-	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
-	l := zerolog.Ctx(ctx)
-	return l, ctx, cancel
-}
-
 func RegisterChiHandlers(router *chi.Mux, q sqlc.Querier, c *PasetoCreator, symmetricKey string, logger *zerolog.Logger) {
 	router.Post("/register", RegisterUser(q))
 	router.Post("/login", LoginUser(q, c))
 	router.Group(func(r chi.Router) {
 		r.Use(AuthMiddleware(c, symmetricKey, logger))
 	})
+}
+
+func NewChiRouter(q sqlc.Querier, symmetricKey string, logger *zerolog.Logger) (*chi.Mux, error) {
+	tokenCreator, err := NewPasetoCreator(symmetricKey)
+	if err != nil {
+		logger.Err(err).Msgf("could not create a new PasetoCreator. %v", err)
+		return nil, err
+	}
+
+	router := chi.NewRouter()
+	RegisterChiMiddlewares(router, logger)
+	RegisterChiHandlers(router, q, tokenCreator, symmetricKey, logger)
+
+	return router, nil
 }
