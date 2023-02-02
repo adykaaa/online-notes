@@ -43,9 +43,8 @@ function Login() {
 <>
     {loginSuccess ?
     (<>
-    <Container  maxW='full' display="flex" >
+    <Container minW='full' display="flex" justifyContent="space-between" margin="0 0 0 0" padding="0 0 0 0"  >
     <ProSidebar/>
-    <TextEditor/>
     </Container>
     </>) 
     :(

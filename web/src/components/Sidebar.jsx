@@ -6,9 +6,18 @@ import ReceiptOutlinedIcon from "@mui/icons-material/ReceiptOutlined";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
+import { useEffect, useState } from "react";
 
 function ProSidebar() {
   const { collapseSidebar } = useProSidebar();
+  const [width, setWidth] = useState("")
+
+  useEffect(()=>{
+    window.addEventListener('resize', () => setWidth(window.innerWidth))
+    if (width < 450) {
+      collapseSidebar()
+    }
+    },[])
 
   return (
     <div id="app" style={({ height: "100vh" }, { display: "flex" })}>
