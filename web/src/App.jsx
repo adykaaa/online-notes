@@ -32,7 +32,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Login />} />
             <Route path ="/register" element={<Signup />} />
-            <Route path ="/home" element={userValue ? <Home /> : <Navigate to="/" />} />
+            <Route path ="/home" element={userValue.user === "adykaaa" ? <Home /> : <Navigate to="/" />} />
           </Routes>
         </ProSidebarProvider>
       </BrowserRouter>
