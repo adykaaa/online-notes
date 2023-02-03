@@ -24,9 +24,7 @@ root.render(
     <ProSidebarProvider>
     <BrowserRouter>
     <ChakraProvider theme={theme}>
-      <Context>
         <App />
-      </Context>
     </ChakraProvider>
     </BrowserRouter>
     </ProSidebarProvider>

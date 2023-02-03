@@ -1,27 +1,27 @@
 import { Link } from "react-router-dom";
 import './login.css';
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useToast,Container } from '@chakra-ui/react'
 import axios from "axios";
-import TextEditor from "./TextEditor"
-import ProSidebar from "./Sidebar"
 import ShowToast from './Toast'
+import { UserContext } from "./UserContext";
 
 function Login() {
   
   const toast = useToast()
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
-  const [loginSuccess, setLoginSuccess] = useState(false);
+  const { user, setUser } = useContext(UserContext)
 
   const login = () => {
     axios.post("http://localhost:8080/login" , { username: username, password: password })
     .then(response => {
         if (response.status == 200) {
-          ShowToast(toast,"success","Login successful!")
-          setLoginSuccess(true)
+          setUser(username)
         }
     })
+    .then(ShowToast(toast,"success","Login successful!"))
+
     .catch(function (error) {
       if (error.response) {
         switch (error.response.status) {
@@ -36,44 +36,35 @@ function Login() {
             return
         }
       }
-    });
+    })
   }
   
   return (
-<>
-    {loginSuccess ?
-    (<>
-    <Container minW='full' display="flex" justifyContent="space-between" margin="0 0 0 0" padding="0 0 0 0"  >
-    <ProSidebar/>
-    </Container>
-    </>) 
-    :(
-  <div class="login-box">
-  <h2>Login to OnlineNoteZ!</h2>
-  <div class="inputs">
-    <div class="user-box">
-      <input type="text" name="username" onChange={(e) => setUsername(e.target.value)}/>
-      <label>Username</label>
+    <div class="login-box">
+    <h2>Login to OnlineNoteZ!</h2>
+      <div class="inputs">
+        <div class="user-box">
+          <input type="text" name="username" onChange={(e) => setUsername(e.target.value)}/>
+          <label>Username</label>
+      </div>
+      <div class="user-box">
+        <input type="password" name="password" onChange={(e) => setPassword(e.target.value)}/>
+        <label>Password</label>
+      </div>
+      <a>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <button class="submit-button" onClick={login}>Submit</button>
+      </a>
     </div>
-    <div class="user-box">
-      <input type="password" name="password" onChange={(e) => setPassword(e.target.value)}/>
-      <label>Password</label>
+      <div class="signup">
+        New here? <Link to="/register">Sign Up!</Link>
+      </div>
     </div>
-    <a>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <button class="submit-button" onClick={login}>Submit</button>
-    </a>
-  </div>
-    <div class="signup">
-      New here? <Link to="/register">Sign Up!</Link>
-    </div>
-</div>
-  )};
-  </>
-)}
+  )
+}
 
 export default Login;
 

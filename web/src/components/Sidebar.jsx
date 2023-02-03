@@ -1,44 +1,29 @@
 import { Sidebar, Menu, MenuItem, useProSidebar } from "react-pro-sidebar";
-import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
-import ContactsOutlinedIcon from "@mui/icons-material/ContactsOutlined";
-import ReceiptOutlinedIcon from "@mui/icons-material/ReceiptOutlined";
-import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
-import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
-import { useEffect, useState } from "react";
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 
 function ProSidebar() {
   const { collapseSidebar } = useProSidebar();
-  const [width, setWidth] = useState("")
-
-  useEffect(()=>{
-    window.addEventListener('resize', () => setWidth(window.innerWidth))
-    if (width < 450) {
-      collapseSidebar()
-    }
-    },[])
 
   return (
     <div id="app" style={({ height: "100vh" }, { display: "flex" })}>
-      <Sidebar style={{ height: "100vh", backgroundColor:"white", maxWidth:"350px"}}>
+      <Sidebar style={{ height: "100vh", backgroundColor:"white", maxWidth:"400px", fontSize:"20px"}}>
         <Menu>
           <MenuItem
             icon={<MenuOutlinedIcon />}
             onClick={() => {
               collapseSidebar();
             }}
-            style={{ textAlign: "center" }}
+            style={{ textAlign: "center", color: "linear-gradient(#141e30, #243b55)", fontWeight:"bold", marginBottom:"30px" }}
           >
             <h2>Online NoteZ</h2>
           </MenuItem>
 
-          <MenuItem icon={<HomeOutlinedIcon />}>Home</MenuItem>
-          <MenuItem icon={<EventNoteOutlinedIcon />}>My Notes</MenuItem>
-          <MenuItem icon={<ContactsOutlinedIcon />}>Contacts</MenuItem>
-          <MenuItem icon={<ReceiptOutlinedIcon />}>Profile</MenuItem>
-          <MenuItem icon={<HelpOutlineOutlinedIcon />}>FAQ</MenuItem>
-          <MenuItem icon={<CalendarTodayOutlinedIcon />}>Calendar</MenuItem>
+          <MenuItem style={{"marginBottom":"15px"}} icon={<EventNoteOutlinedIcon />}>My Notes</MenuItem>
+          <MenuItem style={{"marginBottom":"15px"}} icon={<AddCircleOutlinedIcon />}>Create a Note!</MenuItem>
+          <MenuItem style={{"marginBottom":"15px"}} icon={<AccountCircleOutlinedIcon />}>Profile</MenuItem>
         </Menu>
       </Sidebar>
     </div>

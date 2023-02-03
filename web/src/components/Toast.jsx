@@ -8,6 +8,4 @@ export default function ShowToast(toast,type,msg) {
             isClosable: true, 
             duration: 5000,
         })
-    
-    return toast;
 }
