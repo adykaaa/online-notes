@@ -8,20 +8,20 @@ import (
 
 func TestHashUserPassword(t *testing.T) {
 	t.Run("password hashing OK", func(t *testing.T) {
-		hpw, err := HashPassword("abc123!")
+		hpw, err := HashPassword(NewRandomString(10))
 		require.NoError(t, err)
 		require.NotEmpty(t, hpw)
 	})
 
 	t.Run("different hash for different passwords", func(t *testing.T) {
-		hpw1, err := HashPassword("abc123!")
+		hpw1, err := HashPassword(NewRandomString(10))
 		require.NoError(t, err)
-		hpw2, err := HashPassword("abc321!")
+		hpw2, err := HashPassword(NewRandomString(10))
 		require.NoError(t, err)
 		require.NotEqual(t, hpw1, hpw2)
 	})
 	t.Run("fails if too short", func(t *testing.T) {
-		hpw, err := HashPassword("abc1")
+		hpw, err := HashPassword(NewRandomString(4))
 		require.Error(t, err)
 		require.Empty(t, hpw)
 	})
@@ -31,7 +31,7 @@ func TestHashUserPassword(t *testing.T) {
 		require.Empty(t, hpw)
 	})
 	t.Run("fails if too long", func(t *testing.T) {
-		hpw, err := HashPassword(".vI(5dSO^hM)Q:>z.n'T?1mdzFQE2;UP5N-(q`NCkM=m'efZZ'JajBn№A)vU:84Mozt<G:vg*")
+		hpw, err := HashPassword(NewRandomString(100))
 		require.Error(t, err)
 		require.Empty(t, hpw)
 	})

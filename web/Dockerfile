@@ -1,7 +1,8 @@
 FROM node:10 AS builder
 WORKDIR /app
+ENV NODE_ENV production
 COPY package.json ./
-RUN npm install 
+RUN npm install
 COPY . ./
 RUN npm run build
 
