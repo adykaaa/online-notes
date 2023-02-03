@@ -11,7 +11,7 @@ function Login() {
   const toast = useToast()
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
-  const { user, setUser } = useContext(UserContext)
+  const { setUser } = useContext(UserContext)
 
   const login = () => {
     axios.post("http://localhost:8080/login" , { username: username, password: password })
