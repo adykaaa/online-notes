@@ -43,7 +43,6 @@ func RegisterChiHandlers(router *chi.Mux, q sqlc.Querier, c *PasetoCreator, symm
 	router.Post("/login", LoginUser(q, c))
 	router.Group(func(authRouter chi.Router) {
 		authRouter.Use(AuthMiddleware(c, symmetricKey, logger))
-		authRouter.Post("/home", UserHome(q))
 	})
 }
 

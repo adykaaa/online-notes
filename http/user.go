@@ -121,12 +121,6 @@ func LoginUser(q sqlc.Querier, c *PasetoCreator) http.HandlerFunc {
 	}
 }
 
-func UserHome(q sqlc.Querier) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-
-	}
-}
-
 func ListUsers(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
