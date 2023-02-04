@@ -21,7 +21,6 @@ function Login() {
           dispatch({type: 'LOGIN', payload: username})
           localStorage.setItem('loggedIn', username)
           ShowToast(toast,"success","Login successful!")
-          navigate("/")
         }
     })
 
