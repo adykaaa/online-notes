@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
+	"time"
 
 	sqlc "github.com/adykaaa/online-notes/db/sqlc"
 	models "github.com/adykaaa/online-notes/http/models"
@@ -118,6 +120,30 @@ func LoginUser(q sqlc.Querier, c *PasetoCreator) http.HandlerFunc {
 		w.Write([]byte("Successful login!"))
 		l.Info().Msgf("User login for %s was successful!", user.Username)
 
+	}
+}
+
+func LogoutUser() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		l, _, cancel := SetupHandler(w, r.Context())
+		defer cancel()
+
+		username, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, "Couldn't decode request body", http.StatusInternalServerError)
+			return
+		}
+
+		http.SetCookie(w, &http.Cookie{
+			Name:     "paseto",
+			Value:    "",
+			Expires:  time.Unix(0, 0),
+			HttpOnly: true,
+			Secure:   true,
+		})
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("User successfully logged out!"))
+		l.Info().Msgf("User logout for %s was successful!", string(username))
 	}
 }
 

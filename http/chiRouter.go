@@ -41,6 +41,7 @@ func RegisterChiMiddlewares(r *chi.Mux, logger *zerolog.Logger) {
 func RegisterChiHandlers(router *chi.Mux, q sqlc.Querier, c *PasetoCreator, symmetricKey string, logger *zerolog.Logger) {
 	router.Post("/register", RegisterUser(q))
 	router.Post("/login", LoginUser(q, c))
+	router.Post("/logout", LogoutUser())
 	router.Group(func(authRouter chi.Router) {
 		authRouter.Use(AuthMiddleware(c, symmetricKey, logger))
 	})

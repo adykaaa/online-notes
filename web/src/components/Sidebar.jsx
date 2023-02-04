@@ -3,9 +3,31 @@ import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
+import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
+import axios from "axios";
+import { useContext } from "react";
+import { UserContext } from "./UserContext";
+import ShowToast from './Toast'
+import { useToast,Container } from '@chakra-ui/react'
 
 function ProSidebar() {
+
+  const toast = useToast()
   const { collapseSidebar } = useProSidebar();
+  const { username,dispatch } = useContext(UserContext)
+  
+  const logout = () => {
+    axios.post("http://localhost:8080/logout", {username: username}).then(response => {
+        if (response.status == 200) {
+            dispatch({type: 'LOGOUT', payload: username})
+            localStorage.removeItem('user')
+            ShowToast(toast,"info","Successfully logged out!")
+        }
+    })
+    .catch(function () {
+      ShowToast(toast,"error","Server error while logging out, please try again later.")
+    })
+  }
 
   return (
     <div id="app" style={({ height: "100vh" }, { display: "flex" })}>
@@ -21,9 +43,10 @@ function ProSidebar() {
             <h2>Online NoteZ</h2>
           </MenuItem>
 
-          <MenuItem style={{"marginBottom":"15px"}} icon={<EventNoteOutlinedIcon />}>My Notes</MenuItem>
-          <MenuItem style={{"marginBottom":"15px"}} icon={<AddCircleOutlinedIcon />}>Create a Note!</MenuItem>
-          <MenuItem style={{"marginBottom":"15px"}} icon={<AccountCircleOutlinedIcon />}>Profile</MenuItem>
+          <MenuItem style={{"marginBottom":"10px"}} icon={<EventNoteOutlinedIcon />}>My Notes</MenuItem>
+          <MenuItem style={{"marginBottom":"10px"}} icon={<AddCircleOutlinedIcon />}>Create a Note!</MenuItem>
+          <MenuItem style={{"marginBottom":"10px"}} icon={<AccountCircleOutlinedIcon />}>Profile</MenuItem>
+          <MenuItem style={{"marginTop":"50px"}} icon={<LogoutOutlinedIcon />} onClick={() => logout()}>Log Out</MenuItem>
         </Menu>
       </Sidebar>
     </div>

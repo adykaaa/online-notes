@@ -9,7 +9,6 @@ import { UserContext } from "./UserContext";
 function Login() {
   
   const toast = useToast()
-  const navigate = useNavigate()
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const { dispatch } = useContext(UserContext)
@@ -19,7 +18,7 @@ function Login() {
     .then(response => {
         if (response.status == 200) {
           dispatch({type: 'LOGIN', payload: username})
-          localStorage.setItem('loggedIn', username)
+          localStorage.setItem('user', username)
           ShowToast(toast,"success","Login successful!")
         }
     })
