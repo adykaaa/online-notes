@@ -23,11 +23,16 @@ INSERT INTO notes (id,title, username, text, created_at, updated_at)
 VALUES ($1,$2,$3,$4,$5,$6)
 RETURNING *;
 
--- name: UpdateNoteTitle :one
-UPDATE notes SET title = $1, updated_at = $2 WHERE id = $3 RETURNING *;
-
--- name: UpdateNoteText :one
-UPDATE notes SET text = $1, updated_at = $2 WHERE id = $3 RETURNING *;
+-- name: UpdateNote :one
+UPDATE notes
+SET
+  title = COALESCE(sqlc.narg(title), title),
+  text = COALESCE(sqlc.narg(text), text),
+  created_at = COALESCE(sqlc.narg(created_at), created_at),
+  updated_at = COALESCE(sqlc.narg(updated_at), updated_at)
+WHERE
+  username = sqlc.arg(username)
+RETURNING *;
 -- name: GetNoteByID :one
 SELECT id
 FROM notes

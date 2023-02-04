@@ -188,42 +188,34 @@ func (q *Queries) RegisterUser(ctx context.Context, arg *RegisterUserParams) (st
 	return username, err
 }
 
-const updateNoteText = `-- name: UpdateNoteText :one
-UPDATE notes SET text = $1, updated_at = $2 WHERE id = $3 RETURNING id, title, username, text, created_at, updated_at
+const updateNote = `-- name: UpdateNote :one
+UPDATE notes
+SET
+  title = COALESCE($1, title),
+  text = COALESCE($2, text),
+  created_at = COALESCE($3, created_at),
+  updated_at = COALESCE($4, updated_at)
+WHERE
+  username = $5
+RETURNING id, title, username, text, created_at, updated_at
 `
 
-type UpdateNoteTextParams struct {
+type UpdateNoteParams struct {
+	Title     sql.NullString
 	Text      sql.NullString
+	CreatedAt sql.NullTime
 	UpdatedAt sql.NullTime
-	ID        uuid.UUID
+	Username  sql.NullString
 }
 
-func (q *Queries) UpdateNoteText(ctx context.Context, arg *UpdateNoteTextParams) (Note, error) {
-	row := q.db.QueryRowContext(ctx, updateNoteText, arg.Text, arg.UpdatedAt, arg.ID)
-	var i Note
-	err := row.Scan(
-		&i.ID,
-		&i.Title,
-		&i.Username,
-		&i.Text,
-		&i.CreatedAt,
-		&i.UpdatedAt,
+func (q *Queries) UpdateNote(ctx context.Context, arg *UpdateNoteParams) (Note, error) {
+	row := q.db.QueryRowContext(ctx, updateNote,
+		arg.Title,
+		arg.Text,
+		arg.CreatedAt,
+		arg.UpdatedAt,
+		arg.Username,
 	)
-	return i, err
-}
-
-const updateNoteTitle = `-- name: UpdateNoteTitle :one
-UPDATE notes SET title = $1, updated_at = $2 WHERE id = $3 RETURNING id, title, username, text, created_at, updated_at
-`
-
-type UpdateNoteTitleParams struct {
-	Title     string
-	UpdatedAt sql.NullTime
-	ID        uuid.UUID
-}
-
-func (q *Queries) UpdateNoteTitle(ctx context.Context, arg *UpdateNoteTitleParams) (Note, error) {
-	row := q.db.QueryRowContext(ctx, updateNoteTitle, arg.Title, arg.UpdatedAt, arg.ID)
 	var i Note
 	err := row.Scan(
 		&i.ID,

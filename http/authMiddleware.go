@@ -10,9 +10,9 @@ import (
 func AuthMiddleware(c *PasetoCreator, symmetricKey string, l *zerolog.Logger) func(http.Handler) http.Handler {
 	f := func(h http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
-			tokenCookie, err := r.Cookie("authentication")
+			tokenCookie, err := r.Cookie("paseto")
 			if err != nil {
-				http.Error(w, "auth cookie not set", http.StatusUnauthorized)
+				http.Error(w, "paseto auth cookie not set", http.StatusUnauthorized)
 				l.Error().Err(err).Msgf("authentication cookie is not set!")
 				return
 			}

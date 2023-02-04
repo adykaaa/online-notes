@@ -15,6 +15,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+//TODO: test UpdateNote
+
 func TestDBMethods(t *testing.T) {
 
 	ctx := context.Background()
@@ -104,66 +106,6 @@ func TestDBMethods(t *testing.T) {
 
 		require.NoError(t, err)
 		require.Equal(t, retID, id)
-	})
-	t.Run("UpdateNoteText OK", func(t *testing.T) {
-		args := db.UpdateNoteTextParams{
-			ID:        id,
-			Text:      randText,
-			UpdatedAt: randUpdatedAt,
-		}
-
-		mockdb.EXPECT().UpdateNoteText(ctx, &args).Return(db.Note{
-			ID:        id,
-			Text:      randText,
-			UpdatedAt: randUpdatedAt,
-		}, nil)
-
-		retNote, err := mockdb.UpdateNoteText(ctx, &args)
-
-		require.NoError(t, err)
-		require.Equal(t, retNote.ID, args.ID)
-		require.Equal(t, retNote.Text, args.Text)
-		require.Equal(t, retNote.UpdatedAt, args.UpdatedAt)
-	})
-	t.Run("UpdateNoteTitle OK", func(t *testing.T) {
-		args := db.UpdateNoteTitleParams{
-			ID:        id,
-			Title:     randTitle,
-			UpdatedAt: randUpdatedAt,
-		}
-
-		mockdb.EXPECT().UpdateNoteTitle(ctx, &args).Return(db.Note{
-			ID:        id,
-			Title:     randTitle,
-			UpdatedAt: randUpdatedAt,
-		}, nil)
-
-		retNote, err := mockdb.UpdateNoteTitle(ctx, &args)
-
-		require.NoError(t, err)
-		require.Equal(t, retNote.ID, args.ID)
-		require.Equal(t, retNote.Title, args.Title)
-		require.Equal(t, retNote.UpdatedAt, args.UpdatedAt)
-	})
-	t.Run("UpdateNoteTitle OK", func(t *testing.T) {
-		args := db.UpdateNoteTitleParams{
-			ID:        id,
-			Title:     randTitle,
-			UpdatedAt: randUpdatedAt,
-		}
-
-		mockdb.EXPECT().UpdateNoteTitle(ctx, &args).Return(db.Note{
-			ID:        id,
-			Title:     randTitle,
-			UpdatedAt: randUpdatedAt,
-		}, nil)
-
-		retNote, err := mockdb.UpdateNoteTitle(ctx, &args)
-
-		require.NoError(t, err)
-		require.Equal(t, retNote.ID, args.ID)
-		require.Equal(t, retNote.Title, args.Title)
-		require.Equal(t, retNote.UpdatedAt, args.UpdatedAt)
 	})
 	t.Run("RegisterUser OK", func(t *testing.T) {
 		args := db.RegisterUserParams{
