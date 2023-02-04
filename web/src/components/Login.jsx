@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import './login.css';
 import { useContext, useState } from "react";
 import { useToast,Container } from '@chakra-ui/react'
@@ -9,18 +9,21 @@ import { UserContext } from "./UserContext";
 function Login() {
   
   const toast = useToast()
+  const navigate = useNavigate()
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
-  const { setUser } = useContext(UserContext)
+  const { dispatch } = useContext(UserContext)
 
   const login = () => {
     axios.post("http://localhost:8080/login" , { username: username, password: password })
     .then(response => {
         if (response.status == 200) {
-          setUser(username)
+          dispatch({type: 'LOGIN', payload: username})
+          localStorage.setItem('loggedIn', username)
+          ShowToast(toast,"success","Login successful!")
+          navigate("/")
         }
     })
-    .then(ShowToast(toast,"success","Login successful!"))
 
     .catch(function (error) {
       if (error.response) {

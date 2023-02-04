@@ -107,7 +107,7 @@ func LoginUser(q sqlc.Querier, c *PasetoCreator) http.HandlerFunc {
 		}
 
 		http.SetCookie(w, &http.Cookie{
-			Name:     "authentication",
+			Name:     "paseto",
 			Value:    token,
 			Expires:  payload.ExpiresAt,
 			HttpOnly: true,
@@ -117,6 +117,12 @@ func LoginUser(q sqlc.Querier, c *PasetoCreator) http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("Successful login!"))
 		l.Info().Msgf("User login for %s was successful!", user.Username)
+
+	}
+}
+
+func UserHome(q sqlc.Querier) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 
 	}
 }
