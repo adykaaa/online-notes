@@ -1,5 +1,6 @@
 import {useState} from 'react'
-import { Card, CardHeader, CardBody, CardFooter,Box,Text,Heading,Stack,StackDivider,Input,Textarea } from '@chakra-ui/react'
+import { Card, CardHeader, CardBody, Button,Box,Text,Heading,Stack,StackDivider,Input,Textarea } from '@chakra-ui/react'
+import axios from 'axios';
 
 function NewNote() {
 
@@ -9,6 +10,10 @@ function NewNote() {
         let inputValue = e.target.value;
         setValue(inputValue)
     }
+
+    const handleSubmit = ()=>{
+    }
+
 
     return (
         <Card minW="100vw" color="black" backgroundColor="white" display="flex" justifyContent="center">
@@ -22,14 +27,15 @@ function NewNote() {
                     <Heading size='xs' textTransform='uppercase' marginBottom="20px">
                     Title
                     </Heading>
-                    <Textarea placeholder='Title of your note' size="lg" w="60vw" onChange={handleInputChange}/>
+                    <Textarea placeholder='Title of your note...' size="md" w="50vw"  onChange={handleInputChange}/>
                 </Box>
                 <Box>
                     <Heading size='xs' textTransform='uppercase' marginBottom="20px">
                     Text
                     </Heading>
-                    <Textarea placeholder='Text... 'size="lg" w="60vw" onChange={handleInputChange}/>
+                    <Textarea placeholder='Text... 'size="lg" w="50vw" onChange={handleInputChange}/>
                 </Box>
+                <Button onClick={()=>handleSubmit}colorScheme='green'>SUBMIT</Button>
                 </Stack>
             </CardBody>
         </Card>
