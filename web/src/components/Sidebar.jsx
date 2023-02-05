@@ -8,18 +8,18 @@ import axios from "axios";
 import { useContext } from "react";
 import { UserContext } from "./UserContext";
 import ShowToast from './Toast'
-import { useToast,Container } from '@chakra-ui/react'
+import { useToast } from '@chakra-ui/react'
 
 function ProSidebar() {
 
   const toast = useToast()
   const { collapseSidebar } = useProSidebar();
-  const { username,dispatch } = useContext(UserContext)
+  const { user, dispatch } = useContext(UserContext)
   
   const logout = () => {
-    axios.post("http://localhost:8080/logout", {username: username}).then(response => {
+    axios.post("http://localhost:8080/logout", {username: user}).then(response => {
         if (response.status == 200) {
-            dispatch({type: 'LOGOUT', payload: username})
+            dispatch({type: 'LOGOUT', payload: user})
             localStorage.removeItem('user')
             ShowToast(toast,"info","Successfully logged out!")
         }
