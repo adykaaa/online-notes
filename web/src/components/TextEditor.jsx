@@ -8,10 +8,9 @@ import "katex/dist/katex.min.css";
 const TextEditor = ({ name, onChange, props }) => {
   const options = {
     plugins: plugins,
-    minHeight: "100px",
-    maxHeight: "200px",
-    minWidth: "200px",
-    maxWidth: "800px",
+    minHeight: "30vh",
+    minWidth: "30vw",
+    width: "50vw",
     katex: katex,
     lang: en,
     buttonList: [

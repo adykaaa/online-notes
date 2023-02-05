@@ -6,11 +6,11 @@ import NewNote from "./NewNote"
 
 function Home() {
 
-  return (
+  return ( 
     <>
     <Container minH="100vh" minW='100vw' display="flex" margin="0 0 0 0" padding="0 0 0 0" overflow="hidden">
       <ProSidebar/>
-      <NewNote display="flex"/>
+      <NewNote/>
     </Container>
     </>
     )
