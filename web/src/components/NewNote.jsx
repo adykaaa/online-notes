@@ -4,14 +4,21 @@ import axios from 'axios';
 
 function NewNote() {
 
-    const [value,setValue] = useState("")
+    const [title,setTitle] = useState("")
+    const [text,setText] = useState("")
 
-    const handleInputChange = (e) => {
+    const handleTitleChange = (e) => {
         let inputValue = e.target.value;
-        setValue(inputValue)
+        setTitle(inputValue)
     }
 
-    const handleSubmit = ()=>{
+    const handleTextChange = (e) => {
+        let inputValue = e.target.value;
+        setText(inputValue)
+    }
+
+    const handleSubmit = () => {
+        console.log("submit")
     }
 
 
@@ -27,13 +34,13 @@ function NewNote() {
                     <Heading size='xs' textTransform='uppercase' marginBottom="20px">
                     Title
                     </Heading>
-                    <Textarea placeholder='Title of your note...' size="md" w="50vw"  onChange={handleInputChange}/>
+                    <Textarea placeholder='Title of your note...' size="md" w="50vw"  onChange={handleTitleChange}/>
                 </Box>
                 <Box>
                     <Heading size='xs' textTransform='uppercase' marginBottom="20px">
                     Text
                     </Heading>
-                    <Textarea placeholder='Text... 'size="lg" w="50vw" onChange={handleInputChange}/>
+                    <Textarea placeholder='Text... 'size="lg" w="50vw" onChange={handleTextChange}/>
                 </Box>
                 <Button onClick={()=>handleSubmit}colorScheme='green'>SUBMIT</Button>
                 </Stack>
