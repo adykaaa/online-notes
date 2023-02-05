@@ -8,6 +8,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -21,10 +22,10 @@ RETURNING id, title, username, text, created_at, updated_at
 type CreateNoteParams struct {
 	ID        uuid.UUID
 	Title     string
-	Username  sql.NullString
+	Username  string
 	Text      sql.NullString
-	CreatedAt sql.NullTime
-	UpdatedAt sql.NullTime
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 func (q *Queries) CreateNote(ctx context.Context, arg *CreateNoteParams) (Note, error) {
@@ -80,7 +81,7 @@ FROM notes
 WHERE username = $1
 `
 
-func (q *Queries) GetAllNotesFromUser(ctx context.Context, username sql.NullString) ([]Note, error) {
+func (q *Queries) GetAllNotesFromUser(ctx context.Context, username string) ([]Note, error) {
 	rows, err := q.db.QueryContext(ctx, getAllNotesFromUser, username)
 	if err != nil {
 		return nil, err
@@ -117,7 +118,7 @@ WHERE username = $1 AND title = $2
 `
 
 type GetNoteByIDParams struct {
-	Username sql.NullString
+	Username string
 	Title    string
 }
 
@@ -205,7 +206,7 @@ type UpdateNoteParams struct {
 	Text      sql.NullString
 	CreatedAt sql.NullTime
 	UpdatedAt sql.NullTime
-	Username  sql.NullString
+	Username  string
 }
 
 func (q *Queries) UpdateNote(ctx context.Context, arg *UpdateNoteParams) (Note, error) {

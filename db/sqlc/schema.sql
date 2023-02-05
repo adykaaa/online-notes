@@ -8,9 +8,9 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS notes (
  id UUID,
  title TEXT NOT NULL,
- username VARCHAR(30) references users(username) ON DELETE CASCADE,
+ username VARCHAR(30) references users(username) ON DELETE CASCADE NOT NULL,
  text TEXT,
- created_at TIMESTAMP,
- updated_at TIMESTAMP,
+ created_at TIMESTAMP NOT NULL,
+ updated_at TIMESTAMP NOT NULL,
  PRIMARY KEY (id)
 );

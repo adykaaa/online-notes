@@ -6,7 +6,6 @@ package mockdb
 
 import (
 	context "context"
-	sql "database/sql"
 	reflect "reflect"
 
 	db "github.com/adykaaa/online-notes/db/sqlc"
@@ -83,7 +82,7 @@ func (mr *MockQuerierMockRecorder) DeleteUser(arg0, arg1 interface{}) *gomock.Ca
 }
 
 // GetAllNotesFromUser mocks base method.
-func (m *MockQuerier) GetAllNotesFromUser(arg0 context.Context, arg1 sql.NullString) ([]db.Note, error) {
+func (m *MockQuerier) GetAllNotesFromUser(arg0 context.Context, arg1 string) ([]db.Note, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllNotesFromUser", arg0, arg1)
 	ret0, _ := ret[0].([]db.Note)

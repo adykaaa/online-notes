@@ -19,3 +19,9 @@ services:
       - "8080:8080"
     depends_on:
       - postgres
+  frontend:
+    build:
+      context: .
+      dockerfile: ./web/Dockerfile
+    ports:
+      - "3000:3000"

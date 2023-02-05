@@ -28,10 +28,10 @@ func NewRandomDBNote(id uuid.UUID) *db.Note {
 	note := db.Note{
 		ID:        id,
 		Title:     NewRandomString(15),
-		Username:  sql.NullString{String: NewRandomString(10), Valid: true},
+		Username:  NewRandomString(10),
 		Text:      sql.NullString{String: NewRandomString(60), Valid: true},
-		CreatedAt: sql.NullTime{Time: time.Now(), Valid: true},
-		UpdatedAt: sql.NullTime{Time: time.Now(), Valid: true},
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	return &note

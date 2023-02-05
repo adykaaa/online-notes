@@ -6,6 +6,7 @@ package db
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -13,10 +14,10 @@ import (
 type Note struct {
 	ID        uuid.UUID
 	Title     string
-	Username  sql.NullString
+	Username  string
 	Text      sql.NullString
-	CreatedAt sql.NullTime
-	UpdatedAt sql.NullTime
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type User struct {

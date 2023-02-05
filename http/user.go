@@ -17,7 +17,7 @@ import (
 
 func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		l, ctx, cancel := SetupHandler(w, r.Context())
+		l, ctx, cancel := utils.SetupHandler(w, r.Context())
 		defer cancel()
 
 		var user models.User
@@ -25,7 +25,7 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 		err := json.NewDecoder(r.Body).Decode(&user)
 		if err != nil {
 			l.Error().Err(err).Msgf("error decoding the User into JSON during registration. %v", err)
-			http.Error(w, "internal error decoding User struct", http.StatusInternalServerError)
+			utils.JSONresponse(w, map[string]string{"error": "internal error decoding User struct"}, http.StatusInternalServerError)
 			return
 		}
 
@@ -33,14 +33,14 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 		err = validate.Struct(&user)
 		if err != nil {
 			l.Error().Err(err).Msgf("error during User struct validation %v", err)
-			http.Error(w, "wrongly formatted or missing User parameter", http.StatusBadRequest)
+			utils.JSONresponse(w, map[string]string{"error": "wrongly formatted or missing User parameter"}, http.StatusBadRequest)
 			return
 		}
 
 		hashedPassword, err := utils.HashPassword(user.Password)
 		if err != nil {
 			l.Error().Err(err).Msgf("error during password hashing %v", err)
-			http.Error(w, "internal error during password hashing", http.StatusInternalServerError)
+			utils.JSONresponse(w, map[string]string{"error": "internal error during password hashing"}, http.StatusInternalServerError)
 			return
 		}
 
@@ -52,18 +52,17 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 		if err != nil {
 			if postgreError, ok := err.(*pq.Error); ok {
 				if postgreError.Code.Name() == "unique_violation" {
-					http.Error(w, "username or email already in use", http.StatusForbidden)
+					utils.JSONresponse(w, map[string]string{"error": "username or email already in use"}, http.StatusForbidden)
 					l.Error().Err(err).Msgf("registration failed, username or email already in use for us %s", user.Username)
 					return
 				}
 			}
 			l.Error().Err(err).Msgf("Error during user registration to the DB! %v", err)
-			http.Error(w, "internal error during saving the user to the DB", http.StatusInternalServerError)
+			utils.JSONresponse(w, map[string]string{"error": "internal error during saving the user to the DB"}, http.StatusInternalServerError)
 			return
 		}
 
-		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte("User registration successful!"))
+		utils.JSONresponse(w, map[string]string{"success": "User registration successful!"}, http.StatusCreated)
 		l.Info().Msgf("User registration for %s was successful!", uname)
 	}
 
@@ -71,7 +70,7 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 
 func LoginUser(q sqlc.Querier, c *PasetoCreator) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		l, ctx, cancel := SetupHandler(w, r.Context())
+		l, ctx, cancel := utils.SetupHandler(w, r.Context())
 		defer cancel()
 
 		var userRequest models.User
@@ -79,7 +78,7 @@ func LoginUser(q sqlc.Querier, c *PasetoCreator) http.HandlerFunc {
 		err := json.NewDecoder(r.Body).Decode(&userRequest)
 		if err != nil {
 			l.Error().Err(err).Msgf("error decoding the User into JSON during registration. %v", err)
-			http.Error(w, "internal error decoding User struct", http.StatusInternalServerError)
+			utils.JSONresponse(w, map[string]string{"error": "internal error decoding User struct"}, http.StatusInternalServerError)
 			return
 		}
 
@@ -87,24 +86,24 @@ func LoginUser(q sqlc.Querier, c *PasetoCreator) http.HandlerFunc {
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				l.Info().Err(err).Msgf("Requested user was not found in the database. %s", userRequest.Username)
-				http.Error(w, "User not found!", http.StatusNotFound)
+				utils.JSONresponse(w, map[string]string{"error": "User not found!"}, http.StatusNotFound)
 				return
 			}
-			http.Error(w, "interal server error while looking up user in the DB", http.StatusInternalServerError)
+			utils.JSONresponse(w, map[string]string{"error": "interal server error while looking up user in the DB"}, http.StatusInternalServerError)
 			return
 		}
 
 		err = utils.ValidatePassword(user.Password, userRequest.Password)
 		if err != nil {
 			l.Info().Err(err).Msgf("Wrong password was provided for user %s", userRequest.Username)
-			http.Error(w, "wrong password was provided", http.StatusUnauthorized)
+			utils.JSONresponse(w, map[string]string{"error": "wrong password was provided"}, http.StatusUnauthorized)
 			return
 		}
 
 		token, payload, err := c.CreateToken(user.Username)
 		if err != nil {
 			l.Info().Err(err).Msgf("Could not create PASETO for user. %v", err)
-			http.Error(w, "internal server error while creating the token", http.StatusInternalServerError)
+			utils.JSONresponse(w, map[string]string{"error": "internal server error while creating the token"}, http.StatusInternalServerError)
 			return
 		}
 
@@ -115,22 +114,19 @@ func LoginUser(q sqlc.Querier, c *PasetoCreator) http.HandlerFunc {
 			HttpOnly: true,
 			Secure:   true,
 		})
-
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("Successful login!"))
+		utils.JSONresponse(w, map[string]string{"success": "login successful"}, http.StatusOK)
 		l.Info().Msgf("User login for %s was successful!", user.Username)
-
 	}
 }
 
 func LogoutUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		l, _, cancel := SetupHandler(w, r.Context())
+		l, _, cancel := utils.SetupHandler(w, r.Context())
 		defer cancel()
 
 		username, err := io.ReadAll(r.Body)
 		if err != nil {
-			http.Error(w, "Couldn't decode request body", http.StatusInternalServerError)
+			utils.JSONresponse(w, map[string]string{"error": "couldn't decode request body"}, http.StatusInternalServerError)
 			return
 		}
 
@@ -141,8 +137,7 @@ func LogoutUser() http.HandlerFunc {
 			HttpOnly: true,
 			Secure:   true,
 		})
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("User successfully logged out!"))
+		utils.JSONresponse(w, map[string]string{"success": "user successfully logged out"}, http.StatusOK)
 		l.Info().Msgf("User logout for %s was successful!", string(username))
 	}
 }

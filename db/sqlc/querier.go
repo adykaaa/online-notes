@@ -6,7 +6,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/google/uuid"
 )
@@ -15,7 +14,7 @@ type Querier interface {
 	CreateNote(ctx context.Context, arg *CreateNoteParams) (Note, error)
 	DeleteNote(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	DeleteUser(ctx context.Context, username string) (string, error)
-	GetAllNotesFromUser(ctx context.Context, username sql.NullString) ([]Note, error)
+	GetAllNotesFromUser(ctx context.Context, username string) ([]Note, error)
 	GetNoteByID(ctx context.Context, arg *GetNoteByIDParams) (uuid.UUID, error)
 	GetUser(ctx context.Context, username string) (User, error)
 	ListUsers(ctx context.Context) ([]User, error)

@@ -28,7 +28,7 @@ function ProSidebar() {
       ShowToast(toast,"error","Server error while logging out, please try again later.")
     })
   }
-
+  
   return (
     <div id="app" style={({ height: "100vh" }, { display: "flex" })}>
       <Sidebar style={{ height: "100vh", backgroundColor:"white", maxWidth:"400px", fontSize:"20px"}}>

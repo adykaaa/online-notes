@@ -1,10 +1,6 @@
 package http
 
 import (
-	"context"
-	"net/http"
-	"time"
-
 	"github.com/adykaaa/httplog"
 	sqlc "github.com/adykaaa/online-notes/db/sqlc"
 	"github.com/go-chi/chi/v5"
@@ -13,13 +9,6 @@ import (
 	"github.com/go-chi/render"
 	"github.com/rs/zerolog"
 )
-
-func SetupHandler(w http.ResponseWriter, ctx context.Context) (*zerolog.Logger, context.Context, context.CancelFunc) {
-	w.Header().Set("Content-Type", "application/json")
-	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
-	l := zerolog.Ctx(ctx)
-	return l, ctx, cancel
-}
 
 // TODO: set strict CORS when everything's gucci
 func RegisterChiMiddlewares(r *chi.Mux, logger *zerolog.Logger) {

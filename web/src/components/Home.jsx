@@ -8,9 +8,9 @@ function Home() {
 
   return (
     <>
-    <Container minH="full" minW='full' display="flex" justifyContent="space-between" margin="0 0 0 0" padding="0 0 0 0">
+    <Container minH="full" minW='full' display="flex" margin="0 0 0 0" padding="0 0 0 0">
       <ProSidebar/>
-      <Note/>
+      <Note display="flex"/>
     </Container>
     </>
     )

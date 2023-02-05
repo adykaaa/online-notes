@@ -22,10 +22,10 @@ func TestDBMethods(t *testing.T) {
 	ctx := context.Background()
 	id := uuid.New()
 	randTitle := utils.NewRandomString(15)
-	randUsername := sql.NullString{String: utils.NewRandomString(10), Valid: true}
+	randUsername := utils.NewRandomString(10)
 	randText := sql.NullString{String: utils.NewRandomString(50), Valid: true}
-	randCreatedAt := sql.NullTime{Time: time.Now(), Valid: true}
-	randUpdatedAt := sql.NullTime{Time: time.Now(), Valid: true}
+	randCreatedAt := time.Now()
+	randUpdatedAt := time.Now()
 	randPassword := utils.NewRandomString(15)
 	randEmail := "random@random.com"
 
@@ -109,7 +109,7 @@ func TestDBMethods(t *testing.T) {
 	})
 	t.Run("RegisterUser OK", func(t *testing.T) {
 		args := db.RegisterUserParams{
-			Username: randUsername.String,
+			Username: randUsername,
 			Password: randPassword,
 			Email:    randEmail,
 		}
@@ -120,9 +120,9 @@ func TestDBMethods(t *testing.T) {
 	})
 	t.Run("DeleteUser OK", func(t *testing.T) {
 
-		mockdb.EXPECT().DeleteUser(ctx, randUsername.String).Return(randUsername.String, nil)
-		username, err := mockdb.DeleteUser(ctx, randUsername.String)
+		mockdb.EXPECT().DeleteUser(ctx, randUsername).Return(randUsername, nil)
+		username, err := mockdb.DeleteUser(ctx, randUsername)
 		require.NoError(t, err)
-		require.Equal(t, username, randUsername.String)
+		require.Equal(t, username, randUsername)
 	})
 }
