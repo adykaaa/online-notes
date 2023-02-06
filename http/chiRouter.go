@@ -31,8 +31,9 @@ func RegisterChiHandlers(router *chi.Mux, q sqlc.Querier, c *PasetoCreator, symm
 	router.Post("/register", RegisterUser(q))
 	router.Post("/login", LoginUser(q, c))
 	router.Post("/logout", LogoutUser())
-	router.Group(func(authRouter chi.Router) {
-		authRouter.Use(AuthMiddleware(c, symmetricKey, logger))
+	router.Route("/notes", func(router chi.Router) {
+		router.Use(AuthMiddleware(c, symmetricKey, logger))
+		router.Post("/create", CreateNote(q))
 	})
 }
 
@@ -42,7 +43,6 @@ func NewChiRouter(q sqlc.Querier, symmetricKey string, logger *zerolog.Logger) (
 		logger.Err(err).Msgf("could not create a new PasetoCreator. %v", err)
 		return nil, err
 	}
-
 	router := chi.NewRouter()
 	RegisterChiMiddlewares(router, logger)
 	RegisterChiHandlers(router, q, tokenCreator, symmetricKey, logger)

@@ -45,7 +45,7 @@ func CreateNote(q sqlc.Querier) http.HandlerFunc {
 		if err != nil {
 			if postgreError, ok := err.(*pq.Error); ok {
 				if postgreError.Code.Name() == "unique_violation" {
-					utils.JSONresponse(w, map[string]string{"error": "a Note with that title already exists! Titles must be unique."}, http.StatusBadRequest)
+					utils.JSONresponse(w, map[string]string{"error": "a Note with that title already exists! Titles must be unique."}, http.StatusForbidden)
 					l.Error().Err(err).Msgf("Note creation failed, a note with that title already exists")
 					return
 				}
