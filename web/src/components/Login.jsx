@@ -14,7 +14,7 @@ function Login() {
   const { dispatch } = useContext(UserContext)
 
   const login = () => {
-    axios.post("http://localhost:8080/login" , { username: username, password: password })
+    axios.post("http://localhost:8080/login" , { username: username, password: password }, { withCredentials: true })
     .then(response => {
         if (response.status == 200) {
           dispatch({type: 'LOGIN', payload: username})
