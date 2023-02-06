@@ -3,6 +3,7 @@ package http
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"time"
 
@@ -70,11 +71,38 @@ func GetNoteByID(q sqlc.Querier) http.HandlerFunc {
 
 func GetAllNotesFromUser(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		l, ctx, cancel := utils.SetupHandler(w, r.Context())
+		defer cancel()
 
+		getNotesRequest := struct {
+			Username string `json:"user"`
+		}{}
+
+		err := json.NewDecoder(r.Body).Decode(&getNotesRequest)
+		if err != nil {
+			l.Error().Err(err).Msgf("error decoding request. %v", err)
+			utils.JSONresponse(w, map[string]string{"error": "internal error decoding request"}, http.StatusInternalServerError)
+			return
+		}
+
+		notes, err := q.GetAllNotesFromUser(ctx, getNotesRequest.Username)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				l.Info().Msgf("Requested user has no Notes!. %s", getNotesRequest.Username)
+				utils.JSONresponse(w, map[string]string{"error": "user has no notes!"}, http.StatusNotFound)
+				return
+			}
+		}
 	}
 }
 
 func DeleteNote(q sqlc.Querier) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+	}
+}
+
+func UpdateNote(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 	}
