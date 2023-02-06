@@ -4,11 +4,13 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	sqlc "github.com/adykaaa/online-notes/db/sqlc"
 	models "github.com/adykaaa/online-notes/http/models"
 	"github.com/adykaaa/online-notes/utils"
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
 
@@ -35,12 +37,12 @@ func CreateNote(q sqlc.Querier) http.HandlerFunc {
 		}
 
 		n, err := q.CreateNote(ctx, &sqlc.CreateNoteParams{
-			ID:        noteRequest.ID,
+			ID:        uuid.New(),
 			Title:     noteRequest.Title,
 			Username:  noteRequest.User,
 			Text:      sql.NullString{String: noteRequest.Text, Valid: true},
-			CreatedAt: noteRequest.CreatedAt,
-			UpdatedAt: noteRequest.UpdatedAt,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
 		})
 		if err != nil {
 			if postgreError, ok := err.(*pq.Error); ok {

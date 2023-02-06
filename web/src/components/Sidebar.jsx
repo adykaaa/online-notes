@@ -17,7 +17,7 @@ function ProSidebar() {
   const { user, dispatch } = useContext(UserContext)
   
   const logout = () => {
-    axios.post("http://localhost:8080/logout", {username: user}).then(response => {
+    axios.post("http://localhost:8080/logout", {username: user}, {withCredentials: true}).then(response => {
         if (response.status == 200) {
             dispatch({type: 'LOGOUT', payload: user})
             localStorage.removeItem('user')

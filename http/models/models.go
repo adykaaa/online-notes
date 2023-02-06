@@ -13,12 +13,12 @@ type User struct {
 }
 
 type Note struct {
-	ID        uuid.UUID `json:"id" validate:"required"`
+	ID        uuid.UUID `json:"id"`
 	Title     string    `json:"title" validate:"required"`
 	User      string    `json:"user" validate:"required"`
 	Text      string    `json:"text"`
-	CreatedAt time.Time `json:"createdAt" validate:"required"`
-	UpdatedAt time.Time `json:"updatedAt" validate:"required"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 func NewUser(email string, username string, password string) (*User, error) {

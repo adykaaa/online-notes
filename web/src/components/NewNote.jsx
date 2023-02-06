@@ -1,7 +1,6 @@
 import { useState,useContext } from 'react'
 import { Card, CardHeader, CardBody, Button,Box,Text,Heading,Stack,StackDivider,Input,Textarea } from '@chakra-ui/react'
 import axios from 'axios';
-import { v4 as uuidv4 } from 'uuid';
 import { useToast} from '@chakra-ui/react'
 import ShowToast from './Toast'
 import { UserContext } from "./UserContext";
@@ -25,12 +24,9 @@ function NewNote() {
 
     const handleSubmit = () => {
         axios.post("http://localhost:8080/notes/create", {
-            ID: uuidv4(),
             Title: title,
             User: user,
             Text: text,
-            CreatedAt:new Date().toLocaleString( 'sv', { timeZoneName: 'short' } ),
-            UpdatedAt: new Date().toLocaleString( 'sv', { timeZoneName: 'short' } ),
         },{ withCredentials: true })
         .then(response => {
                 if (response.status == 201) {
