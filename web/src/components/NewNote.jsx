@@ -29,9 +29,11 @@ function NewNote() {
             Text: text,
         },{ withCredentials: true })
         .then(response => {
-                if (response.status == 201) {
-                    ShowToast(toast,"success","Note successfully created!")
-                }
+            if (response.status == 201) {
+                ShowToast(toast,"success","Note successfully created!")
+                setTitle("")
+                setText("")
+            }
         })
         .catch(function (error) {
             if (error.response) {

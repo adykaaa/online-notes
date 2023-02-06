@@ -7,6 +7,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { ProSidebarProvider } from "react-pro-sidebar";
 import { ChakraProvider,extendTheme } from '@chakra-ui/react';
 import { UserContext, UserContextProvider } from './components/UserContext'
+import ViewNotes from "./components/ViewNotes.jsx";
 
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
         <ProSidebarProvider>
         <Routes>
           <Route path ="/" element={user ? <Home/> : <Navigate to="/login" />} />
+          <Route path ="/notes" element={user ? <ViewNotes/> :<Navigate to="/login"/>} />
           <Route path ="/register" element={<Signup />} />
           <Route path ="/login" element={!user ? <Login /> : <Navigate to="/" />} />
         </Routes>

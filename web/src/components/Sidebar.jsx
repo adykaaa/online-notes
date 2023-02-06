@@ -9,10 +9,12 @@ import { useContext } from "react";
 import { UserContext } from "./UserContext";
 import ShowToast from './Toast'
 import { useToast } from '@chakra-ui/react'
+import { useNavigate } from "react-router-dom";
 
 function ProSidebar() {
 
   const toast = useToast()
+  const navigate = useNavigate();
   const { collapseSidebar } = useProSidebar();
   const { user, dispatch } = useContext(UserContext)
   
@@ -43,7 +45,7 @@ function ProSidebar() {
             <h2>Online NoteZ</h2>
           </MenuItem>
 
-          <MenuItem style={{"marginBottom":"10px"}} icon={<EventNoteOutlinedIcon />}>My Notes</MenuItem>
+          <MenuItem style={{"marginBottom":"10px"}} icon={<EventNoteOutlinedIcon />} onClick={() =>navigate("/notes")}>My Notes</MenuItem>
           <MenuItem style={{"marginBottom":"10px"}} icon={<AddCircleOutlinedIcon />}>Create a Note!</MenuItem>
           <MenuItem style={{"marginBottom":"10px"}} icon={<AccountCircleOutlinedIcon />}>Profile</MenuItem>
           <MenuItem style={{"marginTop":"50px"}} icon={<LogoutOutlinedIcon />} onClick={() => logout()}>Log Out</MenuItem>

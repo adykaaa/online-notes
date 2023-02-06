@@ -20,8 +20,8 @@ func RegisterChiMiddlewares(r *chi.Mux, logger *zerolog.Logger) {
 		cors.Handler(cors.Options{
 			AllowedOrigins:   []string{"https://*", "http://*"},
 			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "Bearer"},
-			ExposedHeaders:   []string{"Link"},
+			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "Bearer", "Set-Cookie"},
+			ExposedHeaders:   []string{"Link", "Access-Control-Expose-Headers", "Set-Cookie"},
 			AllowCredentials: true,
 			MaxAge:           300,
 		}))
