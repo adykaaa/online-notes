@@ -75,7 +75,7 @@ func GetAllNotesFromUser(q sqlc.Querier) http.HandlerFunc {
 		defer cancel()
 
 		getNotesRequest := struct {
-			Username string `json:"user"`
+			Username string `json:"username"`
 		}{}
 
 		err := json.NewDecoder(r.Body).Decode(&getNotesRequest)

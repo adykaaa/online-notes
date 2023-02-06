@@ -15,11 +15,10 @@ function ViewNotes() {
     const { user } = useContext(UserContext)
     
     const getNotes = () => {
-        axios.get(`http://localhost:8080/notes` ,{data: {username: user}}, {withCredentials: true})
+        axios.post(`http://localhost:8080/notes` ,{ username: user }, { withCredentials: true })
         .then(response => {
             if (response.status === 200) {
-                console.log(response.data)
-                return response.data
+                console.log(response)
             }
         })
         .catch(function (error) {

@@ -34,7 +34,7 @@ func RegisterChiHandlers(router *chi.Mux, q sqlc.Querier, c *PasetoCreator, symm
 	router.Route("/notes", func(router chi.Router) {
 		router.Use(AuthMiddleware(c, symmetricKey, logger))
 		router.Post("/create", CreateNote(q))
-		router.Get("/", GetAllNotesFromUser(q))
+		router.Post("/", GetAllNotesFromUser(q))
 		router.Patch("/{ID}", UpdateNote(q))
 		router.Delete("/{ID}", DeleteNote(q))
 	})
