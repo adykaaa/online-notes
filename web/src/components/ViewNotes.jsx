@@ -13,9 +13,15 @@ function getCookie(cookieName) {
 function ViewNotes() {
     const toast = useToast()
     const { user } = useContext(UserContext)
-    
     const getNotes = () => {
-        axios.post(`http://localhost:8080/notes` ,{ username: user }, { withCredentials: true })
+        axios.get('http://localhost:8080/notes',
+        {
+          params:
+          {
+            username: user
+          }
+          , withCredentials: true
+        })
         .then(response => {
             if (response.status === 200) {
                 console.log(response)

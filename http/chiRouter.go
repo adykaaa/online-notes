@@ -18,7 +18,7 @@ func RegisterChiMiddlewares(r *chi.Mux, logger *zerolog.Logger) {
 		middleware.Heartbeat("/ping"),
 		middleware.RedirectSlashes,
 		cors.Handler(cors.Options{
-			AllowedOrigins:   []string{"https://*", "http://*"},
+			AllowedOrigins:   []string{"http://localhost:3000"},
 			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "Bearer", "Set-Cookie"},
 			ExposedHeaders:   []string{"Link", "Access-Control-Expose-Headers", "Set-Cookie"},
@@ -34,7 +34,7 @@ func RegisterChiHandlers(router *chi.Mux, q sqlc.Querier, c *PasetoCreator, symm
 	router.Route("/notes", func(router chi.Router) {
 		router.Use(AuthMiddleware(c, symmetricKey, logger))
 		router.Post("/create", CreateNote(q))
-		router.Post("/", GetAllNotesFromUser(q))
+		router.Get("/", GetAllNotesFromUser(q))
 		router.Patch("/{ID}", UpdateNote(q))
 		router.Delete("/{ID}", DeleteNote(q))
 	})

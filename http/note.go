@@ -74,21 +74,17 @@ func GetAllNotesFromUser(q sqlc.Querier) http.HandlerFunc {
 		l, ctx, cancel := utils.SetupHandler(w, r.Context())
 		defer cancel()
 
-		getNotesRequest := struct {
-			Username string `json:"username"`
-		}{}
-
-		err := json.NewDecoder(r.Body).Decode(&getNotesRequest)
-		if err != nil {
-			l.Error().Err(err).Msgf("error decoding request. %v", err)
-			utils.JSONresponse(w, map[string]string{"error": "internal error decoding request"}, http.StatusInternalServerError)
+		username := r.URL.Query().Get("username")
+		if username == "" {
+			l.Error().Msgf("error fetching username, the request parameter seems empty. %s", username)
+			utils.JSONresponse(w, map[string]string{"error": "user not in request params"}, http.StatusInternalServerError)
 			return
 		}
 
-		notes, err := q.GetAllNotesFromUser(ctx, getNotesRequest.Username)
+		notes, err := q.GetAllNotesFromUser(ctx, username)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
-				l.Info().Msgf("Requested user has no Notes!. %s", getNotesRequest.Username)
+				l.Info().Msgf("Requested user has no Notes!. %s", username)
 				utils.JSONresponse(w, map[string]string{"error": "user has no notes!"}, http.StatusNotFound)
 				return
 			}
@@ -97,7 +93,7 @@ func GetAllNotesFromUser(q sqlc.Querier) http.HandlerFunc {
 			return
 		}
 
-		l.Info().Msgf("Retriving user notes for %s was successful!", getNotesRequest.Username)
+		l.Info().Msgf("Retriving user notes for %s was successful!", username)
 		utils.JSONresponse(w, notes, http.StatusOK)
 	}
 }
