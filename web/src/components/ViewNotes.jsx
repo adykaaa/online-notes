@@ -1,19 +1,15 @@
-import {useContext} from 'react'
+import {useContext, useState, useEffect} from 'react'
 import axios from 'axios';
-import { useToast, Button} from '@chakra-ui/react'
+import { useToast, Button } from '@chakra-ui/react'
 import ShowToast from './Toast'
 import { UserContext } from "./UserContext";
 
-function getCookie(cookieName) {
-    const value = "; " + document.cookie;
-    const parts = value.split("; " + cookieName + "=");
-    if (parts.length === 2) return parts.pop().split(";").shift();
-}
-
 function ViewNotes() {
     const toast = useToast()
+    const [notes, setNotes] = useState([])
     const { user } = useContext(UserContext)
-    const getNotes = () => {
+
+    useEffect(() => {
         axios.get('http://localhost:8080/notes',
         {
           params:
@@ -24,7 +20,7 @@ function ViewNotes() {
         })
         .then(response => {
             if (response.status === 200) {
-                console.log(response)
+                setNotes(response.data)
             }
         })
         .catch(function (error) {
@@ -39,11 +35,16 @@ function ViewNotes() {
               }
             }
         });
-    }
+    },[user])
 
-  return (
-    <Button onClick={getNotes} colorScheme='blue'>SUBMIT</Button>
-  )
-}
+    return (
+      <>
+      <ul>
+      {notes.map((item) => (
+        <li key={item.ID}>{item.ID}</li>
+      ))}
+      </ul>
+      </>
+  )}
 
 export default ViewNotes
