@@ -14,7 +14,7 @@ type User struct {
 
 type Note struct {
 	ID        uuid.UUID `json:"id"`
-	Title     string    `json:"title" validate:"required"`
+	Title     string    `json:"title" validate:"required,min=4,alphanum"`
 	User      string    `json:"user" validate:"required"`
 	Text      string    `json:"text"`
 	CreatedAt time.Time `json:"createdAt"`

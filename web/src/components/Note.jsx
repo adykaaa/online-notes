@@ -12,8 +12,9 @@ function NoteCard({title, text}) {
     <CardBody>
       <Text isTruncated>{text}</Text>
     </CardBody>
-    <CardFooter>
-      <Button alignSelf="left">Delete</Button>
+    <CardFooter justifyContent="space-between">
+      <Button alignSelf="right" color="red">Delete</Button>
+      <Button alignSelf="left" color="blue">Update</Button>
     </CardFooter>
   </Card>
   )

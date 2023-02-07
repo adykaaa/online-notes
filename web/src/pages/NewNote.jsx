@@ -2,8 +2,8 @@ import { useState,useContext } from 'react'
 import { Card, CardHeader, CardBody, Button,Box,Text,Heading,Stack,StackDivider,Input,Textarea } from '@chakra-ui/react'
 import axios from 'axios';
 import { useToast} from '@chakra-ui/react'
-import ShowToast from './Toast'
-import { UserContext } from "./UserContext";
+import ShowToast from '../components/Toast'
+import { UserContext } from "../components/UserContext";
 
 function NewNote() {
 
@@ -57,24 +57,24 @@ function NewNote() {
 
 
     return (
-        <Card minW="100vw" color="black" backgroundColor="white" display="flex" justifyContent="center">
-            <CardHeader justifyContent="center">
-                <Heading size='lg'>Create a new note</Heading>
+        <Card minW="50vw" minH="50vh" color="black" backgroundColor="white" display="flex" justifyContent="center" align-items="center" marginLeft="50" marginTop="0">
+            <CardHeader alignSelf="center" marginTop="20">
+                <Heading size='md'>Create a new note</Heading>
             </CardHeader>
 
-            <CardBody w="100vw" h="100vh" display="flex" justifyContent="flex">
-                <Stack divider={<StackDivider size="10px" />} spacing='4'>
+            <CardBody display="flex" justifyContent="flex" alignSelf="center">
+                <Stack size="lg" divider={<StackDivider size="10px" />} spacing='4'>
                 <Box>
                     <Heading size='xs' textTransform='uppercase' marginBottom="20px">
                     Title
                     </Heading>
-                    <Textarea placeholder='Title of your note...' size="md" w="50vw"  onChange={handleTitleChange}/>
+                    <Textarea placeholder='Title of your note...' size="md" w="20vw"  onChange={handleTitleChange}/>
                 </Box>
                 <Box>
                     <Heading size='xs' textTransform='uppercase' marginBottom="20px">
                     Text
                     </Heading>
-                    <Textarea placeholder='Text... 'size="lg" w="50vw" onChange={handleTextChange}/>
+                    <Textarea placeholder='Text... 'size="lg" w="20vw"  onChange={handleTextChange}/>
                 </Box>
                 <Button onClick={handleSubmit} colorScheme='green'>SUBMIT</Button>
                 </Stack>

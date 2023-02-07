@@ -5,7 +5,7 @@ import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import axios from "axios";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { UserContext } from "./UserContext";
 import ShowToast from './Toast'
 import { useToast } from '@chakra-ui/react'
@@ -18,6 +18,7 @@ function ProSidebar() {
   const navigate = useNavigate();
   const { collapseSidebar } = useProSidebar();
   const { user, dispatch } = useContext(UserContext)
+
 
   const logout = () => {
     axios.post("http://localhost:8080/logout", {username: user}, {withCredentials: true}).then(response => {
@@ -34,7 +35,7 @@ function ProSidebar() {
   
   return (
     <div id="app" style={({ height: "100vh" }, { display: "flex" })}>
-      <Sidebar position="sticky" breakPoint="xs" style={{ height: "100vh", backgroundColor:"white", maxWidth:"400px", fontSize:"20px"}}>
+      <Sidebar position="sticky" style={{ height: "100vh", backgroundColor:"white", maxWidth:"400px", fontSize:"20px"}}>
         <Menu>
           <MenuItem
             icon={<MenuOutlinedIcon />}
