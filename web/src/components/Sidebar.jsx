@@ -10,6 +10,7 @@ import { UserContext } from "./UserContext";
 import ShowToast from './Toast'
 import { useToast } from '@chakra-ui/react'
 import { useNavigate } from "react-router-dom";
+import useWindowDimensions from './Sidebar'
 
 function ProSidebar() {
 
@@ -17,7 +18,7 @@ function ProSidebar() {
   const navigate = useNavigate();
   const { collapseSidebar } = useProSidebar();
   const { user, dispatch } = useContext(UserContext)
-  
+
   const logout = () => {
     axios.post("http://localhost:8080/logout", {username: user}, {withCredentials: true}).then(response => {
         if (response.status == 200) {
@@ -33,7 +34,7 @@ function ProSidebar() {
   
   return (
     <div id="app" style={({ height: "100vh" }, { display: "flex" })}>
-      <Sidebar style={{ height: "100vh", backgroundColor:"white", maxWidth:"400px", fontSize:"20px"}}>
+      <Sidebar position="sticky" breakPoint="xs" style={{ height: "100vh", backgroundColor:"white", maxWidth:"400px", fontSize:"20px"}}>
         <Menu>
           <MenuItem
             icon={<MenuOutlinedIcon />}
@@ -46,7 +47,7 @@ function ProSidebar() {
           </MenuItem>
 
           <MenuItem style={{"marginBottom":"10px"}} icon={<EventNoteOutlinedIcon />} onClick={() =>navigate("/notes")}>My Notes</MenuItem>
-          <MenuItem style={{"marginBottom":"10px"}} icon={<AddCircleOutlinedIcon />}>Create a Note!</MenuItem>
+          <MenuItem style={{"marginBottom":"10px"}} icon={<AddCircleOutlinedIcon />} onClick={() =>navigate("/")}>Create a Note!</MenuItem>
           <MenuItem style={{"marginBottom":"10px"}} icon={<AccountCircleOutlinedIcon />}>Profile</MenuItem>
           <MenuItem style={{"marginTop":"50px"}} icon={<LogoutOutlinedIcon />} onClick={() => logout()}>Log Out</MenuItem>
         </Menu>

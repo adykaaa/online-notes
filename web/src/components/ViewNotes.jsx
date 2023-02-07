@@ -1,8 +1,10 @@
-import {useContext, useState, useEffect} from 'react'
+import { useContext, useState, useEffect } from 'react'
 import axios from 'axios';
-import { useToast, Button } from '@chakra-ui/react'
+import { useToast, Container, SimpleGrid } from '@chakra-ui/react'
 import ShowToast from './Toast'
 import { UserContext } from "./UserContext";
+import NoteCard from './Note';
+import ProSidebar from './Sidebar';
 
 function ViewNotes() {
     const toast = useToast()
@@ -39,11 +41,14 @@ function ViewNotes() {
 
     return (
       <>
-      <ul>
-      {notes.map((item) => (
-        <li key={item.ID}>{item.ID}</li>
+      <Container minH="100vh" minW='100vw' display="flex" margin="0 0 0 0" padding="0 0 0 0" overflow="hidden">
+      <ProSidebar/>
+      <SimpleGrid justify-content="center" align-items="center" spacing={6} margin="15" templateColumns='repeat(auto-fill, minmax(200px, 1fr))' w="70vw">
+      {notes.map((note) => (
+        <NoteCard title={note.Title} text={note.Text.String}/>
       ))}
-      </ul>
+      </SimpleGrid>
+      </Container>
       </>
   )}
 
