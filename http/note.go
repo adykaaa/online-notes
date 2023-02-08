@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strings"
 	"time"
 
 	sqlc "github.com/adykaaa/online-notes/db/sqlc"
@@ -100,8 +101,29 @@ func GetAllNotesFromUser(q sqlc.Querier) http.HandlerFunc {
 
 func DeleteNote(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		l, ctx, cancel := utils.SetupHandler(w, r.Context())
+		defer cancel()
 
+		reqID := strings.Split(r.URL.Path, "/")[2]
+
+		reqUUID, err := uuid.Parse(reqID)
+		if err != nil {
+			l.Info().Msgf("Could not convert ID to UUID.")
+			utils.JSONresponse(w, map[string]string{"error": "could not convert note id to uuid"}, http.StatusBadRequest)
+			return
+		}
+
+		id, err := q.DeleteNote(ctx, reqUUID)
+		if err != nil {
+			l.Info().Msgf("Could not delete Note %v from the DB!", reqID)
+			utils.JSONresponse(w, map[string]string{"error": "could not delete note from db"}, http.StatusInternalServerError)
+			return
+		}
+
+		l.Info().Msgf("Deleting note %v was successful!", id)
+		utils.JSONresponse(w, map[string]string{"success": "note deleted"}, http.StatusOK)
 	}
+
 }
 
 func UpdateNote(q sqlc.Querier) http.HandlerFunc {

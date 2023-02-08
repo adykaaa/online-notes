@@ -21,7 +21,7 @@ func RegisterChiMiddlewares(r *chi.Mux, logger *zerolog.Logger) {
 			AllowedOrigins:   []string{"http://localhost:3000"},
 			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "Bearer", "Set-Cookie"},
-			ExposedHeaders:   []string{"Link", "Access-Control-Expose-Headers", "Set-Cookie"},
+			ExposedHeaders:   []string{"Link", "Access-Control-Expose-Headers"},
 			AllowCredentials: true,
 			MaxAge:           300,
 		}))
@@ -35,8 +35,8 @@ func RegisterChiHandlers(router *chi.Mux, q sqlc.Querier, c *PasetoCreator, symm
 		router.Use(AuthMiddleware(c, symmetricKey, logger))
 		router.Post("/create", CreateNote(q))
 		router.Get("/", GetAllNotesFromUser(q))
-		router.Patch("/{ID}", UpdateNote(q))
-		router.Delete("/{ID}", DeleteNote(q))
+		router.Patch("/{id}", UpdateNote(q))
+		router.Delete("/{id}", DeleteNote(q))
 	})
 }
 

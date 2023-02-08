@@ -34,8 +34,8 @@ function ProSidebar() {
   }
   
   return (
-    <div id="app" style={({ height: "100vh" }, { display: "flex" })}>
-      <Sidebar position="sticky" style={{ height: "100vh", backgroundColor:"white", maxWidth:"400px", fontSize:"20px"}}>
+    //<div id="app" style={({ height: "100vh" }, { display: "flex" })}>
+      <Sidebar position="sticky" style={{ height: "100vh", backgroundColor:"white", maxWidth:"12vw", fontSize:"20px", overflow:"hidden", float:"left"}}>
         <Menu>
           <MenuItem
             icon={<MenuOutlinedIcon />}
@@ -53,7 +53,7 @@ function ProSidebar() {
           <MenuItem style={{"marginTop":"50px"}} icon={<LogoutOutlinedIcon />} onClick={() => logout()}>Log Out</MenuItem>
         </Menu>
       </Sidebar>
-    </div>
+    //</div>
   );
 }
 
