@@ -5,7 +5,7 @@ import { CloseIcon, EditIcon } from '@chakra-ui/icons'
 function NoteCard({id, title, text, handleDelete, handleUpdate}) {
 
   return (
-    <Card align-self="center" background="white" maxW="350px" maxH="350px">
+    <Card align-self="center" background="white" maxW="350px" maxH="350px" borderRadius="md" boxShadow="box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;">
       <CardHeader>
         <Heading size='sm' isTruncated>{title}</Heading>
       </CardHeader>
