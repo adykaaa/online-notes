@@ -13,13 +13,11 @@ function NewNote() {
     const { user } = useContext(UserContext)
 
     const handleTitleChange = (e) => {
-        let inputValue = e.target.value;
-        setTitle(inputValue)
+        setTitle(e.target.value)
     }
 
     const handleTextChange = (e) => {
-        let inputValue = e.target.value;
-        setText(inputValue)
+        setText(e.target.value)
     }
 
     const handleSubmit = () => {
