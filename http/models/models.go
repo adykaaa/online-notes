@@ -20,24 +20,3 @@ type Note struct {
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
-
-func NewUser(email string, username string, password string) (*User, error) {
-	u := &User{
-		Email:    email,
-		Username: username,
-		Password: password,
-	}
-	return u, nil
-}
-
-func NewNote(title string, text string, user string) (*Note, error) {
-	n := &Note{
-		ID:        uuid.New(),
-		Title:     title,
-		User:      user,
-		Text:      text,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
-	return n, nil
-}
