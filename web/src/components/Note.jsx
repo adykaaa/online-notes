@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Card, CardHeader, CardBody, CardFooter,IconButton,Heading,Text, Textarea } from '@chakra-ui/react'
 import { CloseIcon, EditIcon, CheckIcon } from '@chakra-ui/icons'
 
-function NoteCard({id, title, text, handleDelete, handleUpdate}) {
+function NoteCard({id, title, text, handleDelete, handleUpdate, handleSave}) {
 
   const [editedText, setEditedText] = useState("")
   const [editedTitle, setEditedTitle] = useState("")
@@ -21,16 +21,15 @@ function NoteCard({id, title, text, handleDelete, handleUpdate}) {
           colorScheme='white'
           aria-label='Update note'
           onClick={()=> {
-            setIsBeingEdited((state)=>!state)
-            handleUpdate(id,editedTitle,editedText)}
+            handleUpdate(id,editedTitle,editedText)
+            setIsBeingEdited((state)=>!state)}
           }
           icon={<EditIcon alignSelf="left" color="blue"/>}/>
       {isBeingEdited && <IconButton
           colorScheme='white'
           aria-label='Save changes'
           onClick={()=>{
-            title = editedTitle
-            text = editedText
+            handleSave(id,editedTitle,editedText)
             setIsBeingEdited(false)
           }}
           icon={<CheckIcon alignSelf="center" color="green"/>}/>}

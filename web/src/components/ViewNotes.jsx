@@ -12,7 +12,6 @@ function ViewNotes() {
     const { user } = useContext(UserContext)
     const [searchText,setSearchText] = useState('')
 
-    const [isBeingEdited,setIsBeingEdited] = useState(false)
     
     const handleSearchTextChange = (e) => {
       setSearchText(e.target.value)
@@ -31,11 +30,26 @@ function ViewNotes() {
         ShowToast(toast,"error","Error deleting note, please try again!")
     })}
 
-    const handleUpdate = (id,editedTitle,editedText) =>{
+    const handleSave = (id,title,text) => {
+      axios.patch(`http//localhost:8080/notes/${id}`,{ title: title, text: text }, { withCredentials: true })
+      .then(response => {
+        if (response.status === 204) {
+          ShowToast(toast,"success","Note updated!")
+        }
+        else {
+          ShowToast(toast,"error","Error updating note, please try again!")
+          return
+        }})
+        .catch(function () {
+          ShowToast(toast,"error","Error updating note, please try again!")
+          return
+        })
+    }
+
+    const handleUpdate = (id,editedTitle,editedText) => {
       const current = notes.filter((note) => note.ID === id)
-      current.Title = editedTitle
-      current.Text.String = editedText
-      setNotes([...notes,current])
+      current[0].Title = editedTitle
+      current[0].Text.String = editedText
     }
 
 
@@ -77,7 +91,7 @@ function ViewNotes() {
         {notes
         .filter((note)=>note.Text.String.toLowerCase().includes(searchText.toLowerCase()) || note.Title.toLowerCase().includes(searchText.toLowerCase()))
         .map((note) => (
-          <NoteCard id={note.ID} title={note.Title} text={note.Text.String} handleDelete={()=>handleDelete(note.ID)} handleUpdate={()=>handleUpdate(note.ID)}/>
+          <NoteCard id={note.ID} title={note.Title} text={note.Text.String} handleDelete={()=>handleDelete(note.ID)} handleUpdate={()=>handleUpdate(note.ID)} handleSave={()=>handleSave(note.ID)}/>
         ))}
         </SimpleGrid>
       </Container>

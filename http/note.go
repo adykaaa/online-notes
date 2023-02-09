@@ -128,6 +128,9 @@ func DeleteNote(q sqlc.Querier) http.HandlerFunc {
 
 func UpdateNote(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		l, _, cancel := utils.SetupHandler(w, r.Context())
+		defer cancel()
 
+		l.Info().Msg("Incoming Update request!")
 	}
 }
