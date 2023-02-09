@@ -35,7 +35,7 @@ function ViewNotes() {
       const current = notes.filter((note) => note.ID === id)
       current.Title = editedTitle
       current.Text.String = editedText
-      setNotes([...notes],current)
+      setNotes([...notes,current])
     }
 
 
