@@ -11,10 +11,11 @@ function ViewNotes() {
     const [notes, setNotes] = useState([])
     const { user } = useContext(UserContext)
     const [searchText,setSearchText] = useState('')
+
+    const [isBeingEdited,setIsBeingEdited] = useState(false)
     
     const handleSearchTextChange = (e) => {
       setSearchText(e.target.value)
-      console.log(searchText)
   }
     
     const handleDelete = (id) => {
@@ -26,13 +27,17 @@ function ViewNotes() {
           if (response.status !== 200) {
             ShowToast(toast,"error","Error deleting note, please try again!")
       }})
-      .catch(function (error) {
+      .catch(function () {
         ShowToast(toast,"error","Error deleting note, please try again!")
     })}
 
-    const handleUpdate = (id) => {
-      console.log("Update!")
+    const handleUpdate = (id,editedTitle,editedText) =>{
+      const current = notes.filter((note) => note.ID === id)
+      current.Title = editedTitle
+      current.Text.String = editedText
+      setNotes([...notes],current)
     }
+
 
 
     useEffect(() => {
@@ -41,8 +46,8 @@ function ViewNotes() {
           params:
           {
             username: user
-          }
-          , withCredentials: true
+          },
+          withCredentials: true
         })
         .then(response => {
             if (response.status === 200) {
@@ -62,6 +67,7 @@ function ViewNotes() {
             }
         });
     },[user])
+
     return (
       <>
       <Container minH="100%" minW='100%' display="flex" margin="0 0 0 0" padding="0 0 0 0" overflow="hidden">
@@ -71,10 +77,11 @@ function ViewNotes() {
         {notes
         .filter((note)=>note.Text.String.toLowerCase().includes(searchText.toLowerCase()) || note.Title.toLowerCase().includes(searchText.toLowerCase()))
         .map((note) => (
-          <NoteCard title={note.Title} text={note.Text.String} handleDelete={()=>handleDelete(note.ID)} handleUpdate={()=>handleUpdate(note.ID)}/>
+          <NoteCard id={note.ID} title={note.Title} text={note.Text.String} handleDelete={()=>handleDelete(note.ID)} handleUpdate={()=>handleUpdate(note.ID)}/>
         ))}
         </SimpleGrid>
       </Container>
       </>
   )}
+
 export default ViewNotes

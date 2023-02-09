@@ -27,8 +27,12 @@ build-backend: # Builds the backend Docker image
 
 run-backend: # Runs the backend Docker image
 	docker run -d -p 8080:8080 online-notes-backend
-.PHONY: build-backend
+.PHONY: run-backend
 
 build-frontend: # Builds the frontend Docker image
 	docker build ./web/ -t online-notes-frontend
 .PHONY: build-frontend
+
+run-frontend: # Runs the frontend Docker image
+	docker build ./web/ -t online-notes-frontend
+.PHONY: run-frontend
