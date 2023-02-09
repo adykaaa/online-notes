@@ -5,12 +5,11 @@ import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import axios from "axios";
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import { UserContext } from "./UserContext";
 import ShowToast from './Toast'
 import { useToast } from '@chakra-ui/react'
 import { useNavigate } from "react-router-dom";
-import useWindowDimensions from './Sidebar'
 
 function ProSidebar() {
 

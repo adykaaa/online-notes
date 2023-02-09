@@ -65,15 +65,15 @@ function ViewNotes() {
     return (
       <>
       <Container minH="100%" minW='100%' display="flex" margin="0 0 0 0" padding="0 0 0 0" overflow="hidden">
-      <ProSidebar/>
-      <Input color="white" position="absolute" maxW="350px" marginLeft="16.5rem" focusBorderColor='white' placeholder='Search for text in a note...'  w="20rem" marginTop="1.5rem" justifyContent="center" onChange={handleSearchTextChange}/>
-      <SimpleGrid justify-content="center" align-items="center" spacing={6} margin="15" marginRight="30" marginTop="5rem" position="static" templateColumns='repeat(auto-fill, minmax(200px, 1fr))' w="70vw">
-      {notes
-      .filter((note)=>note.Text.String.toLowerCase().includes(searchText.toLowerCase()) || note.Title.toLowerCase().includes(searchText.toLowerCase()))
-      .map((note) => (
-        <NoteCard title={note.Title} text={note.Text.String} handleDelete={()=>handleDelete(note.ID)} handleUpdate={()=>handleUpdate(note.ID)}/>
-      ))}
-      </SimpleGrid>
+        <ProSidebar/>
+        <Input color="white" position="absolute" w="auto" minW="80px" marginLeft="16.5rem" focusBorderColor='white' placeholder='Search for text in a note...' marginTop="1.5rem" justifyContent="center" onChange={handleSearchTextChange}/>
+        <SimpleGrid justify-content="center" align-items="center" spacing={6} margin="15" marginRight="30" marginTop="5rem" position="static" templateColumns='repeat(auto-fill, minmax(200px, 1fr))' w="70vw">
+        {notes
+        .filter((note)=>note.Text.String.toLowerCase().includes(searchText.toLowerCase()) || note.Title.toLowerCase().includes(searchText.toLowerCase()))
+        .map((note) => (
+          <NoteCard title={note.Title} text={note.Text.String} handleDelete={()=>handleDelete(note.ID)} handleUpdate={()=>handleUpdate(note.ID)}/>
+        ))}
+        </SimpleGrid>
       </Container>
       </>
   )}

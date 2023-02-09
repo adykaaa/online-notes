@@ -37,7 +37,7 @@ function NewNote() {
             if (error.response) {
               switch (error.response.status) {
                 case 400:
-                  ShowToast(toast,"error","Wrongly formatted or missing Note parameter. A title is mandatory!")
+                  ShowToast(toast,"error","Duplicate or missing title!")
                   break
                 case 401:
                   ShowToast(toast,"error","You are unauthorized!")
@@ -55,24 +55,24 @@ function NewNote() {
 
 
     return (
-        <Card minW="50vw" minH="50vh" color="black" backgroundColor="white" display="flex" justifyContent="center" align-items="center" marginLeft="50" marginTop="0">
+        <Card color="black" backgroundColor="linear-gradient(#141e30, #243b55)" border="solid #03e9f4" margin="auto" justifyContent="center" align-items="center">
             <CardHeader alignSelf="center" marginTop="20">
-                <Heading size='md'>Create a new note</Heading>
+                <Heading size='lg' color="white" justifySelf="center">Create a new note</Heading>
             </CardHeader>
 
-            <CardBody display="flex" justifyContent="flex" alignSelf="center">
+            <CardBody display="flex" justifyContent="flex" alignSelf="center" alignItems="center">
                 <Stack size="lg" divider={<StackDivider size="10px" />} spacing='4'>
                 <Box>
-                    <Heading size='xs' textTransform='uppercase' marginBottom="20px">
+                    <Heading size='md' textTransform='uppercase' marginBottom="20px" color="white">
                     Title
                     </Heading>
-                    <Textarea placeholder='Title of your note...' size="md" w="20vw"  onChange={handleTitleChange}/>
+                    <Textarea color="white" placeholder='Title of your note...' size="md" w={['40vw', '40vw', '30vw', '30vw']}  onChange={handleTitleChange}/>
                 </Box>
                 <Box>
-                    <Heading size='xs' textTransform='uppercase' marginBottom="20px">
+                    <Heading size='md' textTransform='uppercase' marginBottom="20px" color="white">
                     Text
                     </Heading>
-                    <Textarea placeholder='Text... 'size="lg" w="20vw"  onChange={handleTextChange}/>
+                    <Textarea color="white" placeholder='Text... 'size="lg" w={['40vw', '40vw', '30vw', '30vw']}  onChange={handleTextChange}/>
                 </Box>
                 <Button onClick={handleSubmit} colorScheme='green'>SUBMIT</Button>
                 </Stack>
