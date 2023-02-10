@@ -174,31 +174,21 @@ func (q *Queries) RegisterUser(ctx context.Context, arg *RegisterUserParams) (st
 const updateNote = `-- name: UpdateNote :one
 UPDATE notes
 SET
-  title = COALESCE($1, title),
-  text = COALESCE($2, text),
-  created_at = COALESCE($3, created_at),
-  updated_at = COALESCE($4, updated_at)
+  title = COALESCE($2, title),
+  text = COALESCE($3, text)
 WHERE
-  username = $5
+  id = $1
 RETURNING id, title, username, text, created_at, updated_at
 `
 
 type UpdateNoteParams struct {
-	Title     sql.NullString
-	Text      sql.NullString
-	CreatedAt sql.NullTime
-	UpdatedAt sql.NullTime
-	Username  string
+	ID    uuid.UUID
+	Title sql.NullString
+	Text  sql.NullString
 }
 
 func (q *Queries) UpdateNote(ctx context.Context, arg *UpdateNoteParams) (Note, error) {
-	row := q.db.QueryRowContext(ctx, updateNote,
-		arg.Title,
-		arg.Text,
-		arg.CreatedAt,
-		arg.UpdatedAt,
-		arg.Username,
-	)
+	row := q.db.QueryRowContext(ctx, updateNote, arg.ID, arg.Title, arg.Text)
 	var i Note
 	err := row.Scan(
 		&i.ID,

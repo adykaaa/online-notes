@@ -27,11 +27,9 @@ RETURNING *;
 UPDATE notes
 SET
   title = COALESCE(sqlc.narg(title), title),
-  text = COALESCE(sqlc.narg(text), text),
-  created_at = COALESCE(sqlc.narg(created_at), created_at),
-  updated_at = COALESCE(sqlc.narg(updated_at), updated_at)
+  text = COALESCE(sqlc.narg(text), text)
 WHERE
-  username = sqlc.arg(username)
+  id = $1
 RETURNING *;
 
 -- name: GetAllNotesFromUser :many
