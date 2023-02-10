@@ -95,18 +95,6 @@ func TestDBMethods(t *testing.T) {
 		assert.NotEqual(t, notes[0].CreatedAt, notes[1].CreatedAt)
 	})
 
-	t.Run("GetNoteByID OK", func(t *testing.T) {
-		args := db.GetNoteByIDParams{
-			Username: randUsername,
-			Title:    randTitle,
-		}
-
-		mockdb.EXPECT().GetNoteByID(ctx, &args).Return(id, nil)
-		retID, err := mockdb.GetNoteByID(ctx, &args)
-
-		require.NoError(t, err)
-		require.Equal(t, retID, id)
-	})
 	t.Run("RegisterUser OK", func(t *testing.T) {
 		args := db.RegisterUserParams{
 			Username: randUsername,

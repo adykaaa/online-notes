@@ -15,7 +15,6 @@ type Querier interface {
 	DeleteNote(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	DeleteUser(ctx context.Context, username string) (string, error)
 	GetAllNotesFromUser(ctx context.Context, username string) ([]Note, error)
-	GetNoteByID(ctx context.Context, arg *GetNoteByIDParams) (uuid.UUID, error)
 	GetUser(ctx context.Context, username string) (User, error)
 	ListUsers(ctx context.Context) ([]User, error)
 	RegisterUser(ctx context.Context, arg *RegisterUserParams) (string, error)

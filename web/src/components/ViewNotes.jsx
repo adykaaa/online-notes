@@ -31,7 +31,7 @@ function ViewNotes() {
     })}
 
     const handleSave = (id,title,text) => {
-      axios.patch(`http//localhost:8080/notes/${id}`,{ title: title, text: text }, { withCredentials: true })
+      axios.patch(`http//localhost:8080/notes/${id}`,{ title:title, text: text }, { withCredentials: true })
       .then(response => {
         if (response.status === 204) {
           ShowToast(toast,"success","Note updated!")

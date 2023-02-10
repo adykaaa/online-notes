@@ -19,7 +19,7 @@ WHERE username = $1
 RETURNING username;
 
 -- name: CreateNote :one
-INSERT INTO notes (id,title, username, text, created_at, updated_at)
+INSERT INTO notes (id, title, username, text, created_at, updated_at)
 VALUES ($1,$2,$3,$4,$5,$6)
 RETURNING *;
 
@@ -33,10 +33,6 @@ SET
 WHERE
   username = sqlc.arg(username)
 RETURNING *;
--- name: GetNoteByID :one
-SELECT id
-FROM notes
-WHERE username = $1 AND title = $2;
 
 -- name: GetAllNotesFromUser :many
 SELECT *

@@ -14,7 +14,7 @@ import (
 )
 
 const createNote = `-- name: CreateNote :one
-INSERT INTO notes (id,title, username, text, created_at, updated_at)
+INSERT INTO notes (id, title, username, text, created_at, updated_at)
 VALUES ($1,$2,$3,$4,$5,$6)
 RETURNING id, title, username, text, created_at, updated_at
 `
@@ -109,24 +109,6 @@ func (q *Queries) GetAllNotesFromUser(ctx context.Context, username string) ([]N
 		return nil, err
 	}
 	return items, nil
-}
-
-const getNoteByID = `-- name: GetNoteByID :one
-SELECT id
-FROM notes
-WHERE username = $1 AND title = $2
-`
-
-type GetNoteByIDParams struct {
-	Username string
-	Title    string
-}
-
-func (q *Queries) GetNoteByID(ctx context.Context, arg *GetNoteByIDParams) (uuid.UUID, error) {
-	row := q.db.QueryRowContext(ctx, getNoteByID, arg.Username, arg.Title)
-	var id uuid.UUID
-	err := row.Scan(&id)
-	return id, err
 }
 
 const getUser = `-- name: GetUser :one
