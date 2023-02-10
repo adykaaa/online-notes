@@ -98,9 +98,7 @@ func DeleteNote(q sqlc.Querier) http.HandlerFunc {
 		l, ctx, cancel := utils.SetupHandler(w, r.Context())
 		defer cancel()
 
-		reqID := strings.Split(r.URL.Path, "/")[2]
-
-		reqUUID, err := uuid.Parse(reqID)
+		reqUUID, err := uuid.Parse(strings.Split(r.URL.Path, "/")[2])
 		if err != nil {
 			l.Info().Msgf("Could not convert ID to UUID.")
 			utils.JSONresponse(w, map[string]string{"error": "could not convert note id to uuid"}, http.StatusBadRequest)
@@ -125,8 +123,7 @@ func UpdateNote(q sqlc.Querier) http.HandlerFunc {
 		l, _, cancel := utils.SetupHandler(w, r.Context())
 		defer cancel()
 
-		reqID := strings.Split(r.URL.Path, "/")[2]
-		reqUUID, err := uuid.Parse(reqID)
+		reqUUID, err := uuid.Parse(strings.Split(r.URL.Path, "/")[2])
 		if err != nil {
 			l.Info().Msgf("Could not convert ID to UUID.")
 			utils.JSONresponse(w, map[string]string{"error": "could not convert note id to uuid"}, http.StatusBadRequest)
