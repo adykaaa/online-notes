@@ -64,12 +64,6 @@ func CreateNote(q sqlc.Querier) http.HandlerFunc {
 	}
 }
 
-func GetNoteByID(q sqlc.Querier) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-
-	}
-}
-
 func GetAllNotesFromUser(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := utils.SetupHandler(w, r.Context())
@@ -131,6 +125,15 @@ func UpdateNote(q sqlc.Querier) http.HandlerFunc {
 		l, _, cancel := utils.SetupHandler(w, r.Context())
 		defer cancel()
 
-		l.Info().Msg("Incoming Update request!")
+		reqID := strings.Split(r.URL.Path, "/")[2]
+		reqUUID, err := uuid.Parse(reqID)
+		if err != nil {
+			l.Info().Msgf("Could not convert ID to UUID.")
+			utils.JSONresponse(w, map[string]string{"error": "could not convert note id to uuid"}, http.StatusBadRequest)
+			return
+		}
+
+		utils.JSONresponse(w, map[string]string{"success": "note updated!"}, http.StatusOK)
+		l.Info().Msg("Note successfully updated!")
 	}
 }

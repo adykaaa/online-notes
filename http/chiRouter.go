@@ -10,7 +10,6 @@ import (
 	"github.com/rs/zerolog"
 )
 
-// TODO: set strict CORS when everything's gucci
 func RegisterChiMiddlewares(r *chi.Mux, logger *zerolog.Logger) {
 	// Request logger has middleware.Recoverer and RequestID baked into it.
 	r.Use(render.SetContentType(render.ContentTypeJSON),
@@ -20,7 +19,7 @@ func RegisterChiMiddlewares(r *chi.Mux, logger *zerolog.Logger) {
 		cors.Handler(cors.Options{
 			AllowedOrigins:   []string{"http://localhost:3000"},
 			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "Bearer", "Set-Cookie"},
+			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "Bearer", "Set-Cookie", "X-Powered-By", "X-Content-Type-Options"},
 			ExposedHeaders:   []string{"Link", "Access-Control-Expose-Headers"},
 			AllowCredentials: true,
 			MaxAge:           300,
@@ -35,7 +34,7 @@ func RegisterChiHandlers(router *chi.Mux, q sqlc.Querier, c *PasetoCreator, symm
 		router.Use(AuthMiddleware(c, symmetricKey, logger))
 		router.Post("/create", CreateNote(q))
 		router.Get("/", GetAllNotesFromUser(q))
-		router.Patch("/{id}", UpdateNote(q))
+		router.Put("/{id}", UpdateNote(q))
 		router.Delete("/{id}", DeleteNote(q))
 	})
 }
