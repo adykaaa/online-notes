@@ -12,19 +12,12 @@ function NoteCard({id, title, text, handleDelete, noteArray, setNoteArray}) {
   const [editedTitle, setEditedTitle] = useState("")
   const [isBeingEdited, setIsBeingEdited] = useState(false)
 
-  const handleUpdate = (id,editedTitle,editedText) => {
+  const handleSave = (id,editedTitle,editedText) => {
     const current = noteArray.filter((note) => note.ID === id)
     current[0].Title = editedTitle
-    console.log(editedTitle)
     current[0].Text.String = editedText
-    console.log(editedText)
 
-  }
-
-  const handleSave = (id,title,text) => {
-    if (title === "" && text === "") return
-
-    axios.put(`http://localhost:8080/notes/${id}`,{ title: title,text: text }, { withCredentials: true })
+    axios.put(`http://localhost:8080/notes/${id}`,{ title: current[0].Title,text: current[0].Text.String }, { withCredentials: true })
     .then(response => {
       if (response.status === 200) {
         ShowToast(toast,"success","Note updated!")
@@ -59,7 +52,6 @@ function NoteCard({id, title, text, handleDelete, noteArray, setNoteArray}) {
           colorScheme='white'
           aria-label='Save changes'
           onClick={()=>{
-            handleUpdate(id,editedTitle,editedText)
             handleSave(id,editedTitle,editedText)
             setIsBeingEdited(false)
           }}

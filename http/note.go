@@ -123,6 +123,11 @@ func UpdateNote(q sqlc.Querier) http.HandlerFunc {
 		l, ctx, cancel := utils.SetupHandler(w, r.Context())
 		defer cancel()
 
+		var (
+			isTitleValid bool = true
+			isTextValid  bool = true
+		)
+
 		reqUUID, err := uuid.Parse(strings.Split(r.URL.Path, "/")[2])
 		if err != nil {
 			l.Error().Err(err).Msgf("Could not convert ID to UUID.")
@@ -142,19 +147,17 @@ func UpdateNote(q sqlc.Querier) http.HandlerFunc {
 			return
 		}
 
-		isTitleEmpty := false
-		isTextEmpty := false
 		if updateRequest.Title == "" {
-			isTitleEmpty = true
+			isTitleValid = false
 		}
 		if updateRequest.Text == "" {
-			isTextEmpty = true
+			isTextValid = false
 		}
 
 		_, err = q.UpdateNote(ctx, &sqlc.UpdateNoteParams{
 			ID:        reqUUID,
-			Title:     sql.NullString{String: updateRequest.Title, Valid: isTitleEmpty},
-			Text:      sql.NullString{String: updateRequest.Text, Valid: isTextEmpty},
+			Title:     sql.NullString{String: updateRequest.Title, Valid: isTitleValid},
+			Text:      sql.NullString{String: updateRequest.Text, Valid: isTextValid},
 			UpdatedAt: sql.NullTime{Time: time.Now(), Valid: true},
 		})
 		if err != nil {
