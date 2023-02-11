@@ -71,7 +71,7 @@ func GetAllNotesFromUser(q sqlc.Querier) http.HandlerFunc {
 
 		username := r.URL.Query().Get("username")
 		if username == "" {
-			l.Error().Msgf("error fetching username, the request parameter seems empty. %s", username)
+			l.Error().Msgf("error fetching username, the request parameter is empty. %s", username)
 			utils.JSON(w, msg{"error": "user not in request params"}, http.StatusInternalServerError)
 			return
 		}
