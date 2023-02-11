@@ -12,13 +12,15 @@ func TestPasetoCreator(t *testing.T) {
 
 	key := utils.NewRandomString(32)
 	uname := utils.NewRandomString(15)
-
 	duration := 30 * time.Second
-	issuedAt := time.Now()
-	expiresAt := issuedAt.Add(duration)
-
 	pc, err := NewPasetoCreator(key)
 	require.NoError(t, err)
+
+	t.Run("fails because of invalid key length", func(t *testing.T) {
+		pc, err := NewPasetoCreator("wrongkeylength")
+		require.Error(t, err)
+		require.Nil(t, pc)
+	})
 
 	t.Run("tokenCreation and verification OK", func(t *testing.T) {
 		token, payload, err := pc.CreateToken(uname, duration)
@@ -32,8 +34,9 @@ func TestPasetoCreator(t *testing.T) {
 	})
 
 	t.Run("fails with invalid token", func(t *testing.T) {
-		_, err := pc.VerifyToken("invalidtoken")
+		token, err := pc.VerifyToken("invalidtoken")
 		require.ErrorIs(t, err, ErrTokenInvalid)
+		require.Nil(t, err, token)
 	})
 
 	t.Run("fails with expired token", func(t *testing.T) {
@@ -42,7 +45,7 @@ func TestPasetoCreator(t *testing.T) {
 		require.NotEmpty(t, token)
 		retToken, err := pc.VerifyToken(token)
 		require.ErrorIs(t, err, ErrTokenExpired)
-		require.Nil(t, err, retToken)
+		require.Nil(t, retToken)
 	})
 
 }

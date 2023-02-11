@@ -71,11 +71,11 @@ func (c *PasetoCreator) VerifyToken(token string) (*PasetoPayload, error) {
 
 	err := c.paseto.Decrypt(token, c.symmetricKey, payload, nil)
 	if err != nil {
-		return nil, fmt.Errorf("the PASETO is invalid. %v", ErrTokenInvalid)
+		return nil, ErrTokenInvalid
 	}
 
 	if time.Now().After(payload.ExpiresAt) {
-		return nil, fmt.Errorf("the PASETO has expired %v", ErrTokenExpired)
+		return nil, ErrTokenExpired
 	}
 
 	return payload, nil
