@@ -5,6 +5,7 @@ import ShowToast from './Toast'
 import { UserContext } from "./UserContext";
 import NoteCard from './Note';
 import ProSidebar from './Sidebar';
+import { NoteContext } from "./NoteContext";
 
 function ViewNotes() {
     const toast = useToast()
@@ -12,7 +13,7 @@ function ViewNotes() {
     const { user } = useContext(UserContext)
     const [searchText,setSearchText] = useState('')
 
-    
+
     const handleSearchTextChange = (e) => {
       setSearchText(e.target.value)
   }
@@ -29,30 +30,6 @@ function ViewNotes() {
       .catch(function () {
         ShowToast(toast,"error","Error deleting note, please try again!")
     })}
-
-    const handleSave = (id,title,text) => {
-      axios.put(`http://localhost:8080/notes/${id}`,{ username: user, title: title, text: text }, { withCredentials: true })
-      .then(response => {
-        if (response.status === 200) {
-          ShowToast(toast,"success","Note updated!")
-        }
-        else {
-          ShowToast(toast,"error","Error updating note, please try again!")
-          return
-        }})
-        .catch(function () {
-          ShowToast(toast,"error","Error updating note, please try again!")
-          return
-        })
-    }
-
-    const handleUpdate = (id,editedTitle,editedText) => {
-      const current = notes.filter((note) => note.ID === id)
-      current[0].Title = editedTitle
-      current[0].Text.String = editedText
-    }
-
-
 
     useEffect(() => {
         axios.get('http://localhost:8080/notes',
@@ -91,7 +68,7 @@ function ViewNotes() {
         {notes
         .filter((note)=>note.Text.String.toLowerCase().includes(searchText.toLowerCase()) || note.Title.toLowerCase().includes(searchText.toLowerCase()))
         .map((note) => (
-          <NoteCard id={note.ID} title={note.Title} text={note.Text.String} handleDelete={()=>handleDelete(note.ID)} handleUpdate={()=>handleUpdate(note.ID)} handleSave={()=>handleSave(note.ID)}/>
+          <NoteCard id={note.ID} title={note.Title} text={note.Text.String} handleDelete={()=>handleDelete(note.ID)} noteArray={notes} setNoteArray={setNotes}/>
         ))}
         </SimpleGrid>
       </Container>

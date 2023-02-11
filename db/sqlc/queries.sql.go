@@ -175,20 +175,27 @@ const updateNote = `-- name: UpdateNote :one
 UPDATE notes
 SET
   title = COALESCE($2, title),
-  text = COALESCE($3, text)
+  text = COALESCE($3, text),
+  updated_at = COALESCE($4, updated_at)
 WHERE
   id = $1
 RETURNING id, title, username, text, created_at, updated_at
 `
 
 type UpdateNoteParams struct {
-	ID    uuid.UUID
-	Title sql.NullString
-	Text  sql.NullString
+	ID        uuid.UUID
+	Title     sql.NullString
+	Text      sql.NullString
+	UpdatedAt sql.NullTime
 }
 
 func (q *Queries) UpdateNote(ctx context.Context, arg *UpdateNoteParams) (Note, error) {
-	row := q.db.QueryRowContext(ctx, updateNote, arg.ID, arg.Title, arg.Text)
+	row := q.db.QueryRowContext(ctx, updateNote,
+		arg.ID,
+		arg.Title,
+		arg.Text,
+		arg.UpdatedAt,
+	)
 	var i Note
 	err := row.Scan(
 		&i.ID,

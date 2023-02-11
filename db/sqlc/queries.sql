@@ -27,7 +27,8 @@ RETURNING *;
 UPDATE notes
 SET
   title = COALESCE(sqlc.narg(title), title),
-  text = COALESCE(sqlc.narg(text), text)
+  text = COALESCE(sqlc.narg(text), text),
+  updated_at = COALESCE(sqlc.narg(updated_at), updated_at)
 WHERE
   id = $1
 RETURNING *;

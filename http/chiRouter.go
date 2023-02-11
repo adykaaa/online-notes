@@ -10,6 +10,8 @@ import (
 	"github.com/rs/zerolog"
 )
 
+type msg map[string]string
+
 func RegisterChiMiddlewares(r *chi.Mux, logger *zerolog.Logger) {
 	// Request logger has middleware.Recoverer and RequestID baked into it.
 	r.Use(render.SetContentType(render.ContentTypeJSON),

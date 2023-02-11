@@ -1,12 +1,43 @@
 import { useState } from 'react'
-import { Card, CardHeader, CardBody, CardFooter,IconButton,Heading,Text, Textarea } from '@chakra-ui/react'
+import { Card, CardHeader, CardBody, CardFooter,IconButton,Heading,Text, Textarea, useToast} from '@chakra-ui/react'
 import { CloseIcon, EditIcon, CheckIcon } from '@chakra-ui/icons'
+import ShowToast from './Toast'
+import axios from 'axios';
+import ViewNotes from './ViewNotes';
 
-function NoteCard({id, title, text, handleDelete, handleUpdate, handleSave}) {
+function NoteCard({id, title, text, handleDelete, noteArray, setNoteArray}) {
 
+  const toast = useToast()
   const [editedText, setEditedText] = useState("")
   const [editedTitle, setEditedTitle] = useState("")
   const [isBeingEdited, setIsBeingEdited] = useState(false)
+
+  const handleUpdate = (id,editedTitle,editedText) => {
+    const current = noteArray.filter((note) => note.ID === id)
+    current[0].Title = editedTitle
+    console.log(editedTitle)
+    current[0].Text.String = editedText
+    console.log(editedText)
+
+  }
+
+  const handleSave = (id,title,text) => {
+    if (title === "" && text === "") return
+
+    axios.put(`http://localhost:8080/notes/${id}`,{ title: title,text: text }, { withCredentials: true })
+    .then(response => {
+      if (response.status === 200) {
+        ShowToast(toast,"success","Note updated!")
+      }
+      else {
+        ShowToast(toast,"error","Error updating note, please try again!")
+        return
+      }})
+      .catch(function () {
+        ShowToast(toast,"error","Error updating note, please try again!")
+        return
+      })
+  }
 
   return (
     <Card align-self="center" background="white" maxW="350px" maxH="350px" borderRadius="md" boxShadow="box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px" border="solid #03e9f4">
@@ -21,7 +52,6 @@ function NoteCard({id, title, text, handleDelete, handleUpdate, handleSave}) {
           colorScheme='white'
           aria-label='Update note'
           onClick={()=> {
-            handleUpdate(id,editedTitle,editedText)
             setIsBeingEdited((state)=>!state)}
           }
           icon={<EditIcon alignSelf="left" color="blue"/>}/>
@@ -29,6 +59,7 @@ function NoteCard({id, title, text, handleDelete, handleUpdate, handleSave}) {
           colorScheme='white'
           aria-label='Save changes'
           onClick={()=>{
+            handleUpdate(id,editedTitle,editedText)
             handleSave(id,editedTitle,editedText)
             setIsBeingEdited(false)
           }}

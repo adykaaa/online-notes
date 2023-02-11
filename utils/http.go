@@ -9,7 +9,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func JSONresponse(w http.ResponseWriter, payload interface{}, code int) {
+func JSON(w http.ResponseWriter, payload interface{}, code int) {
 	response, err := json.Marshal(payload)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
