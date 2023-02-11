@@ -68,7 +68,7 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 
 }
 
-func LoginUser(q sqlc.Querier, c *PasetoCreator) http.HandlerFunc {
+func LoginUser(q sqlc.Querier, c *PasetoCreator, tokenDuration time.Duration) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := utils.SetupHandler(w, r.Context())
 		defer cancel()
@@ -100,7 +100,7 @@ func LoginUser(q sqlc.Querier, c *PasetoCreator) http.HandlerFunc {
 			return
 		}
 
-		token, payload, err := c.CreateToken(user.Username)
+		token, payload, err := c.CreateToken(user.Username, tokenDuration)
 		if err != nil {
 			l.Info().Err(err).Msgf("Could not create PASETO for user. %v", err)
 			utils.JSON(w, msg{"error": "internal server error while creating the token"}, http.StatusInternalServerError)

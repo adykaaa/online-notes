@@ -28,7 +28,7 @@ func main() {
 		logger.Fatal().Err(err).Send()
 	}
 
-	router, err := http.NewChiRouter(sqldb, config.PASETOSecret, &logger)
+	router, err := http.NewChiRouter(sqldb, config.PASETOSecret, config.AccessTokenDuration, &logger)
 	if err != nil {
 		logger.Fatal().Err(err).Send()
 	}

@@ -17,13 +17,12 @@ var (
 
 type PasetoPayload struct {
 	ID        uuid.UUID `json:"id"`
-	Paseto    string    `json:"paseto"`
 	Username  string    `json:"username"`
 	IssuedAt  time.Time `json:"issuedAt"`
 	ExpiresAt time.Time `json:"expiresAt"`
 }
 
-func NewPasetoPayload(username string) (*PasetoPayload, error) {
+func NewPasetoPayload(username string, duration time.Duration) (*PasetoPayload, error) {
 	tokenID, err := uuid.NewRandom()
 	if err != nil {
 		fmt.Errorf("Could not generate a random token ID! %v", err)
@@ -34,7 +33,7 @@ func NewPasetoPayload(username string) (*PasetoPayload, error) {
 		ID:        tokenID,
 		Username:  username,
 		IssuedAt:  time.Now(),
-		ExpiresAt: time.Now().Add(30 * time.Minute),
+		ExpiresAt: time.Now().Add(duration * time.Second),
 	}
 
 	return payload, nil
@@ -50,15 +49,15 @@ func NewPasetoCreator(symmetricKey string) (*PasetoCreator, error) {
 		return nil, fmt.Errorf("invalid key size, must be %d bytes", chacha20poly1305.KeySize)
 	}
 
-	paseto := &PasetoCreator{
+	pc := &PasetoCreator{
 		symmetricKey: []byte(symmetricKey),
 		paseto:       paseto.NewV2(),
 	}
-	return paseto, nil
+	return pc, nil
 }
 
-func (c *PasetoCreator) CreateToken(username string) (string, *PasetoPayload, error) {
-	payload, err := NewPasetoPayload(username)
+func (c *PasetoCreator) CreateToken(username string, duration time.Duration) (string, *PasetoPayload, error) {
+	payload, err := NewPasetoPayload(username, duration)
 	if err != nil {
 		return "", payload, err
 	}
