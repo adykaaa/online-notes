@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TODO: test not happy cases as well, transform to table-driven tests
+// TODO: test not happy cases as well, transform to table-driven tests, etc.
 func TestDBMethods(t *testing.T) {
 
 	ctx := context.Background()
