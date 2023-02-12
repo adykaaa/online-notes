@@ -17,12 +17,6 @@ func TestPasetoCreator(t *testing.T) {
 
 	require.NoError(t, err)
 
-	t.Run("fails because of invalid key length", func(t *testing.T) {
-		pc, err := NewPasetoCreator("wrongkeylength")
-		require.Error(t, err)
-		require.Nil(t, pc)
-	})
-
 	t.Run("tokenCreation and verification OK", func(t *testing.T) {
 		token, payload, err := pc.CreateToken(uname, duration)
 
@@ -33,6 +27,12 @@ func TestPasetoCreator(t *testing.T) {
 		payload, err = pc.VerifyToken(token)
 		require.NoError(t, err)
 		require.Equal(t, payload.Username, uname)
+	})
+
+	t.Run("fails because of invalid key length", func(t *testing.T) {
+		pc, err := NewPasetoCreator("wrongkeylength")
+		require.Error(t, err)
+		require.Nil(t, pc)
 	})
 
 	t.Run("fails with invalid token", func(t *testing.T) {
