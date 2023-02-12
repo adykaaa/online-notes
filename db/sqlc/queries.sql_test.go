@@ -66,15 +66,15 @@ func TestDBMethods(t *testing.T) {
 		updatedAt := time.Date(2021, 8, 15, 14, 30, 45, 100, time.Local)
 		args := &db.UpdateNoteParams{
 			ID:        id,
-			Title:     sql.NullString{"updated title", true},
-			Text:      sql.NullString{"updated text", true},
-			UpdatedAt: sql.NullTime{updatedAt, true},
+			Title:     sql.NullString{String: "updated title", Valid: true},
+			Text:      sql.NullString{String: "updated text", Valid: true},
+			UpdatedAt: sql.NullTime{Time: updatedAt, Valid: true},
 		}
 
 		mockdb.EXPECT().UpdateNote(ctx, args).Return(db.Note{
 			ID:        id,
 			Title:     "updated title",
-			Text:      sql.NullString{"updated text", true},
+			Text:      sql.NullString{String: "updated text", Valid: true},
 			UpdatedAt: updatedAt,
 		}, nil)
 
