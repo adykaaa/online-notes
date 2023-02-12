@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO: test not happy cases as well, transform to table-driven tests
 func TestDBMethods(t *testing.T) {
 
 	ctx := context.Background()
@@ -30,7 +31,6 @@ func TestDBMethods(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockdb := mockdb.NewMockQuerier(ctrl)
 
-	//TODO: test not happy cases as well, transform to table-driven tests
 	t.Run("CreateNote OK", func(t *testing.T) {
 		args := db.CreateNoteParams{
 			ID:        id,
@@ -71,7 +71,7 @@ func TestDBMethods(t *testing.T) {
 			UpdatedAt: sql.NullTime{updatedAt, true},
 		}
 
-		mockdb.EXPECT().UpdateNote(ctx, &args).Return(db.Note{
+		mockdb.EXPECT().UpdateNote(ctx, args).Return(db.Note{
 			ID:        id,
 			Title:     "updated title",
 			Text:      sql.NullString{"updated text", true},
@@ -79,7 +79,10 @@ func TestDBMethods(t *testing.T) {
 		}, nil)
 
 		retNote, err := mockdb.UpdateNote(ctx, args)
-
+		require.NoError(t, err)
+		require.Equal(t, args.ID, retNote.ID)
+		require.Equal(t, args.Title.String, retNote.Title)
+		require.Equal(t, args.Text.String, retNote.Text.String)
 	})
 	t.Run("DeleteNote OK", func(t *testing.T) {
 
