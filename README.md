@@ -2,7 +2,7 @@
 
 This project aims to be the most over-engineered fullstack note-taking application, using React for frontend and Go for backend.
 
-![]https://github.com/adykaaa/online-notes/blob/main/web/public/onlinenotes.gif
+![](https://github.com/adykaaa/online-notes/blob/main/web/public/onlinenotes.gif)
 
 ## Over-engineered, how? you ask
 The domain logic is pretty simple. A user can create notes, update them, and delete them, nothing to ride home about. The aim of this whole project is to showcase (and learn) how to:
