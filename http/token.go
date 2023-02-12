@@ -13,6 +13,7 @@ import (
 var (
 	ErrTokenExpired = errors.New("the PASETO has expired")
 	ErrTokenInvalid = errors.New("the PASETO is not valid")
+	ErrTokenMissing = errors.New("the PASETO is missing")
 )
 
 type PasetoPayload struct {
@@ -67,6 +68,10 @@ func (c *PasetoCreator) CreateToken(username string, duration time.Duration) (st
 }
 
 func (c *PasetoCreator) VerifyToken(token string) (*PasetoPayload, error) {
+	if token == "" {
+		return nil, ErrTokenMissing
+	}
+
 	payload := &PasetoPayload{}
 
 	err := c.paseto.Decrypt(token, c.symmetricKey, payload, nil)

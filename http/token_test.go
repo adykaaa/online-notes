@@ -41,6 +41,12 @@ func TestPasetoCreator(t *testing.T) {
 		require.Nil(t, payload)
 	})
 
+	t.Run("fails with missing token", func(t *testing.T) {
+		payload, err := pc.VerifyToken("")
+		require.ErrorIs(t, err, ErrTokenMissing)
+		require.Nil(t, payload)
+	})
+
 	t.Run("fails with expired token", func(t *testing.T) {
 		token, _, err := pc.CreateToken(uname, 0)
 		require.NoError(t, err)
