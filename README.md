@@ -6,9 +6,10 @@ This project aims to be the most over-engineered fullstack note-taking applicati
 
 ## Over-engineered, how? you ask
 The domain logic is pretty simple. A user can create notes, update them, and delete them, nothing to ride home about. The aim of this whole project is to showcase (and learn) how to:
+- on the frontend side, how to do user state management using useContext, how to use some basic React hooks and Chakra UI
 - do unit testing, and integration testing in Go (TBD)
 - use Chi as a router
-- use SQLC for database operations
+- use SQLC for database operations (best tool ever, honestly)
 - gomock for generating cool mocks
 - PASETO user authentication using secure and HTTP-only Cookies
 - use docker-compose to stand the whole dev environment up
