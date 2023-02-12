@@ -62,19 +62,6 @@ func (q *Queries) DeleteNote(ctx context.Context, id uuid.UUID) (uuid.UUID, erro
 	return id, err
 }
 
-const deleteUser = `-- name: DeleteUser :one
-DELETE
-FROM users
-WHERE username = $1
-RETURNING username
-`
-
-func (q *Queries) DeleteUser(ctx context.Context, username string) (string, error) {
-	row := q.db.QueryRowContext(ctx, deleteUser, username)
-	err := row.Scan(&username)
-	return username, err
-}
-
 const getAllNotesFromUser = `-- name: GetAllNotesFromUser :many
 SELECT id, title, username, text, created_at, updated_at
 FROM notes

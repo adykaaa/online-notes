@@ -12,12 +12,6 @@ ORDER BY username;
 SELECT * FROM users
 WHERE username = $1;
 
--- name: DeleteUser :one
-DELETE
-FROM users
-WHERE username = $1
-RETURNING username;
-
 -- name: CreateNote :one
 INSERT INTO notes (id, title, username, text, created_at, updated_at)
 VALUES ($1,$2,$3,$4,$5,$6)

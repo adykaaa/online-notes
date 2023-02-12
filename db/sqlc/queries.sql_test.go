@@ -15,8 +15,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-//TODO: test UpdateNote
-
 func TestDBMethods(t *testing.T) {
 
 	ctx := context.Background()
@@ -32,10 +30,9 @@ func TestDBMethods(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockdb := mockdb.NewMockQuerier(ctrl)
 
-	//TODO: test not happy cases as well
+	//TODO: test not happy cases as well, transform to table-driven tests
 	t.Run("CreateNote OK", func(t *testing.T) {
-
-		n := db.Note{
+		args := db.CreateNoteParams{
 			ID:        id,
 			Title:     randTitle,
 			Username:  randUsername,
@@ -44,7 +41,7 @@ func TestDBMethods(t *testing.T) {
 			UpdatedAt: randUpdatedAt,
 		}
 
-		args := db.CreateNoteParams{
+		n := db.Note{
 			ID:        id,
 			Title:     randTitle,
 			Username:  randUsername,
@@ -64,6 +61,24 @@ func TestDBMethods(t *testing.T) {
 		assert.Equal(t, args.Text, retNote.Text)
 		assert.Equal(t, args.CreatedAt, retNote.CreatedAt)
 		assert.Equal(t, args.UpdatedAt, retNote.UpdatedAt)
+	})
+	t.Run("UpdateNote OK", func(t *testing.T) {
+		updatedAt := time.Date(2021, 8, 15, 14, 30, 45, 100, time.Local)
+		args := &db.UpdateNoteParams{
+			ID:        id,
+			Title:     sql.NullString{"updated title", true},
+			Text:      sql.NullString{"updated text", true},
+			UpdatedAt: sql.NullTime{updatedAt, true},
+		}
+
+		mockdb.EXPECT().UpdateNote(ctx, &args).Return(db.Note{
+			ID:        id,
+			Title:     "updated title",
+			Text:      sql.NullString{"updated text", true},
+			UpdatedAt: updatedAt,
+		}, nil)
+
+		retNote, err := mockdb.UpdateNote(ctx, args)
 
 	})
 	t.Run("DeleteNote OK", func(t *testing.T) {
@@ -105,12 +120,5 @@ func TestDBMethods(t *testing.T) {
 		user, err := mockdb.RegisterUser(ctx, &args)
 		require.NoError(t, err)
 		require.Equal(t, user, args.Username)
-	})
-	t.Run("DeleteUser OK", func(t *testing.T) {
-
-		mockdb.EXPECT().DeleteUser(ctx, randUsername).Return(randUsername, nil)
-		username, err := mockdb.DeleteUser(ctx, randUsername)
-		require.NoError(t, err)
-		require.Equal(t, username, randUsername)
 	})
 }

@@ -66,21 +66,6 @@ func (mr *MockQuerierMockRecorder) DeleteNote(arg0, arg1 interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNote", reflect.TypeOf((*MockQuerier)(nil).DeleteNote), arg0, arg1)
 }
 
-// DeleteUser mocks base method.
-func (m *MockQuerier) DeleteUser(arg0 context.Context, arg1 string) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteUser", arg0, arg1)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// DeleteUser indicates an expected call of DeleteUser.
-func (mr *MockQuerierMockRecorder) DeleteUser(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockQuerier)(nil).DeleteUser), arg0, arg1)
-}
-
 // GetAllNotesFromUser mocks base method.
 func (m *MockQuerier) GetAllNotesFromUser(arg0 context.Context, arg1 string) ([]db.Note, error) {
 	m.ctrl.T.Helper()
