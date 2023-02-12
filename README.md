@@ -1,19 +1,29 @@
 ## Online NoteZ!
 
-A full-stack application that will be built up from scratch using Go for the backend, and React for the frontend. It's still a WIP.
+This project aims to be the most over-engineered fullstack note-taking application, using React for frontend and Go for backend.
 
-Plans:
-- auth handled via PASETOs in HTTP only cookies
-- frontend to be done with ChakraUI
-- app will be a monolith (with 1 Postgre DB)
-- logging with Zerolog cuz it's fast and supports JSON
-- HTTP backend will use Chi as it's really close to the stdlib, and route grouping honestly rocks
-- I'll implement unit testing as I go along (I'm working in a way that's similar to TDD, but sometimes I get lazy)
-- Integration testing will deffo be there
-- Caching with Redis
-- Notes to PDF feature -> will be done with RabbitMQ for adding some event-driven madness
-- OpenTelemetry will be implemented for sure.
-- I'll forward logs to Elastisearch just for fun
-- the whole app's CI will be done with GHA, and I'll deploy it to K8s
+# Over-engineered, how? you ask
+The domain logic is pretty simple. A user can create notes, update them, and delete them, nothing to ride home about. The aim of this whole project is to showcase (and learn) how to:
+- do unit testing, and integration testing in Go (TBD)
+- use Chi as a router
+- use SQLC for database operations
+- gomock for generating cool mocks
+- PASETO user authentication using secure and HTTP-only Cookies
+- use docker-compose to stand the whole dev environment up
+- use custom middlewares (for logging, authentication, etc.)
+- use Viper for configuration management
+- use Zerolog for logging, that's being passed around in the request context
+and many more. 
 
-REALLY REALLY future plan: make it cloud native, mostly using Lambda functions, RDS, and an API gateway
+I am NOT stating these are the most idiomatic ways of doing things, and everything in this repo is subject to change.
+
+# Plans
+
+So basically after the "base" is done, where a user can register, login, create/delete/update notes - with all unit tests, I'm planning to:
+- add a "Chat" feature using websockets and Redis
+- add backend caching using Redis
+- use opentracing and opentelemetry
+- deploy everything into a local K8s cluster
+- stand up Elastisearch and Kibana for searching through the logs
+- migrate everything to AWS serverless, and document the whole journey
+

@@ -5,7 +5,6 @@ import ShowToast from './Toast'
 import { UserContext } from "./UserContext";
 import NoteCard from './Note';
 import ProSidebar from './Sidebar';
-import { NoteContext } from "./NoteContext";
 
 function ViewNotes() {
     const toast = useToast()
