@@ -2,6 +2,8 @@ package http
 
 import (
 	"context"
+	"encoding/json"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -24,7 +26,7 @@ func TestRegisterUser(t *testing.T) {
 		body          *models.User
 		validateJSON  func(v *validator.Validate, body *models.User)
 		dbmock        func(mockdb *mockdb.MockQuerier, body *models.User)
-		checkResponse func(recoder *httptest.ResponseRecorder)
+		checkResponse func(user *models.User, path string)
 	}{
 		{
 			name: "User registration OK",
@@ -46,19 +48,27 @@ func TestRegisterUser(t *testing.T) {
 					Password: body.Password,
 					Email:    body.Email,
 				}
-
-				mockdb.EXPECT().RegisterUser(ctx, &args).Return(args.Username, nil)
-				user, err := mockdb.RegisterUser(ctx, &args)
-				require.NoError(t, err)
-				require.Equal(t, user, args.Username)
+				mockdb.EXPECT().RegisterUser(ctx, &args).Times(1).Return(args.Username, nil)
 			},
-			checkResponse: func(recoder *httptest.ResponseRecorder) {
+
+			checkResponse: func(user *models.User, path string) {
+
+				b, err := json.Marshal(user)
+				require.NoError(t, err)
+
+				req := httptest.NewRequest(http.MethodPost, "/register", b)
+				res := httptest.NewRecorder()
+				RegisterUser(req, res)
+
 			},
 		},
 	}
-	for c := range testCases {
 
-		testCases[c].validateJSON(jsonValidator, testCases[c].body)
+	for c := range testCases {
+		tc := testCases[c]
+
+		tc.validateJSON(jsonValidator, tc.body)
+		tc.dbmock(dbmock, tc.body)
 
 	}
 
