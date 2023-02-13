@@ -33,15 +33,5 @@ func NewRandomDBNote(id uuid.UUID) *db.Note {
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-
 	return &note
-}
-
-func NewRandomDBUser(username string, password string, email string) *db.User {
-	u := db.User{
-		Username: username,
-		Password: password,
-		Email:    email,
-	}
-	return &u
 }
