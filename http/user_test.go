@@ -1,7 +1,7 @@
 package http
 
 import (
-	"context"
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -10,6 +10,7 @@ import (
 	mockdb "github.com/adykaaa/online-notes/db/mock"
 	db "github.com/adykaaa/online-notes/db/sqlc"
 	models "github.com/adykaaa/online-notes/http/models"
+	"github.com/adykaaa/online-notes/utils"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
@@ -19,14 +20,14 @@ func TestRegisterUser(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	dbmock := mockdb.NewMockQuerier(ctrl)
 	jsonValidator := validator.New()
-	ctx := context.Background()
 
 	testCases := []struct {
 		name          string
 		body          *models.User
-		validateJSON  func(v *validator.Validate, body *models.User)
-		dbmock        func(mockdb *mockdb.MockQuerier, body *models.User)
-		checkResponse func(user *models.User, path string)
+		validateJSON  func(v *validator.Validate, user *models.User)
+		hashPassword  func(user *models.User) string
+		dbmock        func(mockdb *mockdb.MockQuerier, user *models.User, hashedPassword string)
+		checkResponse func(recorder *httptest.ResponseRecorder, request *http.Request)
 	}{
 		{
 			name: "User registration OK",
@@ -37,29 +38,28 @@ func TestRegisterUser(t *testing.T) {
 				Email:    "user1@user.com",
 			},
 
-			validateJSON: func(v *validator.Validate, body *models.User) {
-				err := v.Struct(body)
+			validateJSON: func(v *validator.Validate, user *models.User) {
+				err := v.Struct(user)
 				require.NoError(t, err)
 			},
 
-			dbmock: func(mockdb *mockdb.MockQuerier, body *models.User) {
+			hashPassword: func(user *models.User) string {
+				hp, err := utils.HashPassword(user.Password)
+				require.NoError(t, err)
+				return hp
+			},
+
+			dbmock: func(mockdb *mockdb.MockQuerier, user *models.User, hashedPassword string) {
 				args := db.RegisterUserParams{
-					Username: body.Username,
-					Password: body.Password,
-					Email:    body.Email,
+					Username: user.Username,
+					Password: hashedPassword,
+					Email:    user.Email,
 				}
-				mockdb.EXPECT().RegisterUser(ctx, &args).Times(1).Return(args.Username, nil)
+				mockdb.EXPECT().RegisterUser(gomock.Any(), &args).Times(1).Return(args.Username, nil)
 			},
 
-			checkResponse: func(user *models.User, path string) {
-
-				b, err := json.Marshal(user)
-				require.NoError(t, err)
-
-				req := httptest.NewRequest(http.MethodPost, "/register", b)
-				res := httptest.NewRecorder()
-				RegisterUser(req, res)
-
+			checkResponse: func(recorder *httptest.ResponseRecorder, request *http.Request) {
+				require.Equal(t, recorder.Code, http.StatusCreated)
 			},
 		},
 	}
@@ -68,8 +68,19 @@ func TestRegisterUser(t *testing.T) {
 		tc := testCases[c]
 
 		tc.validateJSON(jsonValidator, tc.body)
-		tc.dbmock(dbmock, tc.body)
+		hp := tc.hashPassword(tc.body)
+		tc.dbmock(dbmock, tc.body, hp)
 
+		b, err := json.Marshal(tc.body)
+		require.NoError(t, err)
+
+		rec := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodPost, "/register", bytes.NewReader(b))
+
+		handler := RegisterUser(dbmock)
+		handler(rec, req)
+
+		tc.checkResponse(rec, req)
 	}
 
 }
