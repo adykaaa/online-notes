@@ -1,4 +1,4 @@
-package utils
+package random
 
 import (
 	"database/sql"
@@ -12,7 +12,7 @@ import (
 
 const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
-func NewRandomString(n int) string {
+func NewString(n int) string {
 	var sb strings.Builder
 	k := len(chars)
 
@@ -24,12 +24,12 @@ func NewRandomString(n int) string {
 	return sb.String()
 }
 
-func NewRandomDBNote(id uuid.UUID) *db.Note {
+func NewDBNote(id uuid.UUID) *db.Note {
 	note := db.Note{
 		ID:        id,
-		Title:     NewRandomString(15),
-		Username:  NewRandomString(10),
-		Text:      sql.NullString{String: NewRandomString(60), Valid: true},
+		Title:     NewString(15),
+		Username:  NewString(10),
+		Text:      sql.NullString{String: NewString(60), Valid: true},
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}

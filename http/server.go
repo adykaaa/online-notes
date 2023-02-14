@@ -19,7 +19,7 @@ type Server struct {
 	shutdownTimeout time.Duration
 }
 
-func NewServer(handler http.Handler, addr string, logger *zerolog.Logger) (*Server, error) {
+func NewServer(handler http.Handler, addr string, l *zerolog.Logger) (*Server, error) {
 
 	s := &Server{
 		server: &http.Server{
@@ -28,7 +28,7 @@ func NewServer(handler http.Handler, addr string, logger *zerolog.Logger) (*Serv
 		},
 		notify:          make(chan error, 1),
 		shutdownTimeout: 5 * time.Second,
-		logger:          logger,
+		logger:          l,
 	}
 
 	if addr == "" {

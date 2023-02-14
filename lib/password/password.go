@@ -1,4 +1,4 @@
-package utils
+package password
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func HashPassword(password string) (string, error) {
+func Hash(password string) (string, error) {
 	if len(password) < 5 {
 		return "", fmt.Errorf("password cannot be less than 5 chars long")
 	}
@@ -18,7 +18,7 @@ func HashPassword(password string) (string, error) {
 	return string(hash), nil
 }
 
-func ValidatePassword(hashedPassword string, password string) error {
+func Validate(hashedPassword string, password string) error {
 	if len(password) < 5 {
 		return fmt.Errorf("password cannot be less than 5 chars long")
 	}

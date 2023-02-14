@@ -10,7 +10,7 @@ import (
 	mockdb "github.com/adykaaa/online-notes/db/mock"
 	db "github.com/adykaaa/online-notes/db/sqlc"
 	models "github.com/adykaaa/online-notes/http/models"
-	"github.com/adykaaa/online-notes/utils"
+	"github.com/adykaaa/online-notes/lib/password"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
@@ -25,7 +25,6 @@ func TestRegisterUser(t *testing.T) {
 		name          string
 		body          *models.User
 		validateJSON  func(v *validator.Validate, user *models.User)
-		hashPassword  func(user *models.User) string
 		dbmock        func(mockdb *mockdb.MockQuerier, user *models.User, hashedPassword string)
 		checkResponse func(recorder *httptest.ResponseRecorder, request *http.Request)
 	}{
@@ -41,12 +40,6 @@ func TestRegisterUser(t *testing.T) {
 			validateJSON: func(v *validator.Validate, user *models.User) {
 				err := v.Struct(user)
 				require.NoError(t, err)
-			},
-
-			hashPassword: func(user *models.User) string {
-				hp, err := utils.HashPassword(user.Password)
-				require.NoError(t, err)
-				return hp
 			},
 
 			dbmock: func(mockdb *mockdb.MockQuerier, user *models.User, hashedPassword string) {
@@ -67,20 +60,25 @@ func TestRegisterUser(t *testing.T) {
 	for c := range testCases {
 		tc := testCases[c]
 
-		tc.validateJSON(jsonValidator, tc.body)
-		hp := tc.hashPassword(tc.body)
-		tc.dbmock(dbmock, tc.body, hp)
+		t.Run(tc.name, func(t *testing.T) {
+			tc.validateJSON(jsonValidator, tc.body)
+			hp, err := password.Hash(tc.body.Password)
+			require.NoError(t, err)
 
-		b, err := json.Marshal(tc.body)
-		require.NoError(t, err)
+			require.NoError(t, err)
+			tc.dbmock(dbmock, tc.body, hp)
 
-		rec := httptest.NewRecorder()
-		req := httptest.NewRequest(http.MethodPost, "/register", bytes.NewReader(b))
+			b, err := json.Marshal(tc.body)
+			require.NoError(t, err)
 
-		handler := RegisterUser(dbmock)
-		handler(rec, req)
+			rec := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodPost, "/register", bytes.NewReader(b))
 
-		tc.checkResponse(rec, req)
+			handler := RegisterUser(dbmock)
+			handler(rec, req)
+
+			tc.checkResponse(rec, req)
+		})
 	}
 
 }

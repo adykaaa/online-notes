@@ -1,4 +1,4 @@
-package utils
+package logger
 
 import (
 	"os"
@@ -9,7 +9,7 @@ import (
 
 var logger zerolog.Logger
 
-func NewLogger(level string) zerolog.Logger {
+func New(level string) zerolog.Logger {
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 	loglevel, err := zerolog.ParseLevel(level)
 	if err != nil {

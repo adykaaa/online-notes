@@ -8,7 +8,7 @@ import (
 
 	mockdb "github.com/adykaaa/online-notes/db/mock"
 	db "github.com/adykaaa/online-notes/db/sqlc"
-	"github.com/adykaaa/online-notes/utils"
+	"github.com/adykaaa/online-notes/lib/random"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -20,12 +20,12 @@ func TestDBMethods(t *testing.T) {
 
 	ctx := context.Background()
 	id := uuid.New()
-	randTitle := utils.NewRandomString(15)
-	randUsername := utils.NewRandomString(10)
-	randText := sql.NullString{String: utils.NewRandomString(50), Valid: true}
+	randTitle := random.NewString(15)
+	randUsername := random.NewString(10)
+	randText := sql.NullString{String: random.NewString(50), Valid: true}
 	randCreatedAt := time.Now()
 	randUpdatedAt := time.Now()
-	randPassword := utils.NewRandomString(15)
+	randPassword := random.NewString(15)
 	randEmail := "random@random.com"
 
 	ctrl := gomock.NewController(t)
@@ -95,8 +95,8 @@ func TestDBMethods(t *testing.T) {
 	})
 	t.Run("GetAllNotesFromUser OK", func(t *testing.T) {
 		randomNotes := []db.Note{
-			*utils.NewRandomDBNote(id),
-			*utils.NewRandomDBNote(id),
+			*random.NewDBNote(id),
+			*random.NewDBNote(id),
 		}
 
 		randomNotes[0].Username = randomNotes[1].Username

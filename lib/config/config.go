@@ -1,4 +1,4 @@
-package utils
+package config
 
 import (
 	"fmt"
@@ -18,7 +18,7 @@ type Config struct {
 }
 
 // LoadConfig reads configuration from file or environment variables.
-func LoadConfig(path string) (config Config, err error) {
+func Load(path string) (config Config, err error) {
 	viper.AddConfigPath(path)
 	viper.SetConfigName("development")
 	viper.SetConfigType("env")

@@ -10,14 +10,15 @@ import (
 
 	sqlc "github.com/adykaaa/online-notes/db/sqlc"
 	models "github.com/adykaaa/online-notes/http/models"
-	"github.com/adykaaa/online-notes/utils"
+	httplib "github.com/adykaaa/online-notes/lib/http"
+	"github.com/adykaaa/online-notes/lib/password"
 	"github.com/go-playground/validator/v10"
 	"github.com/lib/pq"
 )
 
 func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		l, ctx, cancel := utils.SetupHandler(w, r.Context())
+		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
 
 		var user models.User
@@ -25,7 +26,7 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 		err := json.NewDecoder(r.Body).Decode(&user)
 		if err != nil {
 			l.Error().Err(err).Msgf("error decoding the User into JSON during registration. %v", err)
-			utils.JSON(w, msg{"error": "internal error decoding User struct"}, http.StatusInternalServerError)
+			httplib.JSON(w, msg{"error": "internal error decoding User struct"}, http.StatusInternalServerError)
 			return
 		}
 
@@ -33,14 +34,14 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 		err = validate.Struct(&user)
 		if err != nil {
 			l.Error().Err(err).Msgf("error during User struct validation %v", err)
-			utils.JSON(w, msg{"error": "wrongly formatted or missing User parameter"}, http.StatusBadRequest)
+			httplib.JSON(w, msg{"error": "wrongly formatted or missing User parameter"}, http.StatusBadRequest)
 			return
 		}
 
-		hashedPassword, err := utils.HashPassword(user.Password)
+		hashedPassword, err := password.Hash(user.Password)
 		if err != nil {
 			l.Error().Err(err).Msgf("error during password hashing %v", err)
-			utils.JSON(w, msg{"error": "internal error during password hashing"}, http.StatusInternalServerError)
+			httplib.JSON(w, msg{"error": "internal error during password hashing"}, http.StatusInternalServerError)
 			return
 		}
 
@@ -52,17 +53,17 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 		if err != nil {
 			if postgreError, ok := err.(*pq.Error); ok {
 				if postgreError.Code.Name() == "unique_violation" {
-					utils.JSON(w, msg{"error": "username or email already in use"}, http.StatusForbidden)
+					httplib.JSON(w, msg{"error": "username or email already in use"}, http.StatusForbidden)
 					l.Error().Err(err).Msgf("registration failed, username or email already in use for user %s", user.Username)
 					return
 				}
 			}
 			l.Error().Err(err).Msgf("Error during user registration to the DB! %v", err)
-			utils.JSON(w, msg{"error": "internal error during saving the user to the DB"}, http.StatusInternalServerError)
+			httplib.JSON(w, msg{"error": "internal error during saving the user to the DB"}, http.StatusInternalServerError)
 			return
 		}
 
-		utils.JSON(w, msg{"success": "User registration successful!"}, http.StatusCreated)
+		httplib.JSON(w, msg{"success": "User registration successful!"}, http.StatusCreated)
 		l.Info().Msgf("User registration for %s was successful!", uname)
 	}
 
@@ -70,7 +71,7 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 
 func LoginUser(q sqlc.Querier, c *PasetoCreator, tokenDuration time.Duration) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		l, ctx, cancel := utils.SetupHandler(w, r.Context())
+		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
 
 		var userRequest models.User
@@ -78,7 +79,7 @@ func LoginUser(q sqlc.Querier, c *PasetoCreator, tokenDuration time.Duration) ht
 		err := json.NewDecoder(r.Body).Decode(&userRequest)
 		if err != nil {
 			l.Error().Err(err).Msgf("error decoding the User into JSON during registration. %v", err)
-			utils.JSON(w, msg{"error": "internal error decoding User struct"}, http.StatusInternalServerError)
+			httplib.JSON(w, msg{"error": "internal error decoding User struct"}, http.StatusInternalServerError)
 			return
 		}
 
@@ -86,24 +87,24 @@ func LoginUser(q sqlc.Querier, c *PasetoCreator, tokenDuration time.Duration) ht
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				l.Info().Err(err).Msgf("Requested user was not found in the database. %s", userRequest.Username)
-				utils.JSON(w, msg{"error": "User not found!"}, http.StatusNotFound)
+				httplib.JSON(w, msg{"error": "User not found!"}, http.StatusNotFound)
 				return
 			}
-			utils.JSON(w, msg{"error": "interal server error while looking up user in the DB"}, http.StatusInternalServerError)
+			httplib.JSON(w, msg{"error": "interal server error while looking up user in the DB"}, http.StatusInternalServerError)
 			return
 		}
 
-		err = utils.ValidatePassword(user.Password, userRequest.Password)
+		err = password.Validate(user.Password, userRequest.Password)
 		if err != nil {
 			l.Info().Err(err).Msgf("Wrong password was provided for user %s", userRequest.Username)
-			utils.JSON(w, msg{"error": "wrong password was provided"}, http.StatusUnauthorized)
+			httplib.JSON(w, msg{"error": "wrong password was provided"}, http.StatusUnauthorized)
 			return
 		}
 
 		token, payload, err := c.CreateToken(user.Username, tokenDuration)
 		if err != nil {
 			l.Info().Err(err).Msgf("Could not create PASETO for user. %v", err)
-			utils.JSON(w, msg{"error": "internal server error while creating the token"}, http.StatusInternalServerError)
+			httplib.JSON(w, msg{"error": "internal server error while creating the token"}, http.StatusInternalServerError)
 			return
 		}
 
@@ -114,19 +115,19 @@ func LoginUser(q sqlc.Querier, c *PasetoCreator, tokenDuration time.Duration) ht
 			HttpOnly: true,
 			Secure:   true,
 		})
-		utils.JSON(w, msg{"success": "login successful"}, http.StatusOK)
+		httplib.JSON(w, msg{"success": "login successful"}, http.StatusOK)
 		l.Info().Msgf("User login for %s was successful!", user.Username)
 	}
 }
 
 func LogoutUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		l, _, cancel := utils.SetupHandler(w, r.Context())
+		l, _, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
 
 		username, err := io.ReadAll(r.Body)
 		if err != nil {
-			utils.JSON(w, msg{"error": "couldn't decode request body"}, http.StatusInternalServerError)
+			httplib.JSON(w, msg{"error": "couldn't decode request body"}, http.StatusInternalServerError)
 			return
 		}
 
@@ -137,7 +138,7 @@ func LogoutUser() http.HandlerFunc {
 			HttpOnly: true,
 			Secure:   true,
 		})
-		utils.JSON(w, msg{"success": "user successfully logged out"}, http.StatusOK)
+		httplib.JSON(w, msg{"success": "user successfully logged out"}, http.StatusOK)
 		l.Info().Msgf("User logout for %s was successful!", string(username))
 	}
 }

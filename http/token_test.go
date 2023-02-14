@@ -4,14 +4,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/adykaaa/online-notes/utils"
+	"github.com/adykaaa/online-notes/lib/random"
 	"github.com/stretchr/testify/require"
 )
 
 func TestPasetoCreator(t *testing.T) {
 
-	key := utils.NewRandomString(32)
-	uname := utils.NewRandomString(15)
+	key := random.NewString(32)
+	uname := random.NewString(15)
 	duration := 1000 * time.Second
 	pc, err := NewPasetoCreator(key)
 
