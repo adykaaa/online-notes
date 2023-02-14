@@ -7,7 +7,7 @@ import (
 	"github.com/adykaaa/online-notes/db/migrations"
 	"github.com/adykaaa/online-notes/http"
 	"github.com/adykaaa/online-notes/lib/config"
-	logger "github.com/adykaaa/online-notes/lib/log"
+	logger "github.com/adykaaa/online-notes/lib/logger"
 )
 
 func main() {
