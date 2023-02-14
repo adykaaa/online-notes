@@ -22,7 +22,7 @@ type sqlDB struct {
 	connTimeout  time.Duration
 }
 
-func NewSQLdb(driver string, url string, l *zerolog.Logger) (*sqlDB, error) {
+func NewSQL(driver string, url string, l *zerolog.Logger) (*sqlDB, error) {
 	sqlDB := &sqlDB{
 		connAttempts: defaultConnAttempts,
 		connTimeout:  defaultConnTimeout,

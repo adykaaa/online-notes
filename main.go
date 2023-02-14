@@ -19,7 +19,7 @@ func main() {
 
 	l := logger.New(config.LogLevel)
 
-	sqldb, err := db.NewSQLdb("postgres", config.DBConnString, &l)
+	sqldb, err := db.NewSQL("postgres", config.DBConnString, &l)
 	if err != nil {
 		l.Fatal().Err(err).Send()
 	}
