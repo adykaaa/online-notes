@@ -40,6 +40,11 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 
 		hashedPassword, err := password.Hash(user.Password)
 		if err != nil {
+			if errors.Is(err, password.ErrTooShort) {
+				l.Error().Err(err).Msgf("The given password is too short%v", err)
+				httplib.JSON(w, msg{"error": "password is too short"}, http.StatusBadRequest)
+				return
+			}
 			l.Error().Err(err).Msgf("error during password hashing %v", err)
 			httplib.JSON(w, msg{"error": "internal error during password hashing"}, http.StatusInternalServerError)
 			return
