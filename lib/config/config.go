@@ -17,7 +17,7 @@ type Config struct {
 	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
 }
 
-// LoadConfig reads configuration from file or environment variables.
+// Load reads configuration from file or environment variables.
 func Load(path string) (config Config, err error) {
 	viper.AddConfigPath(path)
 	viper.SetConfigName("development")

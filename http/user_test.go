@@ -3,8 +3,10 @@ package http
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 
 	mockdb "github.com/adykaaa/online-notes/db/mock"
@@ -15,6 +17,25 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 )
+
+// needed for the custom mocker.
+type regUserArgs db.RegisterUserParams
+
+func (a *regUserArgs) Matches(x interface{}) bool {
+	reflectedValue := reflect.ValueOf(x).Elem()
+	if a.Username != reflectedValue.FieldByName("Username").String() {
+		return false
+	}
+	if a.Email != reflectedValue.FieldByName("Email").String() {
+		return false
+	}
+
+	return true
+}
+
+func (a *regUserArgs) String() string {
+	return fmt.Sprintf("Username: %s, Email: %s", a.Username, a.Email)
+}
 
 func TestRegisterUser(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -43,7 +64,7 @@ func TestRegisterUser(t *testing.T) {
 			},
 
 			dbmock: func(mockdb *mockdb.MockQuerier, user *models.User, hashedPassword string) {
-				args := db.RegisterUserParams{
+				args := regUserArgs{
 					Username: user.Username,
 					Password: hashedPassword,
 					Email:    user.Email,
@@ -65,7 +86,6 @@ func TestRegisterUser(t *testing.T) {
 			hp, err := password.Hash(tc.body.Password)
 			require.NoError(t, err)
 
-			require.NoError(t, err)
 			tc.dbmock(dbmock, tc.body, hp)
 
 			b, err := json.Marshal(tc.body)

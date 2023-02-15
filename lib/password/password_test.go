@@ -14,10 +14,19 @@ func TestHashUserPassword(t *testing.T) {
 		require.NotEmpty(t, hpw)
 	})
 
-	t.Run("different hash for different passwords", func(t *testing.T) {
-		hpw1, err := Hash(random.NewString(10))
+	t.Run("same hash for different password", func(t *testing.T) {
+		pw := random.NewString(20)
+		hpw1, err := Hash(pw)
 		require.NoError(t, err)
-		hpw2, err := Hash(random.NewString(10))
+		hpw2, err := Hash(pw)
+		require.NoError(t, err)
+		require.NotEqual(t, hpw1, hpw2)
+	})
+	t.Run("different hash for different password", func(t *testing.T) {
+		pw := random.NewString(20)
+		hpw1, err := Hash(pw)
+		require.NoError(t, err)
+		hpw2, err := Hash(pw)
 		require.NoError(t, err)
 		require.NotEqual(t, hpw1, hpw2)
 	})
