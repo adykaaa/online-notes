@@ -29,7 +29,10 @@ func (a *regUserArgs) Matches(x interface{}) bool {
 	if a.Email != reflectedValue.FieldByName("Email").String() {
 		return false
 	}
-
+	err := password.Validate(reflectedValue.FieldByName("Password").String(), a.Password)
+	if err != nil {
+		return false
+	}
 	return true
 }
 
@@ -46,7 +49,7 @@ func TestRegisterUser(t *testing.T) {
 		name          string
 		body          *models.User
 		validateJSON  func(v *validator.Validate, user *models.User)
-		dbmock        func(mockdb *mockdb.MockQuerier, user *models.User, hashedPassword string)
+		dbmock        func(mockdb *mockdb.MockQuerier, user *models.User)
 		checkResponse func(recorder *httptest.ResponseRecorder, request *http.Request)
 	}{
 		{
@@ -63,10 +66,10 @@ func TestRegisterUser(t *testing.T) {
 				require.NoError(t, err)
 			},
 
-			dbmock: func(mockdb *mockdb.MockQuerier, user *models.User, hashedPassword string) {
+			dbmock: func(mockdb *mockdb.MockQuerier, user *models.User) {
 				args := regUserArgs{
 					Username: user.Username,
-					Password: hashedPassword,
+					Password: user.Password,
 					Email:    user.Email,
 				}
 				mockdb.EXPECT().RegisterUser(gomock.Any(), &args).Times(1).Return(args.Username, nil)
@@ -83,10 +86,10 @@ func TestRegisterUser(t *testing.T) {
 
 		t.Run(tc.name, func(t *testing.T) {
 			tc.validateJSON(jsonValidator, tc.body)
-			hp, err := password.Hash(tc.body.Password)
+			_, err := password.Hash(tc.body.Password)
 			require.NoError(t, err)
 
-			tc.dbmock(dbmock, tc.body, hp)
+			tc.dbmock(dbmock, tc.body)
 
 			b, err := json.Marshal(tc.body)
 			require.NoError(t, err)
