@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
+	"time"
 
 	mockdb "github.com/adykaaa/online-notes/db/mock"
 	db "github.com/adykaaa/online-notes/db/sqlc"
@@ -217,11 +218,42 @@ func TestLoginUser(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	dbmock := mockdb.NewMockQuerier(ctrl)
 	jsonValidator := validator.New()
+
 	testCases := []struct {
-		name          string
-		body          *models.User
-		validateJSON  func(v *validator.Validate, user *models.User)
-		dbmock        func(mockdb *mockdb.MockQuerier, user *models.User)
-		checkResponse func(recorder *httptest.ResponseRecorder, request *http.Request)
-	}{}
+		name             string
+		body             *models.User
+		validateJSON     func(v *validator.Validate, user *models.User)
+		dbmock           func(mockdb *mockdb.MockQuerier, user *models.User)
+		validatePassword func(user *models.User)
+		createToken      func(user *models.User, duration time.Duration)
+		checkResponse    func(recorder *httptest.ResponseRecorder, request *http.Request)
+	}{
+		{
+			name: "user login OK",
+
+			body: &models.User{
+				Username: "user1",
+				Password: "password1",
+				Email:    "user1@user.com",
+			},
+
+			validateJSON: func(v *validator.Validate, user *models.User) {
+				err := v.Struct(user)
+				require.NoError(t, err)
+			},
+
+			dbmock: func(mockdb *mockdb.MockQuerier, user *models.User) {
+				dbuser := db.User{
+					Username: user.Username,
+					Password: user.Password,
+					Email:    user.Email,
+				}
+				mockdb.EXPECT().GetUser(gomock.Any(), user.Username).Times(1).Return(dbuser, nil)
+			},
+
+			validatePassword: func(user *models.User) {
+				err := password.Validate(user.Password)
+			},
+		},
+	}
 }
