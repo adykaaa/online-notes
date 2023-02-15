@@ -88,7 +88,7 @@ func LoginUser(q sqlc.Querier, c *PasetoCreator, tokenDuration time.Duration) ht
 			return
 		}
 
-		user, err := q.GetUser(ctx, userRequest.Username)
+		dbuser, err := q.GetUser(ctx, userRequest.Username)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				l.Info().Err(err).Msgf("Requested user was not found in the database. %s", userRequest.Username)
@@ -99,14 +99,14 @@ func LoginUser(q sqlc.Querier, c *PasetoCreator, tokenDuration time.Duration) ht
 			return
 		}
 
-		err = password.Validate(user.Password, userRequest.Password)
+		err = password.Validate(dbuser.Password, userRequest.Password)
 		if err != nil {
 			l.Info().Err(err).Msgf("Wrong password was provided for user %s", userRequest.Username)
 			httplib.JSON(w, msg{"error": "wrong password was provided"}, http.StatusUnauthorized)
 			return
 		}
 
-		token, payload, err := c.CreateToken(user.Username, tokenDuration)
+		token, payload, err := c.CreateToken(userRequest.Username, tokenDuration)
 		if err != nil {
 			l.Info().Err(err).Msgf("Could not create PASETO for user. %v", err)
 			httplib.JSON(w, msg{"error": "internal server error while creating the token"}, http.StatusInternalServerError)
@@ -121,7 +121,7 @@ func LoginUser(q sqlc.Querier, c *PasetoCreator, tokenDuration time.Duration) ht
 			Secure:   true,
 		})
 		httplib.JSON(w, msg{"success": "login successful"}, http.StatusOK)
-		l.Info().Msgf("User login for %s was successful!", user.Username)
+		l.Info().Msgf("User login for %s was successful!", userRequest.Username)
 	}
 }
 
