@@ -7,7 +7,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func AuthMiddleware(c *PasetoCreator, symmetricKey string, l *zerolog.Logger) func(http.Handler) http.Handler {
+func AuthMiddleware(t TokenManager, symmetricKey string, l *zerolog.Logger) func(http.Handler) http.Handler {
 	f := func(h http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			tokenCookie, err := r.Cookie("paseto")
@@ -17,7 +17,7 @@ func AuthMiddleware(c *PasetoCreator, symmetricKey string, l *zerolog.Logger) fu
 				return
 			}
 
-			payload, err := c.VerifyToken(tokenCookie.Value)
+			payload, err := t.VerifyToken(tokenCookie.Value)
 			if err != nil {
 				if errors.Is(err, ErrTokenInvalid) {
 					l.Error().Err(err).Msgf("PASETO is invalid!")

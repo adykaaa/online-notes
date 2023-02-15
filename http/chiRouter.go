@@ -12,6 +12,11 @@ import (
 	"github.com/rs/zerolog"
 )
 
+type TokenManager interface {
+	CreateToken(username string, duration time.Duration) (string, *PasetoPayload, error)
+	VerifyToken(token string) (*PasetoPayload, error)
+}
+
 type msg map[string]string
 
 func RegisterChiMiddlewares(r *chi.Mux, l *zerolog.Logger) {
@@ -30,12 +35,12 @@ func RegisterChiMiddlewares(r *chi.Mux, l *zerolog.Logger) {
 		}))
 }
 
-func RegisterChiHandlers(router *chi.Mux, q sqlc.Querier, c *PasetoCreator, symmetricKey string, tokenDuration time.Duration, l *zerolog.Logger) {
+func RegisterChiHandlers(router *chi.Mux, q sqlc.Querier, t TokenManager, symmetricKey string, tokenDuration time.Duration, l *zerolog.Logger) {
 	router.Post("/register", RegisterUser(q))
-	router.Post("/login", LoginUser(q, c, tokenDuration))
+	router.Post("/login", LoginUser(q, t, tokenDuration))
 	router.Post("/logout", LogoutUser())
 	router.Route("/notes", func(router chi.Router) {
-		router.Use(AuthMiddleware(c, symmetricKey, l))
+		router.Use(AuthMiddleware(t, symmetricKey, l))
 		router.Post("/create", CreateNote(q))
 		router.Get("/", GetAllNotesFromUser(q))
 		router.Put("/{id}", UpdateNote(q))

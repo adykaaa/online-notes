@@ -230,7 +230,7 @@ func TestLoginUser(t *testing.T) {
 	}{
 		{
 			name: "user login OK",
-
+			//recorder.Result().Cookies()[0].Value
 			body: &models.User{
 				Username: "user1",
 				Password: "password1",
