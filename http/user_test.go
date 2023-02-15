@@ -50,11 +50,11 @@ func TestRegisterUser(t *testing.T) {
 	jsonValidator := validator.New()
 
 	testCases := []struct {
-		name          string
-		body          *models.User
-		validateJSON  func(v *validator.Validate, user *models.User)
-		dbmock        func(mockdb *mockdb.MockQuerier, user *models.User)
-		checkResponse func(recorder *httptest.ResponseRecorder, request *http.Request)
+		name             string
+		body             *models.User
+		validateJSON     func(v *validator.Validate, user *models.User)
+		dbmockCreateUser func(mockdb *mockdb.MockQuerier, user *models.User)
+		checkResponse    func(recorder *httptest.ResponseRecorder, request *http.Request)
 	}{
 		{
 			name: "user registration OK",
@@ -70,7 +70,7 @@ func TestRegisterUser(t *testing.T) {
 				require.NoError(t, err)
 			},
 
-			dbmock: func(mockdb *mockdb.MockQuerier, user *models.User) {
+			dbmockCreateUser: func(mockdb *mockdb.MockQuerier, user *models.User) {
 				args := regUserArgs{
 					Username: user.Username,
 					Password: user.Password,
@@ -96,7 +96,7 @@ func TestRegisterUser(t *testing.T) {
 				require.Error(t, err)
 			},
 
-			dbmock: func(mockdb *mockdb.MockQuerier, user *models.User) {
+			dbmockCreateUser: func(mockdb *mockdb.MockQuerier, user *models.User) {
 				mockdb.EXPECT().RegisterUser(gomock.Any(), gomock.Any()).Times(0).Return("", nil)
 			},
 
@@ -118,7 +118,7 @@ func TestRegisterUser(t *testing.T) {
 				require.Error(t, err)
 			},
 
-			dbmock: func(mockdb *mockdb.MockQuerier, user *models.User) {
+			dbmockCreateUser: func(mockdb *mockdb.MockQuerier, user *models.User) {
 				mockdb.EXPECT().RegisterUser(gomock.Any(), gomock.Any()).Times(0).Return("", nil)
 			},
 
@@ -140,7 +140,7 @@ func TestRegisterUser(t *testing.T) {
 				require.Error(t, err)
 			},
 
-			dbmock: func(mockdb *mockdb.MockQuerier, user *models.User) {
+			dbmockCreateUser: func(mockdb *mockdb.MockQuerier, user *models.User) {
 				mockdb.EXPECT().RegisterUser(gomock.Any(), gomock.Any()).Times(0).Return("", nil)
 			},
 
@@ -162,7 +162,7 @@ func TestRegisterUser(t *testing.T) {
 				require.NoError(t, err)
 			},
 
-			dbmock: func(mockdb *mockdb.MockQuerier, user *models.User) {
+			dbmockCreateUser: func(mockdb *mockdb.MockQuerier, user *models.User) {
 				mockdb.EXPECT().RegisterUser(gomock.Any(), gomock.Any()).Times(1).Return("", &pq.Error{Code: "23505"})
 			},
 
@@ -184,7 +184,7 @@ func TestRegisterUser(t *testing.T) {
 				require.NoError(t, err)
 			},
 
-			dbmock: func(mockdb *mockdb.MockQuerier, user *models.User) {
+			dbmockCreateUser: func(mockdb *mockdb.MockQuerier, user *models.User) {
 				mockdb.EXPECT().RegisterUser(gomock.Any(), gomock.Any()).Times(1).Return("", sql.ErrConnDone)
 			},
 
@@ -199,7 +199,7 @@ func TestRegisterUser(t *testing.T) {
 
 		t.Run(tc.name, func(t *testing.T) {
 			tc.validateJSON(jsonValidator, tc.body)
-			tc.dbmock(dbmock, tc.body)
+			tc.dbmockCreateUser(dbmock, tc.body)
 
 			b, err := json.Marshal(tc.body)
 			require.NoError(t, err)
@@ -223,8 +223,8 @@ func TestLoginUser(t *testing.T) {
 		name             string
 		body             *models.User
 		validateJSON     func(v *validator.Validate, user *models.User)
-		dbmock           func(mockdb *mockdb.MockQuerier, user *models.User)
-		validatePassword func(user *models.User)
+		dbmockGetUser    func(mockdb *mockdb.MockQuerier, user *models.User) string
+		validatePassword func(user *models.User, dbUserPassword string)
 		createToken      func(user *models.User, duration time.Duration)
 		checkResponse    func(recorder *httptest.ResponseRecorder, request *http.Request)
 	}{
@@ -242,17 +242,19 @@ func TestLoginUser(t *testing.T) {
 				require.NoError(t, err)
 			},
 
-			dbmock: func(mockdb *mockdb.MockQuerier, user *models.User) {
+			dbmockGetUser: func(mockdb *mockdb.MockQuerier, user *models.User) string {
 				dbuser := db.User{
 					Username: user.Username,
 					Password: user.Password,
 					Email:    user.Email,
 				}
 				mockdb.EXPECT().GetUser(gomock.Any(), user.Username).Times(1).Return(dbuser, nil)
+				return dbuser.Password
 			},
 
-			validatePassword: func(user *models.User) {
-				err := password.Validate(user.Password)
+			validatePassword: func(user *models.User, dbUserPassword string) {
+				err := password.Validate(user.Password, dbUserPassword)
+				require.NoError(t, err)
 			},
 		},
 	}

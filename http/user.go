@@ -21,9 +21,9 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
 
-		var user models.User
+		var userRequest models.User
 
-		err := json.NewDecoder(r.Body).Decode(&user)
+		err := json.NewDecoder(r.Body).Decode(&userRequest)
 		if err != nil {
 			l.Error().Err(err).Msgf("error decoding the User into JSON during registration. %v", err)
 			httplib.JSON(w, msg{"error": "internal error decoding User struct"}, http.StatusInternalServerError)
@@ -31,14 +31,14 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 		}
 
 		validate := validator.New()
-		err = validate.Struct(&user)
+		err = validate.Struct(&userRequest)
 		if err != nil {
 			l.Error().Err(err).Msgf("error during User struct validation %v", err)
 			httplib.JSON(w, msg{"error": "wrongly formatted or missing User parameter"}, http.StatusBadRequest)
 			return
 		}
 
-		hashedPassword, err := password.Hash(user.Password)
+		hashedPassword, err := password.Hash(userRequest.Password)
 		if err != nil {
 			if errors.Is(err, password.ErrTooShort) {
 				l.Error().Err(err).Msgf("The given password is too short%v", err)
@@ -51,15 +51,15 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 		}
 
 		uname, err := q.RegisterUser(ctx, &sqlc.RegisterUserParams{
-			Username: user.Username,
+			Username: userRequest.Username,
 			Password: hashedPassword,
-			Email:    user.Email,
+			Email:    userRequest.Email,
 		})
 		if err != nil {
 			if postgreError, ok := err.(*pq.Error); ok {
 				if postgreError.Code.Name() == "unique_violation" {
 					httplib.JSON(w, msg{"error": "username or email already in use"}, http.StatusForbidden)
-					l.Error().Err(err).Msgf("registration failed, username or email already in use for user %s", user.Username)
+					l.Error().Err(err).Msgf("registration failed, username or email already in use for user %s", userRequest.Username)
 					return
 				}
 			}
