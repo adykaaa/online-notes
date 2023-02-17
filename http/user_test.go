@@ -58,16 +58,14 @@ func (m *MockTokenManager) VerifyToken(token string) (*PasetoPayload, error) {
 }
 
 func TestRegisterUser(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	dbmock := mockdb.NewMockQuerier(ctrl)
 	jsonValidator := validator.New()
 
 	testCases := []struct {
 		name             string
 		body             *models.User
-		validateJSON     func(v *validator.Validate, user *models.User)
+		validateJSON     func(t *testing.T, v *validator.Validate, user *models.User)
 		dbmockCreateUser func(mockdb *mockdb.MockQuerier, user *models.User)
-		checkResponse    func(recorder *httptest.ResponseRecorder, request *http.Request)
+		checkResponse    func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request)
 	}{
 		{
 			name: "user registration OK",
@@ -78,7 +76,7 @@ func TestRegisterUser(t *testing.T) {
 				Email:    "user1@user.com",
 			},
 
-			validateJSON: func(v *validator.Validate, user *models.User) {
+			validateJSON: func(t *testing.T, v *validator.Validate, user *models.User) {
 				err := v.Struct(user)
 				require.NoError(t, err)
 			},
@@ -92,7 +90,7 @@ func TestRegisterUser(t *testing.T) {
 				mockdb.EXPECT().RegisterUser(gomock.Any(), &args).Times(1).Return(args.Username, nil)
 			},
 
-			checkResponse: func(recorder *httptest.ResponseRecorder, request *http.Request) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
 				require.Equal(t, recorder.Code, http.StatusCreated)
 			},
 		}, {
@@ -104,7 +102,7 @@ func TestRegisterUser(t *testing.T) {
 				Email:    "user1@user.com",
 			},
 
-			validateJSON: func(v *validator.Validate, user *models.User) {
+			validateJSON: func(t *testing.T, v *validator.Validate, user *models.User) {
 				err := v.Struct(user)
 				require.Error(t, err)
 			},
@@ -113,7 +111,7 @@ func TestRegisterUser(t *testing.T) {
 				mockdb.EXPECT().RegisterUser(gomock.Any(), gomock.Any()).Times(0).Return("", nil)
 			},
 
-			checkResponse: func(recorder *httptest.ResponseRecorder, request *http.Request) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
 				require.Equal(t, recorder.Code, http.StatusBadRequest)
 			},
 		},
@@ -126,7 +124,7 @@ func TestRegisterUser(t *testing.T) {
 				Email:    "user1@user.com",
 			},
 
-			validateJSON: func(v *validator.Validate, user *models.User) {
+			validateJSON: func(t *testing.T, v *validator.Validate, user *models.User) {
 				err := v.Struct(user)
 				require.Error(t, err)
 			},
@@ -135,7 +133,7 @@ func TestRegisterUser(t *testing.T) {
 				mockdb.EXPECT().RegisterUser(gomock.Any(), gomock.Any()).Times(0).Return("", nil)
 			},
 
-			checkResponse: func(recorder *httptest.ResponseRecorder, request *http.Request) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
 				require.Equal(t, recorder.Code, http.StatusBadRequest)
 			},
 		},
@@ -148,7 +146,7 @@ func TestRegisterUser(t *testing.T) {
 				Email:    "wrongemail@",
 			},
 
-			validateJSON: func(v *validator.Validate, user *models.User) {
+			validateJSON: func(t *testing.T, v *validator.Validate, user *models.User) {
 				err := v.Struct(user)
 				require.Error(t, err)
 			},
@@ -157,7 +155,7 @@ func TestRegisterUser(t *testing.T) {
 				mockdb.EXPECT().RegisterUser(gomock.Any(), gomock.Any()).Times(0).Return("", nil)
 			},
 
-			checkResponse: func(recorder *httptest.ResponseRecorder, request *http.Request) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
 				require.Equal(t, recorder.Code, http.StatusBadRequest)
 			},
 		},
@@ -170,7 +168,7 @@ func TestRegisterUser(t *testing.T) {
 				Email:    "user1@user.com",
 			},
 
-			validateJSON: func(v *validator.Validate, user *models.User) {
+			validateJSON: func(t *testing.T, v *validator.Validate, user *models.User) {
 				err := v.Struct(user)
 				require.NoError(t, err)
 			},
@@ -179,7 +177,7 @@ func TestRegisterUser(t *testing.T) {
 				mockdb.EXPECT().RegisterUser(gomock.Any(), gomock.Any()).Times(1).Return("", &pq.Error{Code: "23505"})
 			},
 
-			checkResponse: func(recorder *httptest.ResponseRecorder, request *http.Request) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
 				require.Equal(t, recorder.Code, http.StatusForbidden)
 			},
 		},
@@ -192,7 +190,7 @@ func TestRegisterUser(t *testing.T) {
 				Email:    "user1@user.com",
 			},
 
-			validateJSON: func(v *validator.Validate, user *models.User) {
+			validateJSON: func(t *testing.T, v *validator.Validate, user *models.User) {
 				err := v.Struct(user)
 				require.NoError(t, err)
 			},
@@ -201,7 +199,7 @@ func TestRegisterUser(t *testing.T) {
 				mockdb.EXPECT().RegisterUser(gomock.Any(), gomock.Any()).Times(1).Return("", sql.ErrConnDone)
 			},
 
-			checkResponse: func(recorder *httptest.ResponseRecorder, request *http.Request) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
 				require.Equal(t, recorder.Code, http.StatusInternalServerError)
 			},
 		},
@@ -211,7 +209,10 @@ func TestRegisterUser(t *testing.T) {
 		tc := testCases[c]
 
 		t.Run(tc.name, func(t *testing.T) {
-			tc.validateJSON(jsonValidator, tc.body)
+			ctrl := gomock.NewController(t)
+			dbmock := mockdb.NewMockQuerier(ctrl)
+
+			tc.validateJSON(t, jsonValidator, tc.body)
 			tc.dbmockCreateUser(dbmock, tc.body)
 
 			b, err := json.Marshal(tc.body)
@@ -222,13 +223,11 @@ func TestRegisterUser(t *testing.T) {
 
 			handler := RegisterUser(dbmock)
 			handler(rec, req)
-			tc.checkResponse(rec, req)
+			tc.checkResponse(t, rec, req)
 		})
 	}
 }
 func TestLoginUser(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	dbmock := mockdb.NewMockQuerier(ctrl)
 	jsonValidator := validator.New()
 	tm := &MockTokenManager{}
 
@@ -274,13 +273,13 @@ func TestLoginUser(t *testing.T) {
 			},
 
 			createToken: func(t *testing.T, tm TokenManager, user *models.User, duration time.Duration) string {
-				token, _, err := tm.CreateToken(user.Username, 30)
+				token, _, err := tm.CreateToken(user.Username, 30000)
 				require.NoError(t, err)
 				return token
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request, token string) {
-				require.Equal(t, recorder.Code, http.StatusOK)
+				require.Equal(t, http.StatusOK, recorder.Code)
 			},
 		},
 	}
@@ -288,11 +287,14 @@ func TestLoginUser(t *testing.T) {
 		tc := testCases[c]
 
 		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			dbmock := mockdb.NewMockQuerier(ctrl)
+
 			tc.validateJSON(t, jsonValidator, tc.body)
 			pw := tc.dbmockGetUser(dbmock, tc.body)
 
 			tc.validatePassword(t, tc.body, pw)
-			token := tc.createToken(t, tm, tc.body, 30)
+			token := tc.createToken(t, tm, tc.body, 300)
 
 			b, err := json.Marshal(tc.body)
 			require.NoError(t, err)
@@ -300,7 +302,7 @@ func TestLoginUser(t *testing.T) {
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodPost, "/login", bytes.NewReader(b))
 
-			handler := LoginUser(dbmock, tm, 30000000)
+			handler := LoginUser(dbmock, tm, 300)
 			handler(rec, req)
 			tc.checkResponse(t, rec, req, token)
 		})
