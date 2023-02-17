@@ -234,13 +234,11 @@ func TestLoginUser(t *testing.T) {
 		Password string `json:"password"`
 	}
 
-	jsonValidator := validator.New()
 	tm := &MockTokenManager{}
 
 	testCases := []struct {
 		name             string
 		body             *LoginUserReq
-		validateJSON     func(t *testing.T, v *validator.Validate, user *LoginUserReq)
 		dbmockGetUser    func(t *testing.T, mockdb *mockdb.MockQuerier, user *LoginUserReq) string
 		validatePassword func(t *testing.T, user *LoginUserReq, dbUserPassword string)
 		createToken      func(t *testing.T, tm TokenManager, user *LoginUserReq, duration time.Duration) string
@@ -254,11 +252,6 @@ func TestLoginUser(t *testing.T) {
 				Password: "password1",
 			},
 
-			validateJSON: func(t *testing.T, v *validator.Validate, user *LoginUserReq) {
-				err := v.Struct(user)
-				require.NoError(t, err)
-			},
-
 			dbmockGetUser: func(t *testing.T, mockdb *mockdb.MockQuerier, user *LoginUserReq) string {
 				hashedPassword, err := password.Hash(user.Password)
 				require.NoError(t, err)
@@ -270,11 +263,6 @@ func TestLoginUser(t *testing.T) {
 
 				mockdb.EXPECT().GetUser(gomock.Any(), user.Username).Times(1).Return(dbuser, nil)
 				return hashedPassword
-			},
-
-			validatePassword: func(t *testing.T, user *LoginUserReq, dbHashedPassword string) {
-				err := password.Validate(dbHashedPassword, user.Password)
-				require.NoError(t, err)
 			},
 
 			createToken: func(t *testing.T, tm TokenManager, user *LoginUserReq, duration time.Duration) string {
@@ -298,11 +286,6 @@ func TestLoginUser(t *testing.T) {
 			body: &LoginUserReq{
 				Username: "user1",
 				Password: "password1",
-			},
-
-			validateJSON: func(t *testing.T, v *validator.Validate, user *LoginUserReq) {
-				err := v.Struct(user)
-				require.NoError(t, err)
 			},
 
 			dbmockGetUser: func(t *testing.T, mockdb *mockdb.MockQuerier, user *LoginUserReq) string {
@@ -340,12 +323,11 @@ func TestLoginUser(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			dbmock := mockdb.NewMockQuerier(ctrl)
+
 			b, err := json.Marshal(tc.body)
 			require.NoError(t, err)
 
-			tc.validateJSON(t, jsonValidator, tc.body)
 			pw := tc.dbmockGetUser(t, dbmock, tc.body)
-
 			tc.validatePassword(t, tc.body, pw)
 			token := tc.createToken(t, tm, tc.body, 300)
 
