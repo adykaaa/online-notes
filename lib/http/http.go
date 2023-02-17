@@ -26,3 +26,13 @@ func SetupHandler(w http.ResponseWriter, ctx context.Context) (*zerolog.Logger, 
 	l := zerolog.Ctx(ctx)
 	return l, ctx, cancel
 }
+
+func SetCookie(w http.ResponseWriter, name string, token string, expiresAt time.Time) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     name,
+		Value:    token,
+		Expires:  expiresAt,
+		HttpOnly: true,
+		Secure:   true,
+	})
+}

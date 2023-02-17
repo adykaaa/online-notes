@@ -233,47 +233,92 @@ func TestLoginUser(t *testing.T) {
 
 	testCases := []struct {
 		name             string
-		body             *models.User
-		validateJSON     func(t *testing.T, v *validator.Validate, user *models.User)
-		dbmockGetUser    func(mockdb *mockdb.MockQuerier, user *models.User) string
-		validatePassword func(t *testing.T, user *models.User, dbUserPassword string)
-		createToken      func(t *testing.T, tm TokenManager, user *models.User, duration time.Duration) string
+		body             *LoginUserReq
+		validateJSON     func(t *testing.T, v *validator.Validate, user *LoginUserReq)
+		dbmockGetUser    func(t *testing.T, mockdb *mockdb.MockQuerier, user *LoginUserReq) string
+		validatePassword func(t *testing.T, user *LoginUserReq, dbUserPassword string)
+		createToken      func(t *testing.T, tm TokenManager, user *LoginUserReq, duration time.Duration) string
 		checkResponse    func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request, token string)
 	}{
 		{
 			name: "user login OK",
 
-			body: &models.User{
+			body: &LoginUserReq{
 				Username: "user1",
 				Password: "password1",
-				Email:    "user1@user.com",
 			},
 
-			validateJSON: func(t *testing.T, v *validator.Validate, user *models.User) {
+			validateJSON: func(t *testing.T, v *validator.Validate, user *LoginUserReq) {
 				err := v.Struct(user)
 				require.NoError(t, err)
 			},
 
-			dbmockGetUser: func(mockdb *mockdb.MockQuerier, user *models.User) string {
+			dbmockGetUser: func(t *testing.T, mockdb *mockdb.MockQuerier, user *LoginUserReq) string {
+				hashedPassword, err := password.Hash(user.Password)
+				require.NoError(t, err)
+
 				dbuser := db.User{
 					Username: user.Username,
-					Password: user.Password,
-					Email:    user.Email,
+					Password: hashedPassword,
 				}
+
 				mockdb.EXPECT().GetUser(gomock.Any(), user.Username).Times(1).Return(dbuser, nil)
-				return dbuser.Password
+				return hashedPassword
 			},
 
-			validatePassword: func(t *testing.T, user *models.User, dbUserPassword string) {
-				upw, err := password.Hash(user.Password)
-				require.NoError(t, err)
-
-				err = password.Validate(upw, dbUserPassword)
+			validatePassword: func(t *testing.T, user *LoginUserReq, dbHashedPassword string) {
+				err := password.Validate(dbHashedPassword, user.Password)
 				require.NoError(t, err)
 			},
 
-			createToken: func(t *testing.T, tm TokenManager, user *models.User, duration time.Duration) string {
-				token, _, err := tm.CreateToken(user.Username, 30000)
+			createToken: func(t *testing.T, tm TokenManager, user *LoginUserReq, duration time.Duration) string {
+				token, _, err := tm.CreateToken(user.Username, duration)
+				require.NoError(t, err)
+
+				return token
+			},
+
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request, token string) {
+				require.Equal(t, recorder.Result().Cookies()[0].Name, "paseto")
+				require.Equal(t, recorder.Result().Cookies()[0].Value, token)
+				require.Equal(t, recorder.Result().Cookies()[0].HttpOnly, true)
+				require.Equal(t, recorder.Result().Cookies()[0].Secure, true)
+				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+		{
+			name: "returns internal server error because of JSON decode error",
+
+			body: &LoginUserReq{
+				Username: "user1",
+				Password: "password1",
+			},
+
+			validateJSON: func(t *testing.T, v *validator.Validate, user *LoginUserReq) {
+				err := v.Struct(user)
+				require.NoError(t, err)
+			},
+
+			dbmockGetUser: func(t *testing.T, mockdb *mockdb.MockQuerier, user *LoginUserReq) string {
+				hashedPassword, err := password.Hash(user.Password)
+				require.NoError(t, err)
+
+				dbuser := db.User{
+					Username: user.Username,
+					Password: hashedPassword,
+				}
+
+				mockdb.EXPECT().GetUser(gomock.Any(), user.Username).Times(1).Return(dbuser, nil)
+				return hashedPassword
+			},
+
+			validatePassword: func(t *testing.T, user *LoginUserReq, dbHashedPassword string) {
+				err := password.Validate(dbHashedPassword, user.Password)
+				require.NoError(t, err)
+			},
+
+			createToken: func(t *testing.T, tm TokenManager, user *LoginUserReq, duration time.Duration) string {
+				token, _, err := tm.CreateToken(user.Username, 300)
 				require.NoError(t, err)
 				return token
 			},
@@ -291,7 +336,7 @@ func TestLoginUser(t *testing.T) {
 			dbmock := mockdb.NewMockQuerier(ctrl)
 
 			tc.validateJSON(t, jsonValidator, tc.body)
-			pw := tc.dbmockGetUser(dbmock, tc.body)
+			pw := tc.dbmockGetUser(t, dbmock, tc.body)
 
 			tc.validatePassword(t, tc.body, pw)
 			token := tc.createToken(t, tm, tc.body, 300)
