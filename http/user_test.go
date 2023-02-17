@@ -235,11 +235,11 @@ func TestLoginUser(t *testing.T) {
 	testCases := []struct {
 		name             string
 		body             *models.User
-		validateJSON     func(v *validator.Validate, user *models.User)
+		validateJSON     func(t *testing.T, v *validator.Validate, user *models.User)
 		dbmockGetUser    func(mockdb *mockdb.MockQuerier, user *models.User) string
-		validatePassword func(user *models.User, dbUserPassword string)
-		createToken      func(tm TokenManager, user *models.User, duration time.Duration) string
-		checkResponse    func(recorder *httptest.ResponseRecorder, request *http.Request, token string)
+		validatePassword func(t *testing.T, user *models.User, dbUserPassword string)
+		createToken      func(t *testing.T, tm TokenManager, user *models.User, duration time.Duration) string
+		checkResponse    func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request, token string)
 	}{
 		{
 			name: "user login OK",
@@ -250,7 +250,7 @@ func TestLoginUser(t *testing.T) {
 				Email:    "user1@user.com",
 			},
 
-			validateJSON: func(v *validator.Validate, user *models.User) {
+			validateJSON: func(t *testing.T, v *validator.Validate, user *models.User) {
 				err := v.Struct(user)
 				require.NoError(t, err)
 			},
@@ -265,7 +265,7 @@ func TestLoginUser(t *testing.T) {
 				return dbuser.Password
 			},
 
-			validatePassword: func(user *models.User, dbUserPassword string) {
+			validatePassword: func(asd *testing.T, user *models.User, dbUserPassword string) {
 				upw, err := password.Hash(user.Password)
 				require.NoError(t, err)
 
@@ -273,15 +273,14 @@ func TestLoginUser(t *testing.T) {
 				require.NoError(t, err)
 			},
 
-			createToken: func(tm TokenManager, user *models.User, duration time.Duration) string {
+			createToken: func(t *testing.T, tm TokenManager, user *models.User, duration time.Duration) string {
 				token, _, err := tm.CreateToken(user.Username, 30)
 				require.NoError(t, err)
 				return token
 			},
 
-			checkResponse: func(recorder *httptest.ResponseRecorder, request *http.Request, token string) {
-				c := recorder.Result().Cookies()[0]
-				require.Equal(t, recorder.Code, http.StatusUnauthorized)
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request, token string) {
+				require.Equal(t, recorder.Code, http.StatusOK)
 			},
 		},
 	}
@@ -289,11 +288,11 @@ func TestLoginUser(t *testing.T) {
 		tc := testCases[c]
 
 		t.Run(tc.name, func(t *testing.T) {
-			tc.validateJSON(jsonValidator, tc.body)
+			tc.validateJSON(t, jsonValidator, tc.body)
 			pw := tc.dbmockGetUser(dbmock, tc.body)
 
-			tc.validatePassword(tc.body, pw)
-			token := tc.createToken(tm, tc.body, 30)
+			tc.validatePassword(t, tc.body, pw)
+			token := tc.createToken(t, tm, tc.body, 30)
 
 			b, err := json.Marshal(tc.body)
 			require.NoError(t, err)
@@ -301,9 +300,9 @@ func TestLoginUser(t *testing.T) {
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodPost, "/login", bytes.NewReader(b))
 
-			handler := LoginUser(dbmock, tm, 30)
+			handler := LoginUser(dbmock, tm, 3000)
 			handler(rec, req)
-			tc.checkResponse(rec, req, token)
+			tc.checkResponse(t, rec, req, token)
 		})
 	}
 }
