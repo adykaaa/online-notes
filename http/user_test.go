@@ -44,6 +44,19 @@ func (a *regUserArgs) String() string {
 	return fmt.Sprintf("Username: %s, Email: %s", a.Username, a.Email)
 }
 
+type MockTokenManager struct{}
+
+func (m *MockTokenManager) CreateToken(username string, duration time.Duration) (string, *PasetoPayload, error) {
+	return "testtoken",
+		&PasetoPayload{},
+		nil
+}
+
+func (m *MockTokenManager) VerifyToken(token string) (*PasetoPayload, error) {
+	return &PasetoPayload{},
+		nil
+}
+
 func TestRegisterUser(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	dbmock := mockdb.NewMockQuerier(ctrl)
@@ -209,7 +222,6 @@ func TestRegisterUser(t *testing.T) {
 
 			handler := RegisterUser(dbmock)
 			handler(rec, req)
-
 			tc.checkResponse(rec, req)
 		})
 	}
@@ -218,6 +230,7 @@ func TestLoginUser(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	dbmock := mockdb.NewMockQuerier(ctrl)
 	jsonValidator := validator.New()
+	tm := &MockTokenManager{}
 
 	testCases := []struct {
 		name             string
@@ -225,12 +238,12 @@ func TestLoginUser(t *testing.T) {
 		validateJSON     func(v *validator.Validate, user *models.User)
 		dbmockGetUser    func(mockdb *mockdb.MockQuerier, user *models.User) string
 		validatePassword func(user *models.User, dbUserPassword string)
-		createToken      func(user *models.User, duration time.Duration)
-		checkResponse    func(recorder *httptest.ResponseRecorder, request *http.Request)
+		createToken      func(tm TokenManager, user *models.User, duration time.Duration) string
+		checkResponse    func(recorder *httptest.ResponseRecorder, request *http.Request, token string)
 	}{
 		{
 			name: "user login OK",
-			//recorder.Result().Cookies()[0].Value
+
 			body: &models.User{
 				Username: "user1",
 				Password: "password1",
@@ -253,9 +266,44 @@ func TestLoginUser(t *testing.T) {
 			},
 
 			validatePassword: func(user *models.User, dbUserPassword string) {
-				err := password.Validate(user.Password, dbUserPassword)
+				upw, err := password.Hash(user.Password)
+				require.NoError(t, err)
+
+				err = password.Validate(upw, dbUserPassword)
 				require.NoError(t, err)
 			},
+
+			createToken: func(tm TokenManager, user *models.User, duration time.Duration) string {
+				token, _, err := tm.CreateToken(user.Username, 30)
+				require.NoError(t, err)
+				return token
+			},
+
+			checkResponse: func(recorder *httptest.ResponseRecorder, request *http.Request, token string) {
+				c := recorder.Result().Cookies()[0]
+				require.Equal(t, recorder.Code, http.StatusUnauthorized)
+			},
 		},
+	}
+	for c := range testCases {
+		tc := testCases[c]
+
+		t.Run(tc.name, func(t *testing.T) {
+			tc.validateJSON(jsonValidator, tc.body)
+			pw := tc.dbmockGetUser(dbmock, tc.body)
+
+			tc.validatePassword(tc.body, pw)
+			token := tc.createToken(tm, tc.body, 30)
+
+			b, err := json.Marshal(tc.body)
+			require.NoError(t, err)
+
+			rec := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodPost, "/login", bytes.NewReader(b))
+
+			handler := LoginUser(dbmock, tm, 30)
+			handler(rec, req)
+			tc.checkResponse(rec, req, token)
+		})
 	}
 }
