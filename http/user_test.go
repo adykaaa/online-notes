@@ -300,7 +300,7 @@ func TestLoginUser(t *testing.T) {
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodPost, "/login", bytes.NewReader(b))
 
-			handler := LoginUser(dbmock, tm, 3000)
+			handler := LoginUser(dbmock, tm, 30000000)
 			handler(rec, req)
 			tc.checkResponse(t, rec, req, token)
 		})
