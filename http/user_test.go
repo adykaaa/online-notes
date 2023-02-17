@@ -228,6 +228,12 @@ func TestRegisterUser(t *testing.T) {
 	}
 }
 func TestLoginUser(t *testing.T) {
+
+	type LoginUserReq struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+
 	jsonValidator := validator.New()
 	tm := &MockTokenManager{}
 
@@ -287,7 +293,7 @@ func TestLoginUser(t *testing.T) {
 			},
 		},
 		{
-			name: "returns internal server error because of JSON decode error",
+			name: "returns not found because user is not registered",
 
 			body: &LoginUserReq{
 				Username: "user1",
@@ -334,15 +340,14 @@ func TestLoginUser(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			dbmock := mockdb.NewMockQuerier(ctrl)
+			b, err := json.Marshal(tc.body)
+			require.NoError(t, err)
 
 			tc.validateJSON(t, jsonValidator, tc.body)
 			pw := tc.dbmockGetUser(t, dbmock, tc.body)
 
 			tc.validatePassword(t, tc.body, pw)
 			token := tc.createToken(t, tm, tc.body, 300)
-
-			b, err := json.Marshal(tc.body)
-			require.NoError(t, err)
 
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodPost, "/login", bytes.NewReader(b))

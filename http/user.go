@@ -16,11 +16,6 @@ import (
 	"github.com/lib/pq"
 )
 
-type LoginUserReq struct {
-	Username string `json:"username" validate:"required,min=5,max=30,alphanum"`
-	Password string `json:"password" validate:"required,min=5"`
-}
-
 func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
@@ -84,20 +79,15 @@ func LoginUser(q sqlc.Querier, t TokenManager, tokenDuration time.Duration) http
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
 
-		userRequest := LoginUserReq{}
+		userRequest := struct {
+			Username string `json:"username"`
+			Password string `json:"password"`
+		}{}
 
 		err := json.NewDecoder(r.Body).Decode(&userRequest)
 		if err != nil {
 			l.Error().Err(err).Msgf("error decoding the User into JSON during registration. %v", err)
 			httplib.JSON(w, msg{"error": "internal error decoding User struct"}, http.StatusInternalServerError)
-			return
-		}
-
-		validate := validator.New()
-		err = validate.Struct(&userRequest)
-		if err != nil {
-			l.Error().Err(err).Msgf("error during User struct validation %v", err)
-			httplib.JSON(w, msg{"error": "wrongly formatted or missing User parameter"}, http.StatusBadRequest)
 			return
 		}
 
