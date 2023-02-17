@@ -265,7 +265,7 @@ func TestLoginUser(t *testing.T) {
 				return dbuser.Password
 			},
 
-			validatePassword: func(asd *testing.T, user *models.User, dbUserPassword string) {
+			validatePassword: func(t *testing.T, user *models.User, dbUserPassword string) {
 				upw, err := password.Hash(user.Password)
 				require.NoError(t, err)
 
