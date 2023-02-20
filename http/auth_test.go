@@ -1,23 +1,24 @@
 package http
 
 import (
-	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	models "github.com/adykaaa/online-notes/http/models"
+	"github.com/rs/zerolog"
 )
 
-func MockHandler(w http.ResponseWriter, r *http.Request) {
-	svr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Printf("Test server started!")
-	}))
-	defer svr.Close()
-
-}
-
 func TestAuthMiddleware(t *testing.T) {
+	l := zerolog.New(io.Discard)
+	testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Hello from test handler!"))
+	})
+	ts := httptest.NewServer(testHandler)
+	defer ts.Close()
+
+	tm := MockTokenManager{}
 	testCases := []struct {
 		name          string
 		body          *models.User
@@ -29,8 +30,12 @@ func TestAuthMiddleware(t *testing.T) {
 		tc := testCases[c]
 
 		t.Run(tc.name, func(t *testing.T) {
-			req := httptest.NewRequest(http.MethodPost, "/notes/create", nil)
-			w := httptest.NewRecorder()
+
+			req := httptest.NewRequest(http.MethodPost, ts.URL, nil)
+			rec := httptest.NewRecorder()
+			asd := AuthMiddleware(tm, "testkey", &l)(testHandler)
+			asd.ServeHTTP(rec, req)
+
 		})
 	}
 }
