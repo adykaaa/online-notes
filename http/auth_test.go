@@ -51,7 +51,7 @@ func TestAuthMiddleware(t *testing.T) {
 			rec := httptest.NewRecorder()
 
 			tm := tc.newMockTokenMaker(t)
-			h := AuthMiddleware(tm, "testkey", &l)(testHandler)
+			h := AuthMiddleware(tm, &l)(testHandler)
 			h.ServeHTTP(rec, req)
 			tc.checkResponse(t, rec, req)
 

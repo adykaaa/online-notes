@@ -7,7 +7,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func AuthMiddleware(t TokenManager, symmetricKey string, l *zerolog.Logger) func(http.Handler) http.Handler {
+func AuthMiddleware(t TokenManager, l *zerolog.Logger) func(http.Handler) http.Handler {
 	f := func(h http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			tokenCookie, err := r.Cookie("paseto")
