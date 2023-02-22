@@ -44,15 +44,24 @@ func (a *regUserArgs) String() string {
 	return fmt.Sprintf("Username: %s, Email: %s", a.Username, a.Email)
 }
 
-type MockTokenManager struct{}
+type MockTokenManager struct {
+	ReturnInvalidToken bool
+	ReturnExpiredToken bool
+}
 
-func (m MockTokenManager) CreateToken(username string, duration time.Duration) (string, *PasetoPayload, error) {
+func (m *MockTokenManager) CreateToken(username string, duration time.Duration) (string, *PasetoPayload, error) {
 	return "testtoken",
 		&PasetoPayload{},
 		nil
 }
 
-func (m MockTokenManager) VerifyToken(token string) (*PasetoPayload, error) {
+func (m *MockTokenManager) VerifyToken(token string) (*PasetoPayload, error) {
+	if m.ReturnExpiredToken {
+		return nil, ErrTokenExpired
+	}
+	if m.ReturnInvalidToken {
+		return nil, ErrTokenInvalid
+	}
 	return &PasetoPayload{},
 		nil
 }
