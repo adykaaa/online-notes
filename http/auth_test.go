@@ -21,17 +21,21 @@ func TestAuthMiddleware(t *testing.T) {
 	ts := httptest.NewServer(testHandler)
 	defer ts.Close()
 
-	tm := &MockTokenManager{}
 	testCases := []struct {
-		name          string
-		testHandler   func(t *testing.T, h func(w http.ResponseWriter, r *http.Request))
+		name              string
+		newMockTokenMaker func(t *testing.T) *MockTokenManager
+
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request)
 	}{
 		{
 			name: "auth OK",
-			testHandler: func(t *testing.T, h func(w http.ResponseWriter, r *http.Request)) {
-				httplib.SetCookie(w, "paseto", "szevasz", 360)
+			newMockTokenMaker: func(t *testing.T) *MockTokenManager {
+				return &MockTokenManager{
+					ReturnInvalidToken: false,
+					ReturnExpiredToken: false,
+				}
 			},
+
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
 				require.Equal(t, recorder.Code, http.StatusUnauthorized)
 			},
@@ -45,8 +49,10 @@ func TestAuthMiddleware(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodPost, ts.URL, nil)
 			rec := httptest.NewRecorder()
-			asd := AuthMiddleware(tm, "testkey", &l)(testHandler)
-			asd.ServeHTTP(rec, req)
+
+			tm := tc.newMockTokenMaker(t)
+			h := AuthMiddleware(tm, "testkey", &l)(testHandler)
+			h.ServeHTTP(rec, req)
 			tc.checkResponse(t, rec, req)
 
 		})
