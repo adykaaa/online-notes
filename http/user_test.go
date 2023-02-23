@@ -100,7 +100,7 @@ func TestRegisterUser(t *testing.T) {
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
-				require.Equal(t, recorder.Code, http.StatusCreated)
+				require.Equal(t, http.StatusCreated, recorder.Code)
 			},
 		}, {
 			name: "returns bad request because of short username",
@@ -121,7 +121,7 @@ func TestRegisterUser(t *testing.T) {
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
-				require.Equal(t, recorder.Code, http.StatusBadRequest)
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
 		{
@@ -143,7 +143,7 @@ func TestRegisterUser(t *testing.T) {
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
-				require.Equal(t, recorder.Code, http.StatusBadRequest)
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
 		{
@@ -165,7 +165,7 @@ func TestRegisterUser(t *testing.T) {
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
-				require.Equal(t, recorder.Code, http.StatusBadRequest)
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
 		{
@@ -187,7 +187,7 @@ func TestRegisterUser(t *testing.T) {
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
-				require.Equal(t, recorder.Code, http.StatusForbidden)
+				require.Equal(t, http.StatusForbidden, recorder.Code)
 			},
 		},
 		{
@@ -209,7 +209,7 @@ func TestRegisterUser(t *testing.T) {
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
-				require.Equal(t, recorder.Code, http.StatusInternalServerError)
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
 	}
