@@ -13,17 +13,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func testHandler(w http.ResponseWriter, r *http.Request) {
+	httplib.JSON(w, "msg from test handler", http.StatusOK)
+}
+
 func TestAuthMiddleware(t *testing.T) {
 	l := zerolog.New(io.Discard)
-
-	testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		httplib.JSON(w, msg{"success": "test handler success"}, http.StatusOK)
-	})
-
-	r := chi.NewRouter()
-
-	ts := httptest.NewServer(r)
-	defer ts.Close()
 
 	testCases := []struct {
 		name            string
@@ -54,13 +49,15 @@ func TestAuthMiddleware(t *testing.T) {
 		tc := testCases[c]
 
 		t.Run(tc.name, func(t *testing.T) {
-
 			tm := tc.newMockTokenMgr()
+			r := chi.NewRouter()
 			r.Use(AuthMiddleware(tm, &l))
-			r.Post("/test", testHandler)
+			r.Get("/test", testHandler)
 
-			req := httptest.NewRequest(http.MethodPost, ts.URL+"/test", nil)
+			req := httptest.NewRequest(http.MethodGet, "/test", nil)
 			rec := httptest.NewRecorder()
+
+			testHandler(rec, req)
 
 			tc.checkResponse(t, rec, req)
 
