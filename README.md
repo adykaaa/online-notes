@@ -4,25 +4,25 @@ This project aims to be the a fullstack note-taking application using React for 
 
 ![](https://github.com/adykaaa/online-notes/blob/main/web/public/onlinenotes.gif)
 
-## Over-engineered, you say?
+## Libraries
 The domain logic is pretty simple. A user can create notes, update them, and delete them, nothing to ride home about. The aim of this whole project is to showcase (and learn) how to:
 - on the frontend side, how to do user state management using useContext, how to use some basic React hooks and Chakra UI
-- do unit testing, and integration testing in Go (TBD)
+- do unit testing
+- do integration testing (TBD)
 - use Chi as a router
-- use SQLC for database operations (best tool ever, honestly)
+- use SQLC for database operations
 - gomock for generating cool mocks
 - PASETO user authentication using secure and HTTP-only Cookies
 - use docker-compose to stand the whole dev environment up
 - use custom middlewares (for logging, authentication, etc.)
 - use Viper for configuration management through environment variables
 - use Zerolog for logging, that's being passed around in the request context
-and many more. 
 
 I am NOT stating these are the most idiomatic ways of doing things, and everything in this repo is subject to change.
 
 ## Plans
 
-So basically after the "base" is done, where a user can register, login, create/delete/update notes - with all unit tests, I'm planning to:
+So after the "base" is done, where a user can register, login, create/delete/update notes - with all unit tests, I'm planning to:
 - add a "Chat" feature using websockets and Redis
 - add backend caching using Redis
 - use opentracing and opentelemetry
