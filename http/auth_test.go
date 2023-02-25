@@ -57,7 +57,7 @@ func TestAuthMiddleware(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, "/test", nil)
 			rec := httptest.NewRecorder()
 
-			testHandler(rec, req)
+			r.ServeHTTP(rec, req)
 
 			tc.checkResponse(t, rec, req)
 
