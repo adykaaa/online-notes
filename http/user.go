@@ -144,6 +144,7 @@ func LogoutUser() http.HandlerFunc {
 	}
 }
 
+// TODO: implement these in the future
 func ListUsers(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
