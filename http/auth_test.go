@@ -33,11 +33,50 @@ func TestAuthMiddleware(t *testing.T) {
 			},
 
 			setCookie: func(w http.ResponseWriter) {
-				httplib.SetCookie(w, "paseto", "testtoken", time.Now().Add(30*time.Minute))
+				httplib.SetCookie(w, "paseto", "testtoken", time.Now().Add(300*time.Minute))
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
+				require.Equal(t, recorder.Result().Cookies()[0].Name, "paseto")
+				require.Equal(t, recorder.Result().Cookies()[0].Secure, true)
+				require.Equal(t, recorder.Result().Cookies()[0].HttpOnly, true)
 				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+		{
+			name: "returns forbidden - invalid token",
+
+			newMockTokenMgr: func() *MockTokenManager {
+				return &MockTokenManager{
+					ReturnInvalidToken: true,
+					ReturnExpiredToken: false,
+				}
+			},
+
+			setCookie: func(w http.ResponseWriter) {
+				httplib.SetCookie(w, "paseto", "testtoken", time.Now().Add(300*time.Minute))
+			},
+
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
+				require.Equal(t, http.StatusForbidden, recorder.Code)
+			},
+		},
+		{
+			name: "returns unauthorized - expired token",
+
+			newMockTokenMgr: func() *MockTokenManager {
+				return &MockTokenManager{
+					ReturnInvalidToken: false,
+					ReturnExpiredToken: true,
+				}
+			},
+
+			setCookie: func(w http.ResponseWriter) {
+				httplib.SetCookie(w, "paseto", "testtoken", time.Now().Add(300*time.Minute))
+			},
+
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
 			},
 		},
 	}
@@ -57,7 +96,6 @@ func TestAuthMiddleware(t *testing.T) {
 
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodGet, "/test", nil)
-
 			tc.setCookie(rec)
 
 			r.ServeHTTP(rec, req)

@@ -21,7 +21,7 @@ func AuthMiddleware(t TokenManager, l *zerolog.Logger) func(http.Handler) http.H
 			if err != nil {
 				if errors.Is(err, ErrTokenInvalid) {
 					l.Error().Err(err).Msgf("PASETO is invalid!")
-					http.Error(w, "invalid token", http.StatusUnauthorized)
+					http.Error(w, "invalid token", http.StatusForbidden)
 					return
 				}
 				if errors.Is(err, ErrTokenExpired) {
