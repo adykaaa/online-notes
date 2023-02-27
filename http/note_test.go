@@ -33,8 +33,8 @@ func TestCreateNote(t *testing.T) {
 	testCases := []struct {
 		name             string
 		body             *models.Note
-		validateJSON     func(t *testing.T, v *validator.Validate, user *models.Note)
-		dbmockCreateNote func(mockdb *mockdb.MockQuerier, user *models.Note)
+		validateJSON     func(t *testing.T, v *validator.Validate, note *models.Note)
+		dbmockCreateNote func(mockdb *mockdb.MockQuerier, note *models.Note)
 		checkResponse    func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request)
 	}{
 		{
@@ -81,7 +81,7 @@ func TestCreateNote(t *testing.T) {
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodPost, "/notes/create", bytes.NewReader(b))
 
-			handler := RegisterUser(dbmock)
+			handler := CreateNote(dbmock)
 			handler(rec, req)
 			tc.checkResponse(t, rec, req)
 		})
