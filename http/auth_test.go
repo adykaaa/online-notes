@@ -81,7 +81,7 @@ func TestAuthMiddleware(t *testing.T) {
 			rec := httptest.NewRecorder()
 
 			req := httptest.NewRequest(http.MethodGet, "/test", nil)
-			req.AddCookie(&http.Cookie{Name: "paseto", Value: "testtoken", Expires: time.Now().Add(30 * time.Minute)})
+			req.AddCookie(&http.Cookie{Name: "paseto", Value: "test", Expires: time.Now().Add(30 * time.Minute)})
 
 			r.ServeHTTP(rec, req)
 			tc.checkResponse(t, rec, req)
