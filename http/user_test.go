@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -204,7 +205,7 @@ func TestRegisterUser(t *testing.T) {
 			},
 
 			dbmockCreateUser: func(mockdb *mockdb.MockQuerier, user *models.User) {
-				mockdb.EXPECT().RegisterUser(gomock.Any(), gomock.Any()).Times(1).Return("", sql.ErrConnDone)
+				mockdb.EXPECT().RegisterUser(gomock.Any(), gomock.Any()).Times(1).Return("", errors.New("internal error"))
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {

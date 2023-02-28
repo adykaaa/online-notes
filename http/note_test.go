@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -62,7 +63,7 @@ func TestCreateNote(t *testing.T) {
 		checkResponse    func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request)
 	}{
 		{
-			name: "Note creation OK",
+			name: "note creation OK",
 
 			body: testNote,
 
@@ -111,30 +112,42 @@ func TestCreateNote(t *testing.T) {
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
-			{
-				name: "returns forbidden - duplicate note title",
-	
-				body: &models.Note{
-					ID:        uuid.New(),
-					Title:     "",
-					User:      "testuser1",
-					Text:      "test1",
-					CreatedAt: time.Now(),
-					UpdatedAt: time.Now(),
-				},
-	
-				validateJSON: func(t *testing.T, v *validator.Validate, note *models.Note) {
-					err := v.Struct(note)
-					require.Error(t, err)
-				},
-	
-				dbmockCreateNote: func(mockdb *mockdb.MockQuerier, note *models.Note) {
-					mockdb.EXPECT().CreateNote(gomock.Any(), gomock.Any()).Times(1).Return(nil,pq.Error{} )
-				},
-	
-				checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
-					require.Equal(t, http.StatusBadRequest, recorder.Code)
-				},
+		},
+		{
+			name: "returns forbidden - duplicate note title",
+
+			body: testNote,
+
+			validateJSON: func(t *testing.T, v *validator.Validate, note *models.Note) {
+				err := v.Struct(note)
+				require.NoError(t, err)
+			},
+
+			dbmockCreateNote: func(mockdb *mockdb.MockQuerier, note *models.Note) {
+				mockdb.EXPECT().CreateNote(gomock.Any(), gomock.Any()).Times(1).Return(note.ID, &pq.Error{Code: "23505"})
+			},
+
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
+				require.Equal(t, http.StatusForbidden, recorder.Code)
+			},
+		},
+		{
+			name: "returns internal server error - db error",
+
+			body: testNote,
+
+			validateJSON: func(t *testing.T, v *validator.Validate, note *models.Note) {
+				err := v.Struct(note)
+				require.NoError(t, err)
+			},
+
+			dbmockCreateNote: func(mockdb *mockdb.MockQuerier, note *models.Note) {
+				mockdb.EXPECT().CreateNote(gomock.Any(), gomock.Any()).Times(1).Return(note.ID, errors.New("internal error"))
+			},
+
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
 		},
 	}
 
@@ -159,5 +172,17 @@ func TestCreateNote(t *testing.T) {
 			tc.checkResponse(t, rec, req)
 		})
 	}
+
+}
+
+func TestGetAllNotesFromUser(t *testing.T) {
+
+}
+
+func TestDeleteNote(t *testing.T) {
+
+}
+
+func TestUpdateNote(t *testing.T) {
 
 }
