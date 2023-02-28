@@ -4,19 +4,44 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 	"time"
 
 	mockdb "github.com/adykaaa/online-notes/db/mock"
 	db "github.com/adykaaa/online-notes/db/sqlc"
 	models "github.com/adykaaa/online-notes/http/models"
+	"github.com/adykaaa/online-notes/lib/password"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
+
+type createNoteArgs db.CreateNoteParams
+
+func (a *createNoteArgs) Matches(x interface{}) bool {
+	reflectedValue := reflect.ValueOf(x).Elem()
+	if a.Username != reflectedValue.FieldByName("Username").String() {
+		return false
+	}
+	if a.Email != reflectedValue.FieldByName("Email").String() {
+		return false
+	}
+	err := password.Validate(reflectedValue.FieldByName("Password").String(), a.Password)
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+func (a *createNoteArgs) String() string {
+	return fmt.Sprintf("Username: %s, Email: %s", a.Username, a.Email)
+}
 
 func TestCreateNote(t *testing.T) {
 	jsonValidator := validator.New()
