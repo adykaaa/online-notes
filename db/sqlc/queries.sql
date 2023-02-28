@@ -15,7 +15,7 @@ WHERE username = $1;
 -- name: CreateNote :one
 INSERT INTO notes (id, title, username, text, created_at, updated_at)
 VALUES ($1,$2,$3,$4,$5,$6)
-RETURNING *;
+RETURNING id;
 
 -- name: UpdateNote :one
 UPDATE notes

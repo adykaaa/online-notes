@@ -21,7 +21,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// needed for the custom mocker.
 type regUserArgs db.RegisterUserParams
 
 func (a *regUserArgs) Matches(x interface{}) bool {

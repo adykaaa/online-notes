@@ -11,7 +11,7 @@ import (
 )
 
 type Querier interface {
-	CreateNote(ctx context.Context, arg *CreateNoteParams) (Note, error)
+	CreateNote(ctx context.Context, arg *CreateNoteParams) (uuid.UUID, error)
 	DeleteNote(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	GetAllNotesFromUser(ctx context.Context, username string) ([]Note, error)
 	GetUser(ctx context.Context, username string) (User, error)

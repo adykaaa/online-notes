@@ -38,7 +38,7 @@ func CreateNote(q sqlc.Querier) http.HandlerFunc {
 			return
 		}
 
-		n, err := q.CreateNote(ctx, &sqlc.CreateNoteParams{
+		retID, err := q.CreateNote(ctx, &sqlc.CreateNoteParams{
 			ID:        uuid.New(),
 			Title:     noteRequest.Title,
 			Username:  noteRequest.User,
@@ -60,7 +60,7 @@ func CreateNote(q sqlc.Querier) http.HandlerFunc {
 		}
 
 		httplib.JSON(w, msg{"success": "note creation successful!"}, http.StatusCreated)
-		l.Info().Msgf("Note with ID %v has been created for user: %s", n.ID, n.Username)
+		l.Info().Msgf("Note with ID %v has been created for user: %s", retID, noteRequest.User)
 	}
 }
 

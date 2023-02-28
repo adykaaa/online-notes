@@ -41,26 +41,12 @@ func TestDBMethods(t *testing.T) {
 			UpdatedAt: randUpdatedAt,
 		}
 
-		n := db.Note{
-			ID:        id,
-			Title:     randTitle,
-			Username:  randUsername,
-			Text:      randText,
-			CreatedAt: randCreatedAt,
-			UpdatedAt: randUpdatedAt,
-		}
-
-		mockdb.EXPECT().CreateNote(ctx, &args).Return(n, nil)
-		retNote, err := mockdb.CreateNote(ctx, &args)
+		mockdb.EXPECT().CreateNote(ctx, &args).Return(args.ID, nil)
+		retID, err := mockdb.CreateNote(ctx, &args)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, id)
-		assert.Equal(t, args.ID, retNote.ID)
-		assert.Equal(t, args.Title, retNote.Title)
-		assert.Equal(t, args.Username, retNote.Username)
-		assert.Equal(t, args.Text, retNote.Text)
-		assert.Equal(t, args.CreatedAt, retNote.CreatedAt)
-		assert.Equal(t, args.UpdatedAt, retNote.UpdatedAt)
+		assert.Equal(t, args.ID, retID)
 	})
 	t.Run("UpdateNote OK", func(t *testing.T) {
 		updatedAt := time.Date(2021, 8, 15, 14, 30, 45, 100, time.Local)

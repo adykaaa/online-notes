@@ -37,10 +37,10 @@ func (m *MockQuerier) EXPECT() *MockQuerierMockRecorder {
 }
 
 // CreateNote mocks base method.
-func (m *MockQuerier) CreateNote(arg0 context.Context, arg1 *db.CreateNoteParams) (db.Note, error) {
+func (m *MockQuerier) CreateNote(arg0 context.Context, arg1 *db.CreateNoteParams) (uuid.UUID, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateNote", arg0, arg1)
-	ret0, _ := ret[0].(db.Note)
+	ret0, _ := ret[0].(uuid.UUID)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

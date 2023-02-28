@@ -48,15 +48,16 @@ func TestCreateNote(t *testing.T) {
 			},
 
 			dbmockCreateNote: func(mockdb *mockdb.MockQuerier, note *models.Note) {
-				args := testNote
-				mockdb.EXPECT().CreateNote(gomock.Any(), &args).Times(1).Return(db.Note{
+				args := db.CreateNoteParams{
 					ID:        testNote.ID,
 					Title:     testNote.Title,
 					Username:  testNote.User,
 					Text:      sql.NullString{String: testNote.Text, Valid: true},
 					CreatedAt: testNote.CreatedAt,
 					UpdatedAt: testNote.UpdatedAt,
-				}, nil)
+				}
+
+				mockdb.EXPECT().CreateNote(gomock.Any(), &args).Times(1).Return(args.ID, nil)
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
