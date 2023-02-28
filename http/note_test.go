@@ -14,10 +14,10 @@ import (
 	mockdb "github.com/adykaaa/online-notes/db/mock"
 	db "github.com/adykaaa/online-notes/db/sqlc"
 	models "github.com/adykaaa/online-notes/http/models"
-	"github.com/adykaaa/online-notes/lib/password"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	"github.com/stretchr/testify/require"
 )
 
@@ -28,11 +28,10 @@ func (a *createNoteArgs) Matches(x interface{}) bool {
 	if a.Username != reflectedValue.FieldByName("Username").String() {
 		return false
 	}
-	if a.Email != reflectedValue.FieldByName("Email").String() {
+	if a.Title != reflectedValue.FieldByName("Title").String() {
 		return false
 	}
-	err := password.Validate(reflectedValue.FieldByName("Password").String(), a.Password)
-	if err != nil {
+	if a.Text.String != reflectedValue.FieldByName("Text").FieldByName("String").String() {
 		return false
 	}
 
@@ -40,7 +39,7 @@ func (a *createNoteArgs) Matches(x interface{}) bool {
 }
 
 func (a *createNoteArgs) String() string {
-	return fmt.Sprintf("Username: %s, Email: %s", a.Username, a.Email)
+	return fmt.Sprintf("ID: %v, Title: %s, Username: %s, Text: %s", a.ID, a.Title, a.Username, a.Text.String)
 }
 
 func TestCreateNote(t *testing.T) {
@@ -73,7 +72,7 @@ func TestCreateNote(t *testing.T) {
 			},
 
 			dbmockCreateNote: func(mockdb *mockdb.MockQuerier, note *models.Note) {
-				args := db.CreateNoteParams{
+				args := createNoteArgs{
 					ID:        testNote.ID,
 					Title:     testNote.Title,
 					Username:  testNote.User,
@@ -88,6 +87,54 @@ func TestCreateNote(t *testing.T) {
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
 				require.Equal(t, http.StatusCreated, recorder.Code)
 			},
+		},
+		{
+			name: "returns bad request - wrongly formatted note param",
+
+			body: &models.Note{
+				ID:        uuid.New(),
+				Title:     "",
+				User:      "testuser1",
+				Text:      "test1",
+				CreatedAt: time.Now(),
+				UpdatedAt: time.Now(),
+			},
+
+			validateJSON: func(t *testing.T, v *validator.Validate, note *models.Note) {
+				err := v.Struct(note)
+				require.Error(t, err)
+			},
+
+			dbmockCreateNote: func(mockdb *mockdb.MockQuerier, note *models.Note) {
+			},
+
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+			{
+				name: "returns forbidden - duplicate note title",
+	
+				body: &models.Note{
+					ID:        uuid.New(),
+					Title:     "",
+					User:      "testuser1",
+					Text:      "test1",
+					CreatedAt: time.Now(),
+					UpdatedAt: time.Now(),
+				},
+	
+				validateJSON: func(t *testing.T, v *validator.Validate, note *models.Note) {
+					err := v.Struct(note)
+					require.Error(t, err)
+				},
+	
+				dbmockCreateNote: func(mockdb *mockdb.MockQuerier, note *models.Note) {
+					mockdb.EXPECT().CreateNote(gomock.Any(), gomock.Any()).Times(1).Return(nil,pq.Error{} )
+				},
+	
+				checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
+					require.Equal(t, http.StatusBadRequest, recorder.Code)
+				},
 		},
 	}
 
