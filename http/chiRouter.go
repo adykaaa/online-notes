@@ -12,11 +12,6 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type TokenManager interface {
-	CreateToken(username string, duration time.Duration) (string, *PasetoPayload, error)
-	VerifyToken(token string) (*PasetoPayload, error)
-}
-
 func RegisterChiMiddlewares(r *chi.Mux, l *zerolog.Logger) {
 	// Request logger has middleware.Recoverer and RequestID baked into it.
 	r.Use(render.SetContentType(render.ContentTypeJSON),
