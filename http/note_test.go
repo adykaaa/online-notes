@@ -176,6 +176,49 @@ func TestCreateNote(t *testing.T) {
 }
 
 func TestGetAllNotesFromUser(t *testing.T) {
+	testCases := []struct {
+		name                      string
+		addQuery                  func(t *testing.T, r *http.Request)
+		dbmockGetAllNotesFromUser func(mockdb *mockdb.MockQuerier)
+		checkResponse             func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request)
+	}{
+		{
+			name: "gettings notes from user OK",
+
+			addQuery: func(t *testing.T, r *http.Request) {
+				q := r.URL.Query()
+				q.Add("username", "testuser1")
+				r.URL.RawQuery = q.Encode()
+			},
+
+			dbmockGetAllNotesFromUser: func(mockdb *mockdb.MockQuerier) {
+				mockdb.EXPECT().GetAllNotesFromUser(gomock.Any(), "testuser1").Times(1).Return([]db.Note{}, nil)
+			},
+
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+	}
+
+	for c := range testCases {
+		tc := testCases[c]
+
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			dbmock := mockdb.NewMockQuerier(ctrl)
+
+			rec := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodGet, "/notes", nil)
+
+			tc.addQuery(t, req)
+			tc.dbmockGetAllNotesFromUser(dbmock)
+
+			handler := GetAllNotesFromUser(dbmock)
+			handler(rec, req)
+			tc.checkResponse(t, rec, req)
+		})
+	}
 
 }
 
