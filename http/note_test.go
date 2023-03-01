@@ -199,6 +199,36 @@ func TestGetAllNotesFromUser(t *testing.T) {
 				require.Equal(t, http.StatusOK, recorder.Code)
 			},
 		},
+		{
+			name: "returns bad request - missing url param",
+
+			addQuery: func(t *testing.T, r *http.Request) {
+			},
+
+			dbmockGetAllNotesFromUser: func(mockdb *mockdb.MockQuerier) {
+			},
+
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "returns internal server error - db error",
+
+			addQuery: func(t *testing.T, r *http.Request) {
+				q := r.URL.Query()
+				q.Add("username", "testuser1")
+				r.URL.RawQuery = q.Encode()
+			},
+
+			dbmockGetAllNotesFromUser: func(mockdb *mockdb.MockQuerier) {
+				mockdb.EXPECT().GetAllNotesFromUser(gomock.Any(), "testuser1").Times(1).Return(nil, errors.New("internal error"))
+			},
+
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
 	}
 
 	for c := range testCases {

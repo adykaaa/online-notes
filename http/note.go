@@ -80,8 +80,6 @@ func GetAllNotesFromUser(q sqlc.Querier) http.HandlerFunc {
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				l.Info().Msgf("Requested user has no Notes!. %s", username)
-				httplib.JSON(w, msg{"error": "user has no notes!"}, http.StatusNotFound)
-				return
 			}
 			l.Info().Err(err).Msgf("Could not retrieve Notes for user. %v", err)
 			httplib.JSON(w, msg{"error": "could not retrieve notes for user"}, http.StatusInternalServerError)
