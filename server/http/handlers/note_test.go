@@ -14,7 +14,7 @@ import (
 
 	mockdb "github.com/adykaaa/online-notes/db/mock"
 	db "github.com/adykaaa/online-notes/db/sqlc"
-	models "github.com/adykaaa/online-notes/http/models"
+	models "github.com/adykaaa/online-notes/server/http/models"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"

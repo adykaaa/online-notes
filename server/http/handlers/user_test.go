@@ -14,9 +14,9 @@ import (
 
 	mockdb "github.com/adykaaa/online-notes/db/mock"
 	db "github.com/adykaaa/online-notes/db/sqlc"
-	auth "github.com/adykaaa/online-notes/http/auth"
-	models "github.com/adykaaa/online-notes/http/models"
 	"github.com/adykaaa/online-notes/lib/password"
+	auth "github.com/adykaaa/online-notes/server/http/auth"
+	models "github.com/adykaaa/online-notes/server/http/models"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang/mock/gomock"
 	"github.com/lib/pq"
@@ -43,28 +43,6 @@ func (a *regUserArgs) Matches(x interface{}) bool {
 
 func (a *regUserArgs) String() string {
 	return fmt.Sprintf("Username: %s, Email: %s", a.Username, a.Email)
-}
-
-type MockTokenManager struct {
-	ReturnInvalidToken bool
-	ReturnExpiredToken bool
-}
-
-func (m *MockTokenManager) CreateToken(username string, duration time.Duration) (string, *auth.PasetoPayload, error) {
-	return "testtoken",
-		&auth.PasetoPayload{},
-		nil
-}
-
-func (m *MockTokenManager) VerifyToken(token string) (*auth.PasetoPayload, error) {
-	if m.ReturnExpiredToken {
-		return nil, auth.ErrTokenExpired
-	}
-	if m.ReturnInvalidToken {
-		return nil, auth.ErrTokenInvalid
-	}
-	return &auth.PasetoPayload{},
-		nil
 }
 
 func TestRegisterUser(t *testing.T) {
@@ -244,7 +222,7 @@ func TestLoginUser(t *testing.T) {
 		Password string `json:"password"`
 	}
 
-	tm := &MockTokenManager{}
+	tm := &auth.MockTokenManager{}
 
 	testCases := []struct {
 		name             string

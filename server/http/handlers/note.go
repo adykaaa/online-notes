@@ -8,10 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/adykaaa/online-notes/db/sqlc"
 	sqlc "github.com/adykaaa/online-notes/db/sqlc"
-	models "github.com/adykaaa/online-notes/http/models"
 	httplib "github.com/adykaaa/online-notes/lib/http"
+	models "github.com/adykaaa/online-notes/server/http/models"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
@@ -27,7 +26,7 @@ func CreateNote(q sqlc.Querier) http.HandlerFunc {
 		err := json.NewDecoder(r.Body).Decode(&noteRequest)
 		if err != nil {
 			l.Error().Err(err).Msgf("error decoding the Note into httplib.JSON during registration. %v", err)
-			httplib.JSON(w, msg{"error": "internal error decoding Note struct"}, http.StatusInternalServerError)
+			httplib.JSON(w, httplib.Msg{"error": "internal error decoding Note struct"}, http.StatusInternalServerError)
 			return
 		}
 
@@ -35,7 +34,7 @@ func CreateNote(q sqlc.Querier) http.HandlerFunc {
 		err = validate.Struct(&noteRequest)
 		if err != nil {
 			l.Error().Err(err).Msgf("error during Note struct validation %v", err)
-			httplib.JSON(w, msg{"error": "wrongly formatted or missing Note parameter"}, http.StatusBadRequest)
+			httplib.JSON(w, httplib.Msg{"error": "wrongly formatted or missing Note parameter"}, http.StatusBadRequest)
 			return
 		}
 
@@ -50,17 +49,17 @@ func CreateNote(q sqlc.Querier) http.HandlerFunc {
 		if err != nil {
 			if postgreError, ok := err.(*pq.Error); ok {
 				if postgreError.Code.Name() == "unique_violation" {
-					httplib.JSON(w, msg{"error": "a Note with that title already exists! Titles must be unique."}, http.StatusForbidden)
+					httplib.JSON(w, httplib.Msg{"error": "a Note with that title already exists! Titles must be unique."}, http.StatusForbidden)
 					l.Error().Err(err).Msgf("Note creation failed, a note with that title already exists")
 					return
 				}
 			}
 			l.Error().Err(err).Msgf("Error during Note creation! %v", err)
-			httplib.JSON(w, msg{"error": "internal error during note creation"}, http.StatusInternalServerError)
+			httplib.JSON(w, httplib.Msg{"error": "internal error during note creation"}, http.StatusInternalServerError)
 			return
 		}
 
-		httplib.JSON(w, msg{"success": "note creation successful!"}, http.StatusCreated)
+		httplib.JSON(w, httplib.Msg{"success": "note creation successful!"}, http.StatusCreated)
 		l.Info().Msgf("Note with ID %v has been created for user: %s", retID, noteRequest.User)
 	}
 }
@@ -73,7 +72,7 @@ func GetAllNotesFromUser(q sqlc.Querier) http.HandlerFunc {
 		username := r.URL.Query().Get("username")
 		if username == "" {
 			l.Error().Msgf("error fetching username, the request parameter is empty. %s", username)
-			httplib.JSON(w, msg{"error": "user not in request params"}, http.StatusBadRequest)
+			httplib.JSON(w, httplib.Msg{"error": "user not in request params"}, http.StatusBadRequest)
 			return
 		}
 
@@ -83,7 +82,7 @@ func GetAllNotesFromUser(q sqlc.Querier) http.HandlerFunc {
 				l.Info().Msgf("Requested user has no Notes!. %s", username)
 			}
 			l.Info().Err(err).Msgf("Could not retrieve Notes for user. %v", err)
-			httplib.JSON(w, msg{"error": "could not retrieve notes for user"}, http.StatusInternalServerError)
+			httplib.JSON(w, httplib.Msg{"error": "could not retrieve notes for user"}, http.StatusInternalServerError)
 			return
 		}
 
@@ -100,19 +99,19 @@ func DeleteNote(q sqlc.Querier) http.HandlerFunc {
 		reqUUID, err := uuid.Parse(strings.Split(r.URL.Path, "/")[2])
 		if err != nil {
 			l.Info().Msgf("Could not convert ID to UUID.")
-			httplib.JSON(w, msg{"error": "could not convert note id to uuid"}, http.StatusBadRequest)
+			httplib.JSON(w, httplib.Msg{"error": "could not convert note id to uuid"}, http.StatusBadRequest)
 			return
 		}
 
 		id, err := q.DeleteNote(ctx, reqUUID)
 		if err != nil {
 			l.Info().Msgf("Could not delete Note %v from the DB!", reqUUID)
-			httplib.JSON(w, msg{"error": "could not delete note from DB"}, http.StatusInternalServerError)
+			httplib.JSON(w, httplib.Msg{"error": "could not delete note from DB"}, http.StatusInternalServerError)
 			return
 		}
 
 		l.Info().Msgf("Deleting note %v was successful!", id)
-		httplib.JSON(w, msg{"success": "note deleted"}, http.StatusOK)
+		httplib.JSON(w, httplib.Msg{"success": "note deleted"}, http.StatusOK)
 	}
 
 }
@@ -130,7 +129,7 @@ func UpdateNote(q sqlc.Querier) http.HandlerFunc {
 		reqUUID, err := uuid.Parse(strings.Split(r.URL.Path, "/")[2])
 		if err != nil {
 			l.Error().Err(err).Msgf("Could not convert ID to UUID.")
-			httplib.JSON(w, msg{"error": "could not convert note id to uuid"}, http.StatusBadRequest)
+			httplib.JSON(w, httplib.Msg{"error": "could not convert note id to uuid"}, http.StatusBadRequest)
 			return
 		}
 
@@ -142,7 +141,7 @@ func UpdateNote(q sqlc.Querier) http.HandlerFunc {
 		err = json.NewDecoder(r.Body).Decode(&updateRequest)
 		if err != nil {
 			l.Error().Err(err).Msgf("error decoding the Note into httplib.JSON during registration. %v", err)
-			httplib.JSON(w, msg{"error": "internal error decoding Note struct"}, http.StatusInternalServerError)
+			httplib.JSON(w, httplib.Msg{"error": "internal error decoding Note struct"}, http.StatusInternalServerError)
 			return
 		}
 
@@ -161,11 +160,11 @@ func UpdateNote(q sqlc.Querier) http.HandlerFunc {
 		})
 		if err != nil {
 			l.Info().Msgf("Could not update Note with id: %v in the DB!", reqUUID)
-			httplib.JSON(w, msg{"error": "could not update note in DB"}, http.StatusInternalServerError)
+			httplib.JSON(w, httplib.Msg{"error": "could not update note in DB"}, http.StatusInternalServerError)
 			return
 		}
 
-		httplib.JSON(w, msg{"success": "note updated!"}, http.StatusOK)
+		httplib.JSON(w, httplib.Msg{"success": "note updated!"}, http.StatusOK)
 		l.Info().Msgf("Note with id: %v successfully updated!", reqUUID)
 	}
 }

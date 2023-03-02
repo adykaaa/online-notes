@@ -9,6 +9,8 @@ import (
 	"github.com/rs/zerolog"
 )
 
+type Msg map[string]string
+
 func JSON(w http.ResponseWriter, payload interface{}, code int) {
 	response, err := json.Marshal(payload)
 	if err != nil {
