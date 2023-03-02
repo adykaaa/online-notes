@@ -1,4 +1,4 @@
-package http
+package server
 
 import (
 	"context"
@@ -12,16 +12,16 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type Server struct {
+type HTTPServer struct {
 	logger          *zerolog.Logger
 	server          *http.Server
 	notify          chan error
 	shutdownTimeout time.Duration
 }
 
-func NewServer(router Router, addr string, l *zerolog.Logger) (*Server, error) {
+func NewHTTPServer(router Router, addr string, l *zerolog.Logger) (*Server, error) {
 
-	s := &Server{
+	s := &HTTPServer{
 		server: &http.Server{
 			Handler: router,
 			Addr:    addr,
@@ -40,7 +40,7 @@ func NewServer(router Router, addr string, l *zerolog.Logger) (*Server, error) {
 	return s, nil
 }
 
-func (s *Server) Start() {
+func (s *HTTPServer) Start() {
 	go func() {
 		s.notify <- s.server.ListenAndServe()
 		close(s.notify)
@@ -57,11 +57,11 @@ func (s *Server) Start() {
 	}
 }
 
-func (s *Server) Notify() <-chan error {
+func (s *HTTPServer) Notify() <-chan error {
 	return s.notify
 }
 
-func (s *Server) Shutdown() error {
+func (s *HTTPServer) Shutdown() error {
 	ctx, cancel := context.WithTimeout(context.Background(), s.shutdownTimeout)
 	defer cancel()
 

@@ -1,4 +1,4 @@
-package http
+package auth
 
 import (
 	"testing"
@@ -8,12 +8,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestPasetoCreator(t *testing.T) {
+func TestPasetoManager(t *testing.T) {
 
 	key := random.NewString(32)
 	uname := random.NewString(15)
 	duration := 1000 * time.Second
-	pc, err := NewPasetoCreator(key)
+	pc, err := NewPasetoManager(key)
 
 	require.NoError(t, err)
 
@@ -30,7 +30,7 @@ func TestPasetoCreator(t *testing.T) {
 	})
 
 	t.Run("fails because of invalid key length", func(t *testing.T) {
-		pc, err := NewPasetoCreator("wrongkeylength")
+		pc, err := NewPasetoManager("wrongkeylength")
 		require.Error(t, err)
 		require.Nil(t, pc)
 	})

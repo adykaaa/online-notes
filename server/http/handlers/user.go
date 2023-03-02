@@ -1,4 +1,4 @@
-package http
+package handlers
 
 import (
 	"database/sql"
@@ -9,6 +9,7 @@ import (
 	"time"
 
 	sqlc "github.com/adykaaa/online-notes/db/sqlc"
+	auth "github.com/adykaaa/online-notes/http/auth"
 	models "github.com/adykaaa/online-notes/http/models"
 	httplib "github.com/adykaaa/online-notes/lib/http"
 	"github.com/adykaaa/online-notes/lib/password"
@@ -73,7 +74,7 @@ func RegisterUser(q sqlc.Querier) http.HandlerFunc {
 
 }
 
-func LoginUser(q sqlc.Querier, t TokenManager, tokenDuration time.Duration) http.HandlerFunc {
+func LoginUser(q sqlc.Querier, t auth.TokenManager, tokenDuration time.Duration) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()

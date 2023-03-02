@@ -1,10 +1,11 @@
-package http
+package server
 
 import (
 	"time"
 
 	"github.com/adykaaa/httplog"
 	sqlc "github.com/adykaaa/online-notes/db/sqlc"
+	auth "github.com/adykaaa/online-notes/http/auth"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -30,12 +31,12 @@ func RegisterChiMiddlewares(r *chi.Mux, l *zerolog.Logger) {
 
 type msg map[string]string
 
-func RegisterChiHandlers(router *chi.Mux, q sqlc.Querier, t TokenManager, tokenDuration time.Duration, l *zerolog.Logger) {
+func RegisterChiHandlers(router *chi.Mux, q sqlc.Querier, t auth.TokenManager, tokenDuration time.Duration, l *zerolog.Logger) {
 	router.Post("/register", RegisterUser(q))
 	router.Post("/login", LoginUser(q, t, tokenDuration))
 	router.Post("/logout", LogoutUser())
 	router.Route("/notes", func(router chi.Router) {
-		router.Use(AuthMiddleware(t, l))
+		router.Use(auth.AuthMiddleware(t, l))
 		router.Post("/create", CreateNote(q))
 		router.Get("/", GetAllNotesFromUser(q))
 		router.Put("/{id}", UpdateNote(q))
@@ -44,7 +45,7 @@ func RegisterChiHandlers(router *chi.Mux, q sqlc.Querier, t TokenManager, tokenD
 }
 
 func NewChiRouter(q sqlc.Querier, symmetricKey string, tokenDuration time.Duration, l *zerolog.Logger) (*chi.Mux, error) {
-	tokenCreator, err := NewPasetoCreator(symmetricKey)
+	tokenCreator, err := auth.NewPasetoManager(symmetricKey)
 	if err != nil {
 		l.Err(err).Msgf("could not create a new PasetoCreator. %v", err)
 		return nil, err

@@ -1,8 +1,7 @@
-package http
+package server
 
 import (
 	"net/http"
-	"time"
 )
 
 type Router interface {
@@ -11,9 +10,4 @@ type Router interface {
 	Post(pattern string, handlerFn http.HandlerFunc)
 	Put(pattern string, handlerFn http.HandlerFunc)
 	ServeHTTP(w http.ResponseWriter, r *http.Request)
-}
-
-type TokenManager interface {
-	CreateToken(username string, duration time.Duration) (string, *PasetoPayload, error)
-	VerifyToken(token string) (*PasetoPayload, error)
 }

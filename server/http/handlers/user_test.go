@@ -1,4 +1,4 @@
-package http
+package handlers
 
 import (
 	"bytes"
@@ -14,6 +14,7 @@ import (
 
 	mockdb "github.com/adykaaa/online-notes/db/mock"
 	db "github.com/adykaaa/online-notes/db/sqlc"
+	auth "github.com/adykaaa/online-notes/http/auth"
 	models "github.com/adykaaa/online-notes/http/models"
 	"github.com/adykaaa/online-notes/lib/password"
 	"github.com/go-playground/validator/v10"
@@ -49,20 +50,20 @@ type MockTokenManager struct {
 	ReturnExpiredToken bool
 }
 
-func (m *MockTokenManager) CreateToken(username string, duration time.Duration) (string, *PasetoPayload, error) {
+func (m *MockTokenManager) CreateToken(username string, duration time.Duration) (string, *auth.PasetoPayload, error) {
 	return "testtoken",
-		&PasetoPayload{},
+		&auth.PasetoPayload{},
 		nil
 }
 
-func (m *MockTokenManager) VerifyToken(token string) (*PasetoPayload, error) {
+func (m *MockTokenManager) VerifyToken(token string) (*auth.PasetoPayload, error) {
 	if m.ReturnExpiredToken {
-		return nil, ErrTokenExpired
+		return nil, auth.ErrTokenExpired
 	}
 	if m.ReturnInvalidToken {
-		return nil, ErrTokenInvalid
+		return nil, auth.ErrTokenInvalid
 	}
-	return &PasetoPayload{},
+	return &auth.PasetoPayload{},
 		nil
 }
 
@@ -250,7 +251,7 @@ func TestLoginUser(t *testing.T) {
 		body             *loginUserReq
 		dbmockGetUser    func(t *testing.T, mockdb *mockdb.MockQuerier, user *loginUserReq) string
 		validatePassword func(t *testing.T, user *loginUserReq, dbUserPassword string)
-		createToken      func(t *testing.T, tm TokenManager, user *loginUserReq, duration time.Duration) string
+		createToken      func(t *testing.T, tm auth.TokenManager, user *loginUserReq, duration time.Duration) string
 		checkResponse    func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request, token string)
 	}{
 		{
@@ -279,7 +280,7 @@ func TestLoginUser(t *testing.T) {
 				require.NoError(t, err)
 			},
 
-			createToken: func(t *testing.T, tm TokenManager, user *loginUserReq, duration time.Duration) string {
+			createToken: func(t *testing.T, tm auth.TokenManager, user *loginUserReq, duration time.Duration) string {
 				token, _, err := tm.CreateToken(user.Username, duration)
 				require.NoError(t, err)
 
@@ -313,7 +314,7 @@ func TestLoginUser(t *testing.T) {
 			validatePassword: func(t *testing.T, user *loginUserReq, dbHashedPassword string) {
 			},
 
-			createToken: func(t *testing.T, tm TokenManager, user *loginUserReq, duration time.Duration) string {
+			createToken: func(t *testing.T, tm auth.TokenManager, user *loginUserReq, duration time.Duration) string {
 				return ""
 			},
 
@@ -347,7 +348,7 @@ func TestLoginUser(t *testing.T) {
 				require.Error(t, err)
 			},
 
-			createToken: func(t *testing.T, tm TokenManager, user *loginUserReq, duration time.Duration) string {
+			createToken: func(t *testing.T, tm auth.TokenManager, user *loginUserReq, duration time.Duration) string {
 				return ""
 			},
 
@@ -371,7 +372,7 @@ func TestLoginUser(t *testing.T) {
 			validatePassword: func(t *testing.T, user *loginUserReq, dbHashedPassword string) {
 			},
 
-			createToken: func(t *testing.T, tm TokenManager, user *loginUserReq, duration time.Duration) string {
+			createToken: func(t *testing.T, tm auth.TokenManager, user *loginUserReq, duration time.Duration) string {
 				return ""
 			},
 

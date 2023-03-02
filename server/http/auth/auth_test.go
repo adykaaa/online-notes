@@ -1,4 +1,4 @@
-package http
+package auth
 
 import (
 	"io"
@@ -18,7 +18,7 @@ func TestAuthMiddleware(t *testing.T) {
 
 	testCases := []struct {
 		name            string
-		newMockTokenMgr func() *MockTokenManager
+		newMockTokenMgr func() *http.MockTokenManager
 		checkResponse   func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request)
 	}{
 		{

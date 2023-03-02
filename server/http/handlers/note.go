@@ -1,4 +1,4 @@
-package http
+package handlers
 
 import (
 	"database/sql"
@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/adykaaa/online-notes/db/sqlc"
 	sqlc "github.com/adykaaa/online-notes/db/sqlc"
 	models "github.com/adykaaa/online-notes/http/models"
 	httplib "github.com/adykaaa/online-notes/lib/http"

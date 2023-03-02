@@ -34,7 +34,7 @@ func main() {
 		l.Fatal().Err(err).Send()
 	}
 
-	httpServer, err := http.NewServer(router, config.HTTPServerAddress, &l)
+	httpServer, err := http.NewHTTPServer(router, config.HTTPServerAddress, &l)
 	if err != nil {
 		l.Fatal().Err(err).Send()
 	}

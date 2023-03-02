@@ -1,4 +1,4 @@
-package http
+package auth
 
 import (
 	"errors"
@@ -40,24 +40,24 @@ func NewPasetoPayload(username string, duration time.Duration) (*PasetoPayload, 
 	return payload, nil
 }
 
-type PasetoCreator struct {
+type PasetoManager struct {
 	symmetricKey []byte
 	paseto       *paseto.V2
 }
 
-func NewPasetoCreator(symmetricKey string) (*PasetoCreator, error) {
+func NewPasetoManager(symmetricKey string) (*PasetoManager, error) {
 	if len(symmetricKey) != chacha20poly1305.KeySize {
 		return nil, fmt.Errorf("invalid key size, must be %d bytes", chacha20poly1305.KeySize)
 	}
 
-	pc := &PasetoCreator{
+	pc := &PasetoManager{
 		symmetricKey: []byte(symmetricKey),
 		paseto:       paseto.NewV2(),
 	}
 	return pc, nil
 }
 
-func (c *PasetoCreator) CreateToken(username string, duration time.Duration) (string, *PasetoPayload, error) {
+func (c *PasetoManager) CreateToken(username string, duration time.Duration) (string, *PasetoPayload, error) {
 	payload, err := NewPasetoPayload(username, duration)
 	if err != nil {
 		return "", payload, err
@@ -67,7 +67,7 @@ func (c *PasetoCreator) CreateToken(username string, duration time.Duration) (st
 	return token, payload, err
 }
 
-func (c *PasetoCreator) VerifyToken(token string) (*PasetoPayload, error) {
+func (c *PasetoManager) VerifyToken(token string) (*PasetoPayload, error) {
 	if token == "" {
 		return nil, ErrTokenMissing
 	}
