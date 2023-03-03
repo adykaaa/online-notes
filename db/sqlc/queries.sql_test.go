@@ -57,18 +57,11 @@ func TestDBMethods(t *testing.T) {
 			UpdatedAt: sql.NullTime{Time: updatedAt, Valid: true},
 		}
 
-		mockdb.EXPECT().UpdateNote(ctx, args).Return(db.Note{
-			ID:        id,
-			Title:     "updated title",
-			Text:      sql.NullString{String: "updated text", Valid: true},
-			UpdatedAt: updatedAt,
-		}, nil)
+		mockdb.EXPECT().UpdateNote(ctx, args).Return(args.ID, nil)
 
-		retNote, err := mockdb.UpdateNote(ctx, args)
+		retID, err := mockdb.UpdateNote(ctx, args)
 		require.NoError(t, err)
-		require.Equal(t, args.ID, retNote.ID)
-		require.Equal(t, args.Title.String, retNote.Title)
-		require.Equal(t, args.Text.String, retNote.Text.String)
+		require.Equal(t, args.ID, retID)
 	})
 	t.Run("DeleteNote OK", func(t *testing.T) {
 

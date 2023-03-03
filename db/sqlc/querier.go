@@ -17,7 +17,7 @@ type Querier interface {
 	GetUser(ctx context.Context, username string) (User, error)
 	ListUsers(ctx context.Context) ([]User, error)
 	RegisterUser(ctx context.Context, arg *RegisterUserParams) (string, error)
-	UpdateNote(ctx context.Context, arg *UpdateNoteParams) (Note, error)
+	UpdateNote(ctx context.Context, arg *UpdateNoteParams) (uuid.UUID, error)
 }
 
 var _ Querier = (*Queries)(nil)

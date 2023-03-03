@@ -159,7 +159,7 @@ SET
   updated_at = COALESCE($4, updated_at)
 WHERE
   id = $1
-RETURNING id, title, username, text, created_at, updated_at
+RETURNING id
 `
 
 type UpdateNoteParams struct {
@@ -169,21 +169,14 @@ type UpdateNoteParams struct {
 	UpdatedAt sql.NullTime
 }
 
-func (q *Queries) UpdateNote(ctx context.Context, arg *UpdateNoteParams) (Note, error) {
+func (q *Queries) UpdateNote(ctx context.Context, arg *UpdateNoteParams) (uuid.UUID, error) {
 	row := q.db.QueryRowContext(ctx, updateNote,
 		arg.ID,
 		arg.Title,
 		arg.Text,
 		arg.UpdatedAt,
 	)
-	var i Note
-	err := row.Scan(
-		&i.ID,
-		&i.Title,
-		&i.Username,
-		&i.Text,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
 }

@@ -25,7 +25,7 @@ SET
   updated_at = COALESCE(sqlc.narg(updated_at), updated_at)
 WHERE
   id = $1
-RETURNING *;
+RETURNING id;
 
 -- name: GetAllNotesFromUser :many
 SELECT *

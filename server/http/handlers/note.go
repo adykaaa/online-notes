@@ -121,10 +121,7 @@ func UpdateNote(q sqlc.Querier) http.HandlerFunc {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
 
-		var (
-			isTitleValid bool = true
-			isTextValid  bool = true
-		)
+		var isTextValid bool = true
 
 		reqUUID, err := uuid.Parse(strings.Split(r.URL.Path, "/")[2])
 		if err != nil {
@@ -146,15 +143,18 @@ func UpdateNote(q sqlc.Querier) http.HandlerFunc {
 		}
 
 		if updateRequest.Title == "" {
-			isTitleValid = false
+			l.Error().Err(err).Msgf("Title cannot be empty!")
+			httplib.JSON(w, httplib.Msg{"error": "title of a note cannot be empty"}, http.StatusBadRequest)
+			return
 		}
+
 		if updateRequest.Text == "" {
 			isTextValid = false
 		}
 
-		_, err = q.UpdateNote(ctx, &sqlc.UpdateNoteParams{
+		id, err := q.UpdateNote(ctx, &sqlc.UpdateNoteParams{
 			ID:        reqUUID,
-			Title:     sql.NullString{String: updateRequest.Title, Valid: isTitleValid},
+			Title:     sql.NullString{String: updateRequest.Title, Valid: true},
 			Text:      sql.NullString{String: updateRequest.Text, Valid: isTextValid},
 			UpdatedAt: sql.NullTime{Time: time.Now(), Valid: true},
 		})
@@ -165,6 +165,6 @@ func UpdateNote(q sqlc.Querier) http.HandlerFunc {
 		}
 
 		httplib.JSON(w, httplib.Msg{"success": "note updated!"}, http.StatusOK)
-		l.Info().Msgf("Note with id: %v successfully updated!", reqUUID)
+		l.Info().Msgf("Note with id: %v successfully updated!", id)
 	}
 }
