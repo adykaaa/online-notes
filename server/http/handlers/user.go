@@ -145,7 +145,7 @@ func LogoutUser() http.HandlerFunc {
 	}
 }
 
-// TODO: implement these in the future
+// TODO: implement these in the future using gRPC. Also, don't forget to extend UserServicer with these 2 funcs.
 func ListUsers(q sqlc.Querier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
