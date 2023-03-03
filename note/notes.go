@@ -8,6 +8,7 @@ import (
 
 	sqlc "github.com/adykaaa/online-notes/db/sqlc"
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 type NoteServicer interface {
@@ -20,7 +21,7 @@ type NoteServicer interface {
 var (
 	ErrAlreadyExists = errors.New("note already exists")
 	ErrDBInternal    = errors.New("internal DB error during operation")
-	ErrNotFound      = errors.New("requested Note is not found")
+	ErrNotFound      = errors.New("requested note is not found")
 )
 
 type NoteService struct {
@@ -38,8 +39,8 @@ func (ns *NoteService) CreateNote(ctx context.Context, title string, username st
 	})
 
 	switch {
-	case errors.Is(err, sql.ErrNoRows):
-		return uuid.Nil, ErrNotFound
+	case err.(*pq.Error).Code.Name() == "unique_violation":
+		return uuid.Nil, ErrAlreadyExists
 	case err != nil:
 		return uuid.Nil, ErrDBInternal
 	default:
@@ -69,16 +70,20 @@ func (ns *NoteService) DeleteNote(ctx context.Context, reqID uuid.UUID) (uuid.UU
 	}
 }
 
-func (ns *NoteService) UpdateNote(ctx context.Context, reqID uuid.UUID, title string, text string, isTextEmpty bool) (uuid.UUID, error) {
+func (ns *NoteService) UpdateNote(ctx context.Context, reqID uuid.UUID, title string, text string, isTextValid bool) (uuid.UUID, error) {
 	id, err := ns.q.UpdateNote(ctx, &sqlc.UpdateNoteParams{
 		ID:        reqID,
 		Title:     sql.NullString{String: title, Valid: true},
-		Text:      sql.NullString{String: text, Valid: isTextEmpty},
+		Text:      sql.NullString{String: text, Valid: isTextValid},
 		UpdatedAt: sql.NullTime{Time: time.Now(), Valid: true},
 	})
 
-	if err != nil {
+	switch {
+	case errors.Is(err, sql.ErrNoRows):
+		return uuid.Nil, ErrNotFound
+	case err != nil:
 		return uuid.Nil, ErrDBInternal
+	default:
+		return id, nil
 	}
-	return id, nil
 }

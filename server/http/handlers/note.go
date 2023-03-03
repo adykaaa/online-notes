@@ -6,17 +6,15 @@ import (
 	"errors"
 	"net/http"
 	"strings"
-	"time"
 
-	sqlc "github.com/adykaaa/online-notes/db/sqlc"
 	httplib "github.com/adykaaa/online-notes/lib/http"
+	"github.com/adykaaa/online-notes/note"
 	models "github.com/adykaaa/online-notes/server/http/models"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
-	"github.com/lib/pq"
 )
 
-func CreateNote(q sqlc.Querier) http.HandlerFunc {
+func CreateNote(ns note.NoteServicer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
@@ -38,33 +36,24 @@ func CreateNote(q sqlc.Querier) http.HandlerFunc {
 			return
 		}
 
-		retID, err := q.CreateNote(ctx, &sqlc.CreateNoteParams{
-			ID:        uuid.New(),
-			Title:     noteRequest.Title,
-			Username:  noteRequest.User,
-			Text:      sql.NullString{String: noteRequest.Text, Valid: true},
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
-		})
-		if err != nil {
-			if postgreError, ok := err.(*pq.Error); ok {
-				if postgreError.Code.Name() == "unique_violation" {
-					httplib.JSON(w, httplib.Msg{"error": "a Note with that title already exists! Titles must be unique."}, http.StatusForbidden)
-					l.Error().Err(err).Msgf("Note creation failed, a note with that title already exists")
-					return
-				}
-			}
+		retID, err := ns.CreateNote(ctx, noteRequest.Title, noteRequest.User, noteRequest.Text)
+		switch {
+		case errors.Is(err, note.ErrAlreadyExists):
+			l.Error().Err(err).Msgf("Note creation failed, a note with that title already exists")
+			httplib.JSON(w, httplib.Msg{"error": "a Note with that title already exists! Titles must be unique."}, http.StatusForbidden)
+			return
+		case errors.Is(err, note.ErrDBInternal):
 			l.Error().Err(err).Msgf("Error during Note creation! %v", err)
 			httplib.JSON(w, httplib.Msg{"error": "internal error during note creation"}, http.StatusInternalServerError)
 			return
+		default:
+			l.Info().Msgf("Note with ID %v has been created for user: %s", retID, noteRequest.User)
+			httplib.JSON(w, httplib.Msg{"success": "note creation successful!"}, http.StatusCreated)
 		}
-
-		httplib.JSON(w, httplib.Msg{"success": "note creation successful!"}, http.StatusCreated)
-		l.Info().Msgf("Note with ID %v has been created for user: %s", retID, noteRequest.User)
 	}
 }
 
-func GetAllNotesFromUser(q sqlc.Querier) http.HandlerFunc {
+func GetAllNotesFromUser(ns note.NoteServicer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
@@ -76,22 +65,22 @@ func GetAllNotesFromUser(q sqlc.Querier) http.HandlerFunc {
 			return
 		}
 
-		notes, err := q.GetAllNotesFromUser(ctx, username)
-		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				l.Info().Msgf("Requested user has no Notes!. %s", username)
-			}
+		notes, err := ns.GetAllNotesFromUser(ctx, username)
+		switch {
+		case errors.Is(err, note.ErrNotFound):
+			l.Info().Msgf("Requested user has no Notes!. %s", username)
+		case errors.Is(err, note.ErrDBInternal):
 			l.Info().Err(err).Msgf("Could not retrieve Notes for user. %v", err)
 			httplib.JSON(w, httplib.Msg{"error": "could not retrieve notes for user"}, http.StatusInternalServerError)
 			return
+		default:
+			l.Info().Msgf("Retriving user notes for %s was successful!", username)
+			httplib.JSON(w, notes, http.StatusOK)
 		}
-
-		l.Info().Msgf("Retriving user notes for %s was successful!", username)
-		httplib.JSON(w, notes, http.StatusOK)
 	}
 }
 
-func DeleteNote(q sqlc.Querier) http.HandlerFunc {
+func DeleteNote(ns note.NoteServicer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
@@ -103,20 +92,23 @@ func DeleteNote(q sqlc.Querier) http.HandlerFunc {
 			return
 		}
 
-		id, err := q.DeleteNote(ctx, reqUUID)
-		if err != nil {
-			l.Info().Msgf("Could not delete Note %v from the DB!", reqUUID)
+		id, err := ns.DeleteNote(ctx, reqUUID)
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			l.Info().Msg("User has no notes to delete from!")
+		case errors.Is(err, note.ErrDBInternal):
+			l.Info().Err(err).Msgf("Could not delete Note %v from the DB!", reqUUID)
 			httplib.JSON(w, httplib.Msg{"error": "could not delete note from DB"}, http.StatusInternalServerError)
 			return
+		default:
+			l.Info().Msgf("Deleting note %v was successful!", id)
+			httplib.JSON(w, httplib.Msg{"success": "note deleted"}, http.StatusOK)
+			return
 		}
-
-		l.Info().Msgf("Deleting note %v was successful!", id)
-		httplib.JSON(w, httplib.Msg{"success": "note deleted"}, http.StatusOK)
 	}
-
 }
 
-func UpdateNote(q sqlc.Querier) http.HandlerFunc {
+func UpdateNote(ns note.NoteServicer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
@@ -152,19 +144,20 @@ func UpdateNote(q sqlc.Querier) http.HandlerFunc {
 			isTextValid = false
 		}
 
-		id, err := q.UpdateNote(ctx, &sqlc.UpdateNoteParams{
-			ID:        reqUUID,
-			Title:     sql.NullString{String: updateRequest.Title, Valid: true},
-			Text:      sql.NullString{String: updateRequest.Text, Valid: isTextValid},
-			UpdatedAt: sql.NullTime{Time: time.Now(), Valid: true},
-		})
-		if err != nil {
-			l.Info().Msgf("Could not update Note with id: %v in the DB!", reqUUID)
-			httplib.JSON(w, httplib.Msg{"error": "could not update note in DB"}, http.StatusInternalServerError)
+		id, err := ns.UpdateNote(ctx, reqUUID, updateRequest.Title, updateRequest.Text, isTextValid)
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			l.Info().Msg("User has no notes to delete from!")
+			httplib.JSON(w, httplib.Msg{"error": "user has no notes, so nothing to update"}, http.StatusBadRequest)
+			return
+		case errors.Is(err, note.ErrDBInternal):
+			l.Info().Err(err).Msgf("Could not update Note %v", reqUUID)
+			httplib.JSON(w, httplib.Msg{"error": "could not update note"}, http.StatusInternalServerError)
+			return
+		default:
+			l.Info().Msgf("Updating note %v was successful!", id)
+			httplib.JSON(w, httplib.Msg{"success": "note deleted"}, http.StatusOK)
 			return
 		}
-
-		httplib.JSON(w, httplib.Msg{"success": "note updated!"}, http.StatusOK)
-		l.Info().Msgf("Note with id: %v successfully updated!", id)
 	}
 }
