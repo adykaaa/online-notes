@@ -11,7 +11,7 @@ import (
 	"github.com/lib/pq"
 )
 
-type NoteServicer interface {
+type Servicer interface {
 	CreateNote(ctx context.Context, title string, username string, text string) (uuid.UUID, error)
 	GetAllNotesFromUser(ctx context.Context, username string) ([]sqlc.Note, error)
 	DeleteNote(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
@@ -24,12 +24,12 @@ var (
 	ErrNotFound      = errors.New("requested note is not found")
 )
 
-type NoteService struct {
+type Service struct {
 	q sqlc.Querier
 }
 
-func (ns *NoteService) CreateNote(ctx context.Context, title string, username string, text string) (uuid.UUID, error) {
-	retID, err := ns.q.CreateNote(ctx, &sqlc.CreateNoteParams{
+func (s *Service) CreateNote(ctx context.Context, title string, username string, text string) (uuid.UUID, error) {
+	retID, err := s.q.CreateNote(ctx, &sqlc.CreateNoteParams{
 		ID:        uuid.New(),
 		Title:     title,
 		Username:  username,
@@ -48,8 +48,8 @@ func (ns *NoteService) CreateNote(ctx context.Context, title string, username st
 	}
 }
 
-func (ns *NoteService) GetAllNotesFromUser(ctx context.Context, username string) ([]sqlc.Note, error) {
-	notes, err := ns.q.GetAllNotesFromUser(ctx, username)
+func (s *Service) GetAllNotesFromUser(ctx context.Context, username string) ([]sqlc.Note, error) {
+	notes, err := s.q.GetAllNotesFromUser(ctx, username)
 
 	if err != nil {
 		return nil, ErrDBInternal
@@ -57,8 +57,8 @@ func (ns *NoteService) GetAllNotesFromUser(ctx context.Context, username string)
 	return notes, nil
 }
 
-func (ns *NoteService) DeleteNote(ctx context.Context, reqID uuid.UUID) (uuid.UUID, error) {
-	id, err := ns.q.DeleteNote(ctx, reqID)
+func (s *Service) DeleteNote(ctx context.Context, reqID uuid.UUID) (uuid.UUID, error) {
+	id, err := s.q.DeleteNote(ctx, reqID)
 
 	switch {
 	case errors.Is(err, sql.ErrNoRows):
@@ -70,8 +70,8 @@ func (ns *NoteService) DeleteNote(ctx context.Context, reqID uuid.UUID) (uuid.UU
 	}
 }
 
-func (ns *NoteService) UpdateNote(ctx context.Context, reqID uuid.UUID, title string, text string, isTextValid bool) (uuid.UUID, error) {
-	id, err := ns.q.UpdateNote(ctx, &sqlc.UpdateNoteParams{
+func (s *Service) UpdateNote(ctx context.Context, reqID uuid.UUID, title string, text string, isTextValid bool) (uuid.UUID, error) {
+	id, err := s.q.UpdateNote(ctx, &sqlc.UpdateNoteParams{
 		ID:        reqID,
 		Title:     sql.NullString{String: title, Valid: true},
 		Text:      sql.NullString{String: text, Valid: isTextValid},

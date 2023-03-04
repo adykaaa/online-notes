@@ -14,7 +14,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func CreateNote(ns note.NoteServicer) http.HandlerFunc {
+func CreateNote(ns note.Servicer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
@@ -53,7 +53,7 @@ func CreateNote(ns note.NoteServicer) http.HandlerFunc {
 	}
 }
 
-func GetAllNotesFromUser(ns note.NoteServicer) http.HandlerFunc {
+func GetAllNotesFromUser(ns note.Servicer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
@@ -80,7 +80,7 @@ func GetAllNotesFromUser(ns note.NoteServicer) http.HandlerFunc {
 	}
 }
 
-func DeleteNote(ns note.NoteServicer) http.HandlerFunc {
+func DeleteNote(ns note.Servicer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
@@ -108,7 +108,7 @@ func DeleteNote(ns note.NoteServicer) http.HandlerFunc {
 	}
 }
 
-func UpdateNote(ns note.NoteServicer) http.HandlerFunc {
+func UpdateNote(ns note.Servicer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
