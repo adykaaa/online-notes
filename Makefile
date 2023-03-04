@@ -17,9 +17,17 @@ test: # Runs the unit tests
 	go test -v -cover ./...
 .PHONY: test
 
-mock: # Generates the DB mocks
+dbmock: # Generates the DB mocks
 	mockgen -package mockdb -destination db/mock/querier.go  github.com/adykaaa/online-notes/db/sqlc Querier
-.PHONY: mock
+.PHONY: dbmock
+
+svcmock: # Generates the noteservice mocks
+	mockgen -package mockdb -destination note/mock/servicer.go  github.com/adykaaa/online-notes/db/sqlc Querier
+.PHONY: notesvcmock
+
+svcmock: # Generates the usersvc mocks
+	mockgen -package mockdb -destination user/mock/servicer.go  github.com/adykaaa/online-notes/db/sqlc Querier
+.PHONY: usersvcmock
 
 build-backend: # Builds the backend Docker image
 	docker build . -t online-notes-backend
