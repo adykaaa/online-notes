@@ -21,11 +21,11 @@ dbmock: # Generates the DB mocks
 	mockgen -package mockdb -destination db/mock/querier.go  github.com/adykaaa/online-notes/db/sqlc Querier
 .PHONY: dbmock
 
-svcmock: # Generates the noteservice mocks
+notesvcmock: # Generates the noteservice mocks
 	mockgen -package mockdb -destination note/mock/servicer.go  github.com/adykaaa/online-notes/db/sqlc Querier
 .PHONY: notesvcmock
 
-svcmock: # Generates the usersvc mocks
+usersvcmock: # Generates the usersvc mocks
 	mockgen -package mockdb -destination user/mock/servicer.go  github.com/adykaaa/online-notes/db/sqlc Querier
 .PHONY: usersvcmock
 
