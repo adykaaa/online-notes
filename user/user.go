@@ -15,16 +15,20 @@ var (
 	ErrNotFound      = errors.New("requested user is not found")
 )
 
-type Servicer interface {
+type UserService interface {
 	RegisterUser(ctx context.Context, username string, password string, email string) (string, error)
 	GetUser(ctx context.Context, username string) (sqlc.User, error)
 }
 
-type Service struct {
+type userService struct {
 	q sqlc.Querier
 }
 
-func (s *Service) RegisterUser(ctx context.Context, username string, hashedpw string, email string) (string, error) {
+func NewUserService(q sqlc.Querier) *userService {
+	return &userService{q}
+}
+
+func (s *userService) RegisterUser(ctx context.Context, username string, hashedpw string, email string) (string, error) {
 	uname, err := s.q.RegisterUser(ctx, &sqlc.RegisterUserParams{
 		Username: username,
 		Password: hashedpw,
@@ -41,7 +45,7 @@ func (s *Service) RegisterUser(ctx context.Context, username string, hashedpw st
 	}
 }
 
-func (s *Service) GetUser(ctx context.Context, username string) (sqlc.User, error) {
+func (s *userService) GetUser(ctx context.Context, username string) (sqlc.User, error) {
 	user, err := s.q.GetUser(ctx, username)
 
 	switch {
