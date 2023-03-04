@@ -9,13 +9,13 @@ import (
 
 	httplib "github.com/adykaaa/online-notes/lib/http"
 	"github.com/adykaaa/online-notes/lib/password"
+	"github.com/adykaaa/online-notes/note"
 	auth "github.com/adykaaa/online-notes/server/http/auth"
 	models "github.com/adykaaa/online-notes/server/http/models"
-	"github.com/adykaaa/online-notes/user"
 	"github.com/go-playground/validator/v10"
 )
 
-func RegisterUser(us user.UserService) http.HandlerFunc {
+func RegisterUser(s note.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
@@ -48,13 +48,13 @@ func RegisterUser(us user.UserService) http.HandlerFunc {
 			return
 		}
 
-		uname, err := us.RegisterUser(ctx, request.Username, hashedPassword, request.Email)
+		uname, err := s.RegisterUser(ctx, request.Username, hashedPassword, request.Email)
 		switch {
-		case errors.Is(err, user.ErrAlreadyExists):
+		case errors.Is(err, note.ErrAlreadyExists):
 			l.Error().Err(err).Msgf("registration failed, username or email already in use for user %s", request.Username)
 			httplib.JSON(w, httplib.Msg{"error": "username or email already in use"}, http.StatusForbidden)
 			return
-		case errors.Is(err, user.ErrDBInternal):
+		case errors.Is(err, note.ErrDBInternal):
 			l.Error().Err(err).Msgf("Error during User registration! %v", err)
 			httplib.JSON(w, httplib.Msg{"error": "internal error during user registration"}, http.StatusInternalServerError)
 			return
@@ -65,7 +65,7 @@ func RegisterUser(us user.UserService) http.HandlerFunc {
 	}
 }
 
-func LoginUser(us user.UserService, t auth.TokenManager, tokenDuration time.Duration) http.HandlerFunc {
+func LoginUser(s note.Service, t auth.TokenManager, tokenDuration time.Duration) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
@@ -82,13 +82,13 @@ func LoginUser(us user.UserService, t auth.TokenManager, tokenDuration time.Dura
 			return
 		}
 
-		dbuser, err := us.GetUser(ctx, request.Username)
+		dbuser, err := s.GetUser(ctx, request.Username)
 		switch {
-		case errors.Is(err, user.ErrNotFound):
+		case errors.Is(err, note.ErrNotFound):
 			l.Error().Err(err).Msgf("user: %s is not found", request.Username)
 			httplib.JSON(w, httplib.Msg{"error": "user is not found"}, http.StatusForbidden)
 			return
-		case errors.Is(err, user.ErrDBInternal):
+		case errors.Is(err, note.ErrDBInternal):
 			l.Error().Err(err).Msgf("Error during user lookup! %v", err)
 			httplib.JSON(w, httplib.Msg{"error": "internal error during user lookup!"}, http.StatusInternalServerError)
 			return

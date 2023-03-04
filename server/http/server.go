@@ -19,7 +19,7 @@ type HTTPServer struct {
 	shutdownTimeout time.Duration
 }
 
-func NewHTTPServer(r Router, addr string, l *zerolog.Logger) (*HTTPServer, error) {
+func NewHTTP(r Router, addr string, l *zerolog.Logger) (*HTTPServer, error) {
 	s := &HTTPServer{
 		server: &http.Server{
 			Handler: r,

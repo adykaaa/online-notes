@@ -11,28 +11,62 @@ import (
 	"github.com/lib/pq"
 )
 
-type NoteService interface {
+type Service interface {
 	CreateNote(ctx context.Context, title string, username string, text string) (uuid.UUID, error)
 	GetAllNotesFromUser(ctx context.Context, username string) ([]sqlc.Note, error)
 	DeleteNote(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
-	UpdateNote(ctx context.Context, reqID uuid.UUID, title string, text string, isTextEmpty bool) (sqlc.Note, error)
+	UpdateNote(ctx context.Context, reqID uuid.UUID, title string, text string, isTextEmpty bool) (uuid.UUID, error)
+	RegisterUser(ctx context.Context, username string, password string, email string) (string, error)
+	GetUser(ctx context.Context, username string) (sqlc.User, error)
 }
 
 var (
-	ErrAlreadyExists = errors.New("note already exists")
-	ErrDBInternal    = errors.New("internal DB error during operation")
-	ErrNotFound      = errors.New("requested note is not found")
+	ErrAlreadyExists     = errors.New("note already exists")
+	ErrDBInternal        = errors.New("internal DB error during operation")
+	ErrNotFound          = errors.New("requested note is not found")
+	ErrUserAlreadyExists = errors.New("note already exists")
+	ErrUserNotFound      = errors.New("requested note is not found")
 )
 
-type noteService struct {
+type service struct {
 	q sqlc.Querier
 }
 
-func NewNoteService(q sqlc.Querier) *noteService {
-	return &noteService{q}
+func NewService(q sqlc.Querier) *service {
+	return &service{q}
 }
 
-func (s *noteService) CreateNote(ctx context.Context, title string, username string, text string) (uuid.UUID, error) {
+func (s *service) RegisterUser(ctx context.Context, username string, hashedpw string, email string) (string, error) {
+	uname, err := s.q.RegisterUser(ctx, &sqlc.RegisterUserParams{
+		Username: username,
+		Password: hashedpw,
+		Email:    email,
+	})
+
+	switch {
+	case err.(*pq.Error).Code.Name() == "unique_violation":
+		return "", ErrUserAlreadyExists
+	case err != nil:
+		return "", ErrDBInternal
+	default:
+		return uname, nil
+	}
+}
+
+func (s *service) GetUser(ctx context.Context, username string) (sqlc.User, error) {
+	user, err := s.q.GetUser(ctx, username)
+
+	switch {
+	case errors.Is(err, sql.ErrNoRows):
+		return sqlc.User{}, ErrUserNotFound
+	case err != nil:
+		return sqlc.User{}, ErrDBInternal
+	default:
+		return user, nil
+	}
+}
+
+func (s *service) CreateNote(ctx context.Context, title string, username string, text string) (uuid.UUID, error) {
 	retID, err := s.q.CreateNote(ctx, &sqlc.CreateNoteParams{
 		ID:        uuid.New(),
 		Title:     title,
@@ -52,7 +86,7 @@ func (s *noteService) CreateNote(ctx context.Context, title string, username str
 	}
 }
 
-func (s *noteService) GetAllNotesFromUser(ctx context.Context, username string) ([]sqlc.Note, error) {
+func (s *service) GetAllNotesFromUser(ctx context.Context, username string) ([]sqlc.Note, error) {
 	notes, err := s.q.GetAllNotesFromUser(ctx, username)
 
 	if err != nil {
@@ -61,7 +95,7 @@ func (s *noteService) GetAllNotesFromUser(ctx context.Context, username string) 
 	return notes, nil
 }
 
-func (s *noteService) DeleteNote(ctx context.Context, reqID uuid.UUID) (uuid.UUID, error) {
+func (s *service) DeleteNote(ctx context.Context, reqID uuid.UUID) (uuid.UUID, error) {
 	id, err := s.q.DeleteNote(ctx, reqID)
 
 	switch {
@@ -74,7 +108,7 @@ func (s *noteService) DeleteNote(ctx context.Context, reqID uuid.UUID) (uuid.UUI
 	}
 }
 
-func (s *noteService) UpdateNote(ctx context.Context, reqID uuid.UUID, title string, text string, isTextValid bool) (uuid.UUID, error) {
+func (s *service) UpdateNote(ctx context.Context, reqID uuid.UUID, title string, text string, isTextValid bool) (uuid.UUID, error) {
 	id, err := s.q.UpdateNote(ctx, &sqlc.UpdateNoteParams{
 		ID:        reqID,
 		Title:     sql.NullString{String: title, Valid: true},

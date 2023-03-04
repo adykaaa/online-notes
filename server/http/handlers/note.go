@@ -14,7 +14,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func CreateNote(ns note.NoteService) http.HandlerFunc {
+func CreateNote(s note.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
@@ -36,7 +36,7 @@ func CreateNote(ns note.NoteService) http.HandlerFunc {
 			return
 		}
 
-		retID, err := ns.CreateNote(ctx, noteRequest.Title, noteRequest.User, noteRequest.Text)
+		retID, err := s.CreateNote(ctx, noteRequest.Title, noteRequest.User, noteRequest.Text)
 		switch {
 		case errors.Is(err, note.ErrAlreadyExists):
 			l.Error().Err(err).Msgf("Note creation failed, a note with that title already exists")
@@ -53,7 +53,7 @@ func CreateNote(ns note.NoteService) http.HandlerFunc {
 	}
 }
 
-func GetAllNotesFromUser(ns note.NoteService) http.HandlerFunc {
+func GetAllNotesFromUser(s note.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
@@ -65,7 +65,7 @@ func GetAllNotesFromUser(ns note.NoteService) http.HandlerFunc {
 			return
 		}
 
-		notes, err := ns.GetAllNotesFromUser(ctx, username)
+		notes, err := s.GetAllNotesFromUser(ctx, username)
 		switch {
 		case errors.Is(err, note.ErrNotFound):
 			l.Info().Msgf("Requested user has no Notes!. %s", username)
@@ -80,7 +80,7 @@ func GetAllNotesFromUser(ns note.NoteService) http.HandlerFunc {
 	}
 }
 
-func DeleteNote(ns note.NoteService) http.HandlerFunc {
+func DeleteNote(s note.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
@@ -92,7 +92,7 @@ func DeleteNote(ns note.NoteService) http.HandlerFunc {
 			return
 		}
 
-		id, err := ns.DeleteNote(ctx, reqUUID)
+		id, err := s.DeleteNote(ctx, reqUUID)
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
 			l.Info().Msg("User has no notes to delete from!")
@@ -108,7 +108,7 @@ func DeleteNote(ns note.NoteService) http.HandlerFunc {
 	}
 }
 
-func UpdateNote(ns note.NoteService) http.HandlerFunc {
+func UpdateNote(s note.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
@@ -144,7 +144,7 @@ func UpdateNote(ns note.NoteService) http.HandlerFunc {
 			isTextValid = false
 		}
 
-		id, err := ns.UpdateNote(ctx, reqUUID, updateRequest.Title, updateRequest.Text, isTextValid)
+		id, err := s.UpdateNote(ctx, reqUUID, updateRequest.Title, updateRequest.Text, isTextValid)
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
 			l.Info().Msg("User has no notes to delete from!")

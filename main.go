@@ -7,6 +7,7 @@ import (
 	"github.com/adykaaa/online-notes/db/migrations"
 	"github.com/adykaaa/online-notes/lib/config"
 	logger "github.com/adykaaa/online-notes/lib/logger"
+	"github.com/adykaaa/online-notes/note"
 	server "github.com/adykaaa/online-notes/server/http"
 )
 
@@ -29,12 +30,14 @@ func main() {
 		l.Fatal().Err(err).Send()
 	}
 
-	router, err := server.NewChiRouter(sqldb, config.PASETOSecret, config.AccessTokenDuration, &l)
+	s := note.NewService(sqldb)
+
+	router, err := server.NewChiRouter(s, config.PASETOSecret, config.AccessTokenDuration, &l)
 	if err != nil {
 		l.Fatal().Err(err).Send()
 	}
 
-	httpServer, err := server.NewHTTPServer(router, config.HTTPServerAddress, &l)
+	httpServer, err := server.NewHTTP(router, config.HTTPServerAddress, &l)
 	if err != nil {
 		l.Fatal().Err(err).Send()
 	}
