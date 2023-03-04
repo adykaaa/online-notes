@@ -15,7 +15,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-func RegisterUser(us user.Servicer) http.HandlerFunc {
+func RegisterUser(us user.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
@@ -65,7 +65,7 @@ func RegisterUser(us user.Servicer) http.HandlerFunc {
 	}
 }
 
-func LoginUser(us user.Servicer, t auth.TokenManager, tokenDuration time.Duration) http.HandlerFunc {
+func LoginUser(us user.UserService, t auth.TokenManager, tokenDuration time.Duration) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
