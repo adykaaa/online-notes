@@ -22,11 +22,11 @@ dbmock: # Generates the DB mocks
 .PHONY: dbmock
 
 notesvcmock: # Generates the noteservice mocks
-	mockgen -package mockdb -destination note/mock/servicer.go  github.com/adykaaa/online-notes/db/sqlc Querier
+	mockgen -package mockdb -destination note/mock/servicer.go  github.com/adykaaa/online-notes/note Servicer
 .PHONY: notesvcmock
 
 usersvcmock: # Generates the usersvc mocks
-	mockgen -package mockdb -destination user/mock/servicer.go  github.com/adykaaa/online-notes/db/sqlc Querier
+	mockgen -package mockdb -destination user/mock/servicer.go  github.com/adykaaa/online-notes/user Servicer
 .PHONY: usersvcmock
 
 build-backend: # Builds the backend Docker image
