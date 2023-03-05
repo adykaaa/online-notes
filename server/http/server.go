@@ -12,6 +12,14 @@ import (
 	"github.com/rs/zerolog"
 )
 
+type Router interface {
+	Get(pattern string, handlerFn http.HandlerFunc)
+	Delete(pattern string, handlerFn http.HandlerFunc)
+	Post(pattern string, handlerFn http.HandlerFunc)
+	Put(pattern string, handlerFn http.HandlerFunc)
+	ServeHTTP(w http.ResponseWriter, r *http.Request)
+}
+
 type HTTPServer struct {
 	logger          *zerolog.Logger
 	server          *http.Server

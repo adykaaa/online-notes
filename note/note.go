@@ -11,15 +11,6 @@ import (
 	"github.com/lib/pq"
 )
 
-type Service interface {
-	CreateNote(ctx context.Context, title string, username string, text string) (uuid.UUID, error)
-	GetAllNotesFromUser(ctx context.Context, username string) ([]sqlc.Note, error)
-	DeleteNote(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
-	UpdateNote(ctx context.Context, reqID uuid.UUID, title string, text string, isTextEmpty bool) (uuid.UUID, error)
-	RegisterUser(ctx context.Context, username string, password string, email string) (string, error)
-	GetUser(ctx context.Context, username string) (sqlc.User, error)
-}
-
 var (
 	ErrAlreadyExists     = errors.New("note already exists")
 	ErrDBInternal        = errors.New("internal DB error during operation")

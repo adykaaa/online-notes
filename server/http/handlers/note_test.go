@@ -14,6 +14,7 @@ import (
 
 	mockdb "github.com/adykaaa/online-notes/db/mock"
 	db "github.com/adykaaa/online-notes/db/sqlc"
+	mocksvc "github.com/adykaaa/online-notes/note/mock"
 	models "github.com/adykaaa/online-notes/server/http/models"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang/mock/gomock"
@@ -48,9 +49,9 @@ func TestCreateNote(t *testing.T) {
 
 	testNote := &models.Note{
 		ID:        uuid.New(),
-		Title:     "test1",
+		Title:     "testtitle",
 		User:      "testuser1",
-		Text:      "test1",
+		Text:      "testtext",
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -157,6 +158,7 @@ func TestCreateNote(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			dbmock := mockdb.NewMockQuerier(ctrl)
+			mocksvc := mocksvc.NewMockService(ctrl)
 
 			tc.validateJSON(t, jsonValidator, tc.body)
 			tc.dbmockCreateNote(dbmock, tc.body)
@@ -167,7 +169,7 @@ func TestCreateNote(t *testing.T) {
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodPost, "/notes/create", bytes.NewReader(b))
 
-			handler := CreateNote(dbmock)
+			handler := CreateNote(mocksvc)
 			handler(rec, req)
 			tc.checkResponse(t, rec, req)
 		})
@@ -236,15 +238,15 @@ func TestGetAllNotesFromUser(t *testing.T) {
 
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
-			dbmock := mockdb.NewMockQuerier(ctrl)
+			mocksvc := mocksvc.NewMockService(ctrl)
 
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodGet, "/notes", nil)
 
 			tc.addQuery(t, req)
-			tc.dbmockGetAllNotesFromUser(dbmock)
+			tc.dbmockGetAllNotesFromUser(mocksvc)
 
-			handler := GetAllNotesFromUser(dbmock)
+			handler := GetAllNotesFromUser(mocksvc)
 			handler(rec, req)
 			tc.checkResponse(t, rec, req)
 		})

@@ -198,7 +198,7 @@ func TestRegisterUser(t *testing.T) {
 
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
-			dbmock := mockdb.NewMockQuerier(ctrl)
+			dbmock := mocknote.NewMockService(ctrl)
 
 			tc.validateJSON(t, jsonValidator, tc.body)
 			tc.dbmockCreateUser(dbmock, tc.body)

@@ -3,9 +3,15 @@ package auth
 import (
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/rs/zerolog"
 )
+
+type TokenManager interface {
+	CreateToken(username string, duration time.Duration) (string, *PasetoPayload, error)
+	VerifyToken(token string) (*PasetoPayload, error)
+}
 
 func AuthMiddleware(t TokenManager, l *zerolog.Logger) func(http.Handler) http.Handler {
 	f := func(h http.Handler) http.Handler {

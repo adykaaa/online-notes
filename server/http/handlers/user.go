@@ -10,12 +10,13 @@ import (
 	httplib "github.com/adykaaa/online-notes/lib/http"
 	"github.com/adykaaa/online-notes/lib/password"
 	"github.com/adykaaa/online-notes/note"
+	server "github.com/adykaaa/online-notes/server/http"
 	auth "github.com/adykaaa/online-notes/server/http/auth"
 	models "github.com/adykaaa/online-notes/server/http/models"
 	"github.com/go-playground/validator/v10"
 )
 
-func RegisterUser(s note.Service) http.HandlerFunc {
+func RegisterUser(s server.NoteService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
