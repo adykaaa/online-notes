@@ -7,7 +7,6 @@ import (
 	"github.com/adykaaa/httplog"
 	sqlc "github.com/adykaaa/online-notes/db/sqlc"
 	auth "github.com/adykaaa/online-notes/server/http/auth"
-	handler "github.com/adykaaa/online-notes/server/http/handlers"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -40,15 +39,15 @@ func RegisterChiMiddlewares(r *chi.Mux, l *zerolog.Logger) {
 }
 
 func RegisterChiHandlers(router *chi.Mux, s NoteService, t auth.TokenManager, tokenDuration time.Duration, l *zerolog.Logger) {
-	router.Post("/register", handler.RegisterUser(s))
-	router.Post("/login", handler.LoginUser(s, t, tokenDuration))
-	router.Post("/logout", handler.LogoutUser())
+	router.Post("/register", RegisterUser(s))
+	router.Post("/login", LoginUser(s, t, tokenDuration))
+	router.Post("/logout", LogoutUser())
 	router.Route("/notes", func(router chi.Router) {
 		router.Use(auth.AuthMiddleware(t, l))
-		router.Post("/create", handler.CreateNote(s))
-		router.Get("/", handler.GetAllNotesFromUser(s))
-		router.Put("/{id}", handler.UpdateNote(s))
-		router.Delete("/{id}", handler.DeleteNote(s))
+		router.Post("/create", CreateNote(s))
+		router.Get("/", GetAllNotesFromUser(s))
+		router.Put("/{id}", UpdateNote(s))
+		router.Delete("/{id}", DeleteNote(s))
 	})
 }
 

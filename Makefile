@@ -22,7 +22,7 @@ dbmock: # Generates the DB mocks
 .PHONY: dbmock
 
 notesvcmock: # Generates the noteservice mocks
-	mockgen -package mocknote -destination note/mock/notemock.go  github.com/adykaaa/online-notes/note Service
+	mockgen -package mocknote -destination note/mock/notemock.go  github.com/adykaaa/online-notes/server/http NoteService
 .PHONY: notemock
 
 

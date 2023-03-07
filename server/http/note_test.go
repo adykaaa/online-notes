@@ -1,4 +1,4 @@
-package handlers
+package server
 
 import (
 	"bytes"
@@ -158,7 +158,7 @@ func TestCreateNote(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			dbmock := mockdb.NewMockQuerier(ctrl)
-			mocksvc := mocksvc.NewMockService(ctrl)
+			mocksvc := mocksvc.NewMockNoteService(ctrl)
 
 			tc.validateJSON(t, jsonValidator, tc.body)
 			tc.dbmockCreateNote(dbmock, tc.body)
@@ -238,7 +238,7 @@ func TestGetAllNotesFromUser(t *testing.T) {
 
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
-			mocksvc := mocksvc.NewMockService(ctrl)
+			mocksvc := mocksvc.NewMockNoteService(ctrl)
 
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodGet, "/notes", nil)

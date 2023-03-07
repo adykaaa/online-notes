@@ -1,4 +1,4 @@
-package handlers
+package server
 
 import (
 	"database/sql"
@@ -14,7 +14,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func CreateNote(s note.Service) http.HandlerFunc {
+func CreateNote(s NoteService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
@@ -53,7 +53,7 @@ func CreateNote(s note.Service) http.HandlerFunc {
 	}
 }
 
-func GetAllNotesFromUser(s note.Service) http.HandlerFunc {
+func GetAllNotesFromUser(s NoteService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
@@ -80,7 +80,7 @@ func GetAllNotesFromUser(s note.Service) http.HandlerFunc {
 	}
 }
 
-func DeleteNote(s note.Service) http.HandlerFunc {
+func DeleteNote(s NoteService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
@@ -108,7 +108,7 @@ func DeleteNote(s note.Service) http.HandlerFunc {
 	}
 }
 
-func UpdateNote(s note.Service) http.HandlerFunc {
+func UpdateNote(s NoteService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
