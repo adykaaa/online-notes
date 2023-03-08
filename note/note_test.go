@@ -7,8 +7,10 @@ import (
 	mockdb "github.com/adykaaa/online-notes/db/mock"
 	db "github.com/adykaaa/online-notes/db/sqlc"
 	sqlc "github.com/adykaaa/online-notes/db/sqlc"
+	"github.com/adykaaa/online-notes/lib/random"
 	"github.com/adykaaa/online-notes/server/http/models"
 	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -96,7 +98,6 @@ func TestRegisterUser(t *testing.T) {
 }
 
 func TestGetUser(t *testing.T) {
-
 	const username = "user1"
 
 	testCases := []struct {
@@ -158,9 +159,12 @@ func TestGetUser(t *testing.T) {
 
 func TestCreateNote(t *testing.T) {
 
+	uuid := uuid.New()
+	n := random.NewDBNote(uuid)
+
 	testCases := []struct {
 		name              string
-		username          string
+		note              models.Note
 		mockdbCreateNote  func(mockdb *mockdb.MockQuerier, username string)
 		checkReturnValues func(t *testing.T, inputUsername string, user sqlc.User, err error)
 	}{
@@ -209,7 +213,7 @@ func TestCreateNote(t *testing.T) {
 
 			tc.mockdbCreateNote(mockdb, tc.username)
 
-			user, err := ns.q.GetUser(context.Background(), tc.username)
+			user, err := ns.q.CreateNote(context.Background(), &db.CreateNoteParams{})
 			tc.checkReturnValues(t, tc.username, user, err)
 		})
 	}
