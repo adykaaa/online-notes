@@ -27,10 +27,10 @@ func NewService(q sqlc.Querier) *service {
 	return &service{q}
 }
 
-func (s *service) RegisterUser(ctx context.Context, username string, hashedpw string, email string) (string, error) {
+func (s *service) RegisterUser(ctx context.Context, username string, hashedPw string, email string) (string, error) {
 	uname, err := s.q.RegisterUser(ctx, &sqlc.RegisterUserParams{
 		Username: username,
-		Password: hashedpw,
+		Password: hashedPw,
 		Email:    email,
 	})
 
