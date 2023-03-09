@@ -8,13 +8,12 @@ import (
 )
 
 type Config struct {
-	Environment          string        `mapstructure:"ENV"`
-	LogLevel             string        `mapstructure:"LOG_LEVEL"`
-	DBConnString         string        `mapstructure:"DB_CONN_STRING"`
-	HTTPServerAddress    string        `mapstructure:"HTTP_SERVER_ADDRESS"`
-	PASETOSecret         string        `mapstructure:"PASETO_SYMMETRIC_KEY"`
-	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
-	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
+	Environment         string        `mapstructure:"ENV"`
+	LogLevel            string        `mapstructure:"LOG_LEVEL"`
+	DBConnString        string        `mapstructure:"DB_CONN_STRING"`
+	HTTPServerAddress   string        `mapstructure:"HTTP_SERVER_ADDRESS"`
+	PASETOSecret        string        `mapstructure:"PASETO_SYMMETRIC_KEY"`
+	AccessTokenDuration time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 }
 
 // Load reads configuration from file or environment variables.

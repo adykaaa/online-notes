@@ -9,8 +9,19 @@ import (
 	"syscall"
 	"time"
 
+	sqlc "github.com/adykaaa/online-notes/db/sqlc"
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 )
+
+type NoteService interface {
+	CreateNote(ctx context.Context, title string, username string, text string) (uuid.UUID, error)
+	GetAllNotesFromUser(ctx context.Context, username string) ([]sqlc.Note, error)
+	DeleteNote(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
+	UpdateNote(ctx context.Context, reqID uuid.UUID, title string, text string, isTextEmpty bool) (uuid.UUID, error)
+	RegisterUser(ctx context.Context, username string, password string, email string) (string, error)
+	GetUser(ctx context.Context, username string) (sqlc.User, error)
+}
 
 type Router interface {
 	Get(pattern string, handlerFn http.HandlerFunc)

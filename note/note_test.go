@@ -2,6 +2,7 @@ package note
 
 import (
 	"context"
+	"database/sql"
 	"testing"
 
 	mockdb "github.com/adykaaa/online-notes/db/mock"
@@ -250,25 +251,98 @@ func TestGetAllNotesFromUSer(t *testing.T) {
 	}
 }
 
+func TestDeleteNote(t *testing.T) {
+	id := uuid.New()
+
+	testCases := []struct {
+		name              string
+		mockdbDeleteNote  func(mockdb *mockdb.MockQuerier)
+		checkReturnValues func(t *testing.T, id uuid.UUID, err error)
+	}{
+		{
+			name: "deleting note OK",
+			mockdbDeleteNote: func(mockdb *mockdb.MockQuerier) {
+				mockdb.EXPECT().DeleteNote(gomock.Any(), id).Times(1).Return(id, nil)
+			},
+			checkReturnValues: func(t *testing.T, retID uuid.UUID, err error) {
+				require.Equal(t, id, retID)
+				require.Nil(t, err)
+			},
+		},
+		{
+			name: "deleting note returns ErrDBInternal",
+			mockdbDeleteNote: func(mockdb *mockdb.MockQuerier) {
+				mockdb.EXPECT().DeleteNote(gomock.Any(), id).Times(1).Return(uuid.Nil, ErrDBInternal)
+			},
+			checkReturnValues: func(t *testing.T, retID uuid.UUID, err error) {
+				require.Equal(t, retID, uuid.Nil)
+				require.ErrorIs(t, err, ErrDBInternal)
+			},
+		},
+	}
+	for c := range testCases {
+		tc := testCases[c]
+
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockdb := mockdb.NewMockQuerier(ctrl)
+			ns := NewService(mockdb)
+
+			tc.mockdbDeleteNote(mockdb)
+			id, err := ns.q.DeleteNote(context.Background(), id)
+			tc.checkReturnValues(t, id, err)
+		})
+	}
+}
+
 func TestUpdateNote(t *testing.T) {
 	note := random.NewDBNote(uuid.New())
 
 	testCases := []struct {
 		name              string
 		note              *db.Note
-		mockdbCreateNote  func(mockdb *mockdb.MockQuerier, args *db.CreateNoteParams)
+		mockdbUpdateNote  func(mockdb *mockdb.MockQuerier, args *db.UpdateNoteParams)
 		checkReturnValues func(t *testing.T, note *db.Note, id uuid.UUID, err error)
 	}{
 		{
-			name: "creating note OK",
+			name: "updating note OK",
 			note: note,
-			mockdbCreateNote: func(mockdb *mockdb.MockQuerier, args *db.CreateNoteParams) {
-				mockdb.EXPECT().CreateNote(gomock.Any(), args).Times(1).Return(note.ID, nil)
+			mockdbUpdateNote: func(mockdb *mockdb.MockQuerier, args *db.UpdateNoteParams) {
+				mockdb.EXPECT().UpdateNote(gomock.Any(), args).Times(1).Return(note.ID, nil)
 			},
 			checkReturnValues: func(t *testing.T, note *db.Note, id uuid.UUID, err error) {
 				require.Equal(t, note.ID, id)
 				require.Nil(t, err)
 			},
 		},
+		{
+			name: "updating note returns ErrNotFound",
+			note: note,
+			mockdbUpdateNote: func(mockdb *mockdb.MockQuerier, args *db.UpdateNoteParams) {
+				mockdb.EXPECT().UpdateNote(gomock.Any(), args).Times(1).Return(uuid.Nil, ErrNotFound)
+			},
+			checkReturnValues: func(t *testing.T, note *db.Note, id uuid.UUID, err error) {
+				require.Equal(t, uuid.Nil, id)
+				require.ErrorIs(t, err, ErrNotFound)
+			},
+		},
+	}
+	for c := range testCases {
+		tc := testCases[c]
+
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockdb := mockdb.NewMockQuerier(ctrl)
+			ns := NewService(mockdb)
+			args := db.UpdateNoteParams{
+				ID:    tc.note.ID,
+				Title: sql.NullString{String: tc.note.Title, Valid: true},
+				Text:  tc.note.Text,
+			}
+
+			tc.mockdbUpdateNote(mockdb, &args)
+			id, err := ns.q.UpdateNote(context.Background(), &args)
+			tc.checkReturnValues(t, tc.note, id, err)
+		})
 	}
 }

@@ -1,27 +1,15 @@
 package server
 
 import (
-	"context"
 	"time"
 
 	"github.com/adykaaa/httplog"
-	sqlc "github.com/adykaaa/online-notes/db/sqlc"
 	auth "github.com/adykaaa/online-notes/server/http/auth"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
-	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 )
-
-type NoteService interface {
-	CreateNote(ctx context.Context, title string, username string, text string) (uuid.UUID, error)
-	GetAllNotesFromUser(ctx context.Context, username string) ([]sqlc.Note, error)
-	DeleteNote(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
-	UpdateNote(ctx context.Context, reqID uuid.UUID, title string, text string, isTextEmpty bool) (uuid.UUID, error)
-	RegisterUser(ctx context.Context, username string, password string, email string) (string, error)
-	GetUser(ctx context.Context, username string) (sqlc.User, error)
-}
 
 func RegisterChiMiddlewares(r *chi.Mux, l *zerolog.Logger) {
 	// Request logger has middleware.Recoverer and RequestID baked into it.
