@@ -6,16 +6,14 @@ import (
 
 	mockdb "github.com/adykaaa/online-notes/db/mock"
 	db "github.com/adykaaa/online-notes/db/sqlc"
-	sqlc "github.com/adykaaa/online-notes/db/sqlc"
 	"github.com/adykaaa/online-notes/lib/random"
-	"github.com/adykaaa/online-notes/server/http/models"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
 func TestRegisterUser(t *testing.T) {
-	user := &models.User{
+	user := &db.User{
 		Username: "user1",
 		Password: "password1",
 		Email:    "user1@user.com",
@@ -23,22 +21,17 @@ func TestRegisterUser(t *testing.T) {
 
 	testCases := []struct {
 		name              string
-		user              *models.User
-		mockdbCreateUser  func(mockdb *mockdb.MockQuerier, user *models.User)
-		checkReturnValues func(t *testing.T, user *models.User, username string, err error)
+		user              *db.User
+		mockdbCreateUser  func(mockdb *mockdb.MockQuerier, args *db.RegisterUserParams)
+		checkReturnValues func(t *testing.T, user *db.User, username string, err error)
 	}{
 		{
 			name: "user registration OK",
 			user: user,
-			mockdbCreateUser: func(mockdb *mockdb.MockQuerier, user *models.User) {
-				args := db.RegisterUserParams{
-					Username: user.Username,
-					Password: user.Password,
-					Email:    user.Email,
-				}
-				mockdb.EXPECT().RegisterUser(gomock.Any(), &args).Times(1).Return(args.Username, nil)
+			mockdbCreateUser: func(mockdb *mockdb.MockQuerier, args *db.RegisterUserParams) {
+				mockdb.EXPECT().RegisterUser(gomock.Any(), args).Times(1).Return(args.Username, nil)
 			},
-			checkReturnValues: func(t *testing.T, user *models.User, username string, err error) {
+			checkReturnValues: func(t *testing.T, user *db.User, username string, err error) {
 				require.Equal(t, username, user.Username)
 				require.Nil(t, err)
 			},
@@ -46,15 +39,10 @@ func TestRegisterUser(t *testing.T) {
 		{
 			name: "user registration returns ErrUserAlreadyExists",
 			user: user,
-			mockdbCreateUser: func(mockdb *mockdb.MockQuerier, user *models.User) {
-				args := db.RegisterUserParams{
-					Username: user.Username,
-					Password: user.Password,
-					Email:    user.Email,
-				}
-				mockdb.EXPECT().RegisterUser(gomock.Any(), &args).Times(1).Return("", ErrUserAlreadyExists)
+			mockdbCreateUser: func(mockdb *mockdb.MockQuerier, args *db.RegisterUserParams) {
+				mockdb.EXPECT().RegisterUser(gomock.Any(), args).Times(1).Return("", ErrUserAlreadyExists)
 			},
-			checkReturnValues: func(t *testing.T, user *models.User, username string, err error) {
+			checkReturnValues: func(t *testing.T, user *db.User, username string, err error) {
 				require.ErrorIs(t, err, ErrUserAlreadyExists)
 				require.Empty(t, username)
 			},
@@ -62,15 +50,10 @@ func TestRegisterUser(t *testing.T) {
 		{
 			name: "user registration returns ErrDBInternal",
 			user: user,
-			mockdbCreateUser: func(mockdb *mockdb.MockQuerier, user *models.User) {
-				args := db.RegisterUserParams{
-					Username: user.Username,
-					Password: user.Password,
-					Email:    user.Email,
-				}
-				mockdb.EXPECT().RegisterUser(gomock.Any(), &args).Times(1).Return("", ErrDBInternal)
+			mockdbCreateUser: func(mockdb *mockdb.MockQuerier, args *db.RegisterUserParams) {
+				mockdb.EXPECT().RegisterUser(gomock.Any(), args).Times(1).Return("", ErrDBInternal)
 			},
-			checkReturnValues: func(t *testing.T, user *models.User, username string, err error) {
+			checkReturnValues: func(t *testing.T, user *db.User, username string, err error) {
 				require.ErrorIs(t, err, ErrDBInternal)
 				require.Empty(t, username)
 			},
@@ -84,14 +67,15 @@ func TestRegisterUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockdb := mockdb.NewMockQuerier(ctrl)
 			ns := NewService(mockdb)
-
-			tc.mockdbCreateUser(mockdb, tc.user)
-
-			u, err := ns.q.RegisterUser(context.Background(), &db.RegisterUserParams{
+			args := db.RegisterUserParams{
 				Username: tc.user.Username,
 				Password: tc.user.Password,
 				Email:    tc.user.Email,
-			})
+			}
+
+			tc.mockdbCreateUser(mockdb, &args)
+
+			u, err := ns.q.RegisterUser(context.Background(), &args)
 			tc.checkReturnValues(t, tc.user, u, err)
 		})
 	}
@@ -103,16 +87,16 @@ func TestGetUser(t *testing.T) {
 	testCases := []struct {
 		name              string
 		username          string
-		mockdbGetUser     func(mockdb *mockdb.MockQuerier, username string)
-		checkReturnValues func(t *testing.T, inputUsername string, user sqlc.User, err error)
+		mockdbGetUser     func(mockdb *mockdb.MockQuerier)
+		checkReturnValues func(t *testing.T, user db.User, err error)
 	}{
 		{
 			name:     "getting user OK",
 			username: username,
-			mockdbGetUser: func(mockdb *mockdb.MockQuerier, username string) {
-				mockdb.EXPECT().GetUser(gomock.Any(), username).Times(1).Return(sqlc.User{Username: username}, nil)
+			mockdbGetUser: func(mockdb *mockdb.MockQuerier) {
+				mockdb.EXPECT().GetUser(gomock.Any(), username).Times(1).Return(db.User{Username: username}, nil)
 			},
-			checkReturnValues: func(t *testing.T, username string, user sqlc.User, err error) {
+			checkReturnValues: func(t *testing.T, user db.User, err error) {
 				require.Equal(t, username, user.Username)
 				require.Nil(t, err)
 			},
@@ -120,10 +104,10 @@ func TestGetUser(t *testing.T) {
 		{
 			name:     "getting user returns ErrUserNotFound",
 			username: username,
-			mockdbGetUser: func(mockdb *mockdb.MockQuerier, username string) {
-				mockdb.EXPECT().GetUser(gomock.Any(), username).Times(1).Return(sqlc.User{}, ErrUserNotFound)
+			mockdbGetUser: func(mockdb *mockdb.MockQuerier) {
+				mockdb.EXPECT().GetUser(gomock.Any(), username).Times(1).Return(db.User{}, ErrUserNotFound)
 			},
-			checkReturnValues: func(t *testing.T, username string, user sqlc.User, err error) {
+			checkReturnValues: func(t *testing.T, user db.User, err error) {
 				require.Empty(t, user.Email)
 				require.ErrorIs(t, err, ErrUserNotFound)
 			},
@@ -131,10 +115,10 @@ func TestGetUser(t *testing.T) {
 		{
 			name:     "getting user returns ErrDBInternal",
 			username: username,
-			mockdbGetUser: func(mockdb *mockdb.MockQuerier, username string) {
-				mockdb.EXPECT().GetUser(gomock.Any(), username).Times(1).Return(sqlc.User{}, ErrDBInternal)
+			mockdbGetUser: func(mockdb *mockdb.MockQuerier) {
+				mockdb.EXPECT().GetUser(gomock.Any(), username).Times(1).Return(db.User{}, ErrDBInternal)
 			},
-			checkReturnValues: func(t *testing.T, username string, user sqlc.User, err error) {
+			checkReturnValues: func(t *testing.T, user db.User, err error) {
 				require.Empty(t, user.Email)
 				require.ErrorIs(t, err, ErrDBInternal)
 			},
@@ -149,55 +133,52 @@ func TestGetUser(t *testing.T) {
 			mockdb := mockdb.NewMockQuerier(ctrl)
 			ns := NewService(mockdb)
 
-			tc.mockdbGetUser(mockdb, tc.username)
-
+			tc.mockdbGetUser(mockdb)
 			user, err := ns.q.GetUser(context.Background(), tc.username)
-			tc.checkReturnValues(t, tc.username, user, err)
+			tc.checkReturnValues(t, user, err)
 		})
 	}
 }
 
 func TestCreateNote(t *testing.T) {
-
-	uuid := uuid.New()
-	n := random.NewDBNote(uuid)
+	note := random.NewDBNote(uuid.New())
 
 	testCases := []struct {
 		name              string
-		note              models.Note
-		mockdbCreateNote  func(mockdb *mockdb.MockQuerier, username string)
-		checkReturnValues func(t *testing.T, inputUsername string, user sqlc.User, err error)
+		note              *db.Note
+		mockdbCreateNote  func(mockdb *mockdb.MockQuerier, args *db.CreateNoteParams)
+		checkReturnValues func(t *testing.T, note *db.Note, id uuid.UUID, err error)
 	}{
 		{
-			name:     "creating note OK",
-			username: username,
-			mockdbCreateNote: func(mockdb *mockdb.MockQuerier, username string) {
-				mockdb.EXPECT().GetUser(gomock.Any(), username).Times(1).Return(sqlc.User{Username: username}, nil)
+			name: "creating note OK",
+			note: note,
+			mockdbCreateNote: func(mockdb *mockdb.MockQuerier, args *db.CreateNoteParams) {
+				mockdb.EXPECT().CreateNote(gomock.Any(), args).Times(1).Return(note.ID, nil)
 			},
-			checkReturnValues: func(t *testing.T, username string, user sqlc.User, err error) {
-				require.Equal(t, username, user.Username)
+			checkReturnValues: func(t *testing.T, note *db.Note, id uuid.UUID, err error) {
+				require.Equal(t, note.ID, id)
 				require.Nil(t, err)
 			},
 		},
 		{
-			name:     "getting user returns ErrUserNotFound",
-			username: username,
-			mockdbCreateNote: func(mockdb *mockdb.MockQuerier, username string) {
-				mockdb.EXPECT().GetUser(gomock.Any(), username).Times(1).Return(sqlc.User{}, ErrUserNotFound)
+			name: "creating note returns ErrAlreadyExist",
+			note: note,
+			mockdbCreateNote: func(mockdb *mockdb.MockQuerier, args *db.CreateNoteParams) {
+				mockdb.EXPECT().CreateNote(gomock.Any(), args).Times(1).Return(uuid.Nil, ErrAlreadyExists)
 			},
-			checkReturnValues: func(t *testing.T, username string, user sqlc.User, err error) {
-				require.Empty(t, user.Email)
-				require.ErrorIs(t, err, ErrUserNotFound)
+			checkReturnValues: func(t *testing.T, note *db.Note, id uuid.UUID, err error) {
+				require.Equal(t, id, uuid.Nil)
+				require.ErrorIs(t, err, ErrAlreadyExists)
 			},
 		},
 		{
-			name:     "getting user returns ErrDBInternal",
-			username: username,
-			mockdbCreateNote: func(mockdb *mockdb.MockQuerier, username string) {
-				mockdb.EXPECT().GetUser(gomock.Any(), username).Times(1).Return(sqlc.User{}, ErrDBInternal)
+			name: "creating note returns ErrDBInternal",
+			note: note,
+			mockdbCreateNote: func(mockdb *mockdb.MockQuerier, args *db.CreateNoteParams) {
+				mockdb.EXPECT().CreateNote(gomock.Any(), args).Times(1).Return(uuid.Nil, ErrDBInternal)
 			},
-			checkReturnValues: func(t *testing.T, username string, user sqlc.User, err error) {
-				require.Empty(t, user.Email)
+			checkReturnValues: func(t *testing.T, note *db.Note, id uuid.UUID, err error) {
+				require.Equal(t, id, uuid.Nil)
 				require.ErrorIs(t, err, ErrDBInternal)
 			},
 		},
@@ -210,11 +191,84 @@ func TestCreateNote(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockdb := mockdb.NewMockQuerier(ctrl)
 			ns := NewService(mockdb)
+			args := db.CreateNoteParams{
+				ID:       tc.note.ID,
+				Title:    tc.note.Title,
+				Username: tc.note.Username,
+				Text:     tc.note.Text,
+			}
 
-			tc.mockdbCreateNote(mockdb, tc.username)
-
-			user, err := ns.q.CreateNote(context.Background(), &db.CreateNoteParams{})
-			tc.checkReturnValues(t, tc.username, user, err)
+			tc.mockdbCreateNote(mockdb, &args)
+			id, err := ns.q.CreateNote(context.Background(), &args)
+			tc.checkReturnValues(t, tc.note, id, err)
 		})
+	}
+}
+
+func TestGetAllNotesFromUSer(t *testing.T) {
+	const username = "user1"
+
+	testCases := []struct {
+		name                   string
+		username               string
+		mockdbGetNotesFromUser func(mockdb *mockdb.MockQuerier)
+		checkReturnValues      func(t *testing.T, notes []db.Note, err error)
+	}{
+		{
+			name:     "getting notes from user OK",
+			username: username,
+			mockdbGetNotesFromUser: func(mockdb *mockdb.MockQuerier) {
+				mockdb.EXPECT().GetAllNotesFromUser(gomock.Any(), username).Times(1).Return([]db.Note{}, nil)
+			},
+			checkReturnValues: func(t *testing.T, notes []db.Note, err error) {
+				require.Nil(t, err)
+			},
+		},
+		{
+			name:     "getting notes from user returns ErrDBInternal",
+			username: username,
+			mockdbGetNotesFromUser: func(mockdb *mockdb.MockQuerier) {
+				mockdb.EXPECT().GetAllNotesFromUser(gomock.Any(), username).Times(1).Return([]db.Note{}, ErrDBInternal)
+			},
+			checkReturnValues: func(t *testing.T, notes []db.Note, err error) {
+				require.ErrorIs(t, err, ErrDBInternal)
+			},
+		},
+	}
+	for c := range testCases {
+		tc := testCases[c]
+
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockdb := mockdb.NewMockQuerier(ctrl)
+			ns := NewService(mockdb)
+
+			tc.mockdbGetNotesFromUser(mockdb)
+			notes, err := ns.q.GetAllNotesFromUser(context.Background(), tc.username)
+			tc.checkReturnValues(t, notes, err)
+		})
+	}
+}
+
+func TestUpdateNote(t *testing.T) {
+	note := random.NewDBNote(uuid.New())
+
+	testCases := []struct {
+		name              string
+		note              *db.Note
+		mockdbCreateNote  func(mockdb *mockdb.MockQuerier, args *db.CreateNoteParams)
+		checkReturnValues func(t *testing.T, note *db.Note, id uuid.UUID, err error)
+	}{
+		{
+			name: "creating note OK",
+			note: note,
+			mockdbCreateNote: func(mockdb *mockdb.MockQuerier, args *db.CreateNoteParams) {
+				mockdb.EXPECT().CreateNote(gomock.Any(), args).Times(1).Return(note.ID, nil)
+			},
+			checkReturnValues: func(t *testing.T, note *db.Note, id uuid.UUID, err error) {
+				require.Equal(t, note.ID, id)
+				require.Nil(t, err)
+			},
+		},
 	}
 }
