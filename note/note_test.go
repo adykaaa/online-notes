@@ -19,6 +19,11 @@ func TestRegisterUser(t *testing.T) {
 		Password: "password1",
 		Email:    "user1@user.com",
 	}
+	args := db.RegisterUserParams{
+		Username: user.Username,
+		Password: user.Password,
+		Email:    user.Email,
+	}
 
 	testCases := []struct {
 		name              string
@@ -68,14 +73,8 @@ func TestRegisterUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockdb := mockdb.NewMockQuerier(ctrl)
 			ns := NewService(mockdb)
-			args := db.RegisterUserParams{
-				Username: tc.user.Username,
-				Password: tc.user.Password,
-				Email:    tc.user.Email,
-			}
 
 			tc.mockdbCreateUser(mockdb, &args)
-
 			u, err := ns.q.RegisterUser(context.Background(), &args)
 			tc.checkReturnValues(t, tc.user, u, err)
 		})
@@ -143,6 +142,12 @@ func TestGetUser(t *testing.T) {
 
 func TestCreateNote(t *testing.T) {
 	note := random.NewDBNote(uuid.New())
+	args := db.CreateNoteParams{
+		ID:       note.ID,
+		Title:    note.Title,
+		Username: note.Username,
+		Text:     note.Text,
+	}
 
 	testCases := []struct {
 		name              string
@@ -192,12 +197,6 @@ func TestCreateNote(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockdb := mockdb.NewMockQuerier(ctrl)
 			ns := NewService(mockdb)
-			args := db.CreateNoteParams{
-				ID:       tc.note.ID,
-				Title:    tc.note.Title,
-				Username: tc.note.Username,
-				Text:     tc.note.Text,
-			}
 
 			tc.mockdbCreateNote(mockdb, &args)
 			id, err := ns.q.CreateNote(context.Background(), &args)
@@ -297,6 +296,11 @@ func TestDeleteNote(t *testing.T) {
 
 func TestUpdateNote(t *testing.T) {
 	note := random.NewDBNote(uuid.New())
+	args := db.UpdateNoteParams{
+		ID:    note.ID,
+		Title: sql.NullString{String: note.Title, Valid: true},
+		Text:  note.Text,
+	}
 
 	testCases := []struct {
 		name              string
@@ -326,6 +330,17 @@ func TestUpdateNote(t *testing.T) {
 				require.ErrorIs(t, err, ErrNotFound)
 			},
 		},
+		{
+			name: "updating note returns ErrDBInternal",
+			note: note,
+			mockdbUpdateNote: func(mockdb *mockdb.MockQuerier, args *db.UpdateNoteParams) {
+				mockdb.EXPECT().UpdateNote(gomock.Any(), args).Times(1).Return(uuid.Nil, ErrDBInternal)
+			},
+			checkReturnValues: func(t *testing.T, note *db.Note, id uuid.UUID, err error) {
+				require.Equal(t, uuid.Nil, id)
+				require.ErrorIs(t, err, ErrDBInternal)
+			},
+		},
 	}
 	for c := range testCases {
 		tc := testCases[c]
@@ -334,11 +349,6 @@ func TestUpdateNote(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockdb := mockdb.NewMockQuerier(ctrl)
 			ns := NewService(mockdb)
-			args := db.UpdateNoteParams{
-				ID:    tc.note.ID,
-				Title: sql.NullString{String: tc.note.Title, Valid: true},
-				Text:  tc.note.Text,
-			}
 
 			tc.mockdbUpdateNote(mockdb, &args)
 			id, err := ns.q.UpdateNote(context.Background(), &args)
