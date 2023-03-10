@@ -279,27 +279,83 @@ func TestDeleteNote(t *testing.T) {
 
 func TestUpdateNote(t *testing.T) {
 
-	id := uuid.New()
-	updateRequest := struct {
-		Title string `json:"title"`
+	type updateRequest struct {
+		Title string `json:"title" validate:"required,min=4"`
 		Text  string `json:"text"`
-	}{}
+	}
+
+	id := uuid.New()
+	jsonValidator := validator.New()
+	ur := &updateRequest{
+		Title: "testtitle",
+		Text:  "testtext",
+	}
 
 	testCases := []struct {
 		name          string
 		path          string
-		body          *models.Note
-		validateJSON  func(t *testing.T, v *validator.Validate, note *models.Note)
-		mockSvcCall   func(mocksvc *mocksvc.MockNoteService, note *models.Note)
+		body          *updateRequest
+		validateJSON  func(t *testing.T, v *validator.Validate, ur *updateRequest)
+		mockSvcCall   func(mocksvc *mocksvc.MockNoteService, ur *updateRequest)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request)
 	}{
 		{
 			name: "updating note OK",
+			body: ur,
+			path: id.String(),
+			validateJSON: func(t *testing.T, v *validator.Validate, ur *updateRequest) {
+				err := v.Struct(ur)
+				require.NoError(t, err)
+			},
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, ur *updateRequest) {
+				mocksvc.EXPECT().UpdateNote(gomock.Any(), id, ur.Title, ur.Text, true).Times(1).Return(id, nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+		{
+			name: "returns bad request - invalid URL path",
+			body: ur,
 			path: "invalid",
-			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, note *models.Note) {
+			validateJSON: func(t *testing.T, v *validator.Validate, ur *updateRequest) {
+			},
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, ur *updateRequest) {
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "returns bad request - title validation error",
+			body: &updateRequest{
+				Title: "",
+				Text:  "testtext",
+			},
+			path: id.String(),
+			validateJSON: func(t *testing.T, v *validator.Validate, ur *updateRequest) {
+				err := v.Struct(ur)
+				require.Error(t, err)
+			},
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, ur *updateRequest) {
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "returns internal error - db internal error",
+			body: ur,
+			path: id.String(),
+			validateJSON: func(t *testing.T, v *validator.Validate, ur *updateRequest) {
+				err := v.Struct(ur)
+				require.NoError(t, err)
+			},
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, ur *updateRequest) {
+				mocksvc.EXPECT().UpdateNote(gomock.Any(), id, ur.Title, ur.Text, true).Times(1).Return(uuid.Nil, note.ErrDBInternal)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
 	}
@@ -309,14 +365,15 @@ func TestUpdateNote(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mocksvc := mocksvc.NewMockNoteService(ctrl)
+			tc.mockSvcCall(mocksvc, tc.body)
+
+			tc.validateJSON(t, jsonValidator, tc.body)
 
 			b, err := json.Marshal(tc.body)
 			require.NoError(t, err)
 
 			rec := httptest.NewRecorder()
-			req := httptest.NewRequest(http.MethodPut, "/notes/"+tc.path, nil)
-
-			tc.mockSvcCall(mocksvc)
+			req := httptest.NewRequest(http.MethodPut, "/notes/"+tc.path, bytes.NewReader(b))
 
 			handler := UpdateNote(mocksvc)
 			handler(rec, req)

@@ -1,6 +1,5 @@
 package server
 
-/*
 import (
 	"bytes"
 	"database/sql"
@@ -13,9 +12,9 @@ import (
 	"testing"
 	"time"
 
-	mockdb "github.com/adykaaa/online-notes/db/mock"
 	db "github.com/adykaaa/online-notes/db/sqlc"
 	"github.com/adykaaa/online-notes/lib/password"
+	mocksvc "github.com/adykaaa/online-notes/note/mock"
 	auth "github.com/adykaaa/online-notes/server/http/auth"
 	models "github.com/adykaaa/online-notes/server/http/models"
 	"github.com/go-playground/validator/v10"
@@ -50,11 +49,11 @@ func TestRegisterUser(t *testing.T) {
 	jsonValidator := validator.New()
 
 	testCases := []struct {
-		name             string
-		body             *models.User
-		validateJSON     func(t *testing.T, v *validator.Validate, user *models.User)
-		dbmockCreateUser func(mockdb *mockdb.MockQuerier, user *models.User)
-		checkResponse    func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request)
+		name          string
+		body          *models.User
+		validateJSON  func(t *testing.T, v *validator.Validate, user *models.User)
+		mockSvcCall   func(mockdb *mockdb.MockQuerier, user *models.User)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request)
 	}{
 		{
 			name: "user registration OK",
@@ -70,7 +69,7 @@ func TestRegisterUser(t *testing.T) {
 				require.NoError(t, err)
 			},
 
-			dbmockCreateUser: func(mockdb *mockdb.MockQuerier, user *models.User) {
+			mockSvcCall: func(mockdb *mockdb.MockQuerier, user *models.User) {
 				args := regUserArgs{
 					Username: user.Username,
 					Password: user.Password,
@@ -96,7 +95,7 @@ func TestRegisterUser(t *testing.T) {
 				require.Error(t, err)
 			},
 
-			dbmockCreateUser: func(mockdb *mockdb.MockQuerier, user *models.User) {
+			mockSvcCall: func(mockdb *mockdb.MockQuerier, user *models.User) {
 				mockdb.EXPECT().RegisterUser(gomock.Any(), gomock.Any()).Times(0).Return("", nil)
 			},
 
@@ -118,7 +117,7 @@ func TestRegisterUser(t *testing.T) {
 				require.Error(t, err)
 			},
 
-			dbmockCreateUser: func(mockdb *mockdb.MockQuerier, user *models.User) {
+			mockSvcCall: func(mockdb *mockdb.MockQuerier, user *models.User) {
 				mockdb.EXPECT().RegisterUser(gomock.Any(), gomock.Any()).Times(0).Return("", nil)
 			},
 
@@ -140,7 +139,7 @@ func TestRegisterUser(t *testing.T) {
 				require.Error(t, err)
 			},
 
-			dbmockCreateUser: func(mockdb *mockdb.MockQuerier, user *models.User) {
+			mockSvcCall: func(mockdb *mockdb.MockQuerier, user *models.User) {
 				mockdb.EXPECT().RegisterUser(gomock.Any(), gomock.Any()).Times(0).Return("", nil)
 			},
 
@@ -162,7 +161,7 @@ func TestRegisterUser(t *testing.T) {
 				require.NoError(t, err)
 			},
 
-			dbmockCreateUser: func(mockdb *mockdb.MockQuerier, user *models.User) {
+			mockSvcCall: func(mockdb *mockdb.MockQuerier, user *models.User) {
 				mockdb.EXPECT().RegisterUser(gomock.Any(), gomock.Any()).Times(1).Return("", &pq.Error{Code: "23505"})
 			},
 
@@ -184,7 +183,7 @@ func TestRegisterUser(t *testing.T) {
 				require.NoError(t, err)
 			},
 
-			dbmockCreateUser: func(mockdb *mockdb.MockQuerier, user *models.User) {
+			mockSvcCall: func(mockdb *mockdb.MockQuerier, user *models.User) {
 				mockdb.EXPECT().RegisterUser(gomock.Any(), gomock.Any()).Times(1).Return("", errors.New("internal error"))
 			},
 
@@ -199,10 +198,10 @@ func TestRegisterUser(t *testing.T) {
 
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
-			dbmock := mocknote.NewMockService(ctrl)
+			mocksvc := mocksvc.NewMockService(ctrl)
 
 			tc.validateJSON(t, jsonValidator, tc.body)
-			tc.dbmockCreateUser(dbmock, tc.body)
+			tc.mockSvcCall(dbmock, tc.body)
 
 			b, err := json.Marshal(tc.body)
 			require.NoError(t, err)
@@ -383,4 +382,3 @@ func TestLoginUser(t *testing.T) {
 		})
 	}
 }
-*/

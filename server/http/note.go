@@ -123,7 +123,7 @@ func UpdateNote(s NoteService) http.HandlerFunc {
 		}
 
 		updateRequest := struct {
-			Title string `json:"title"`
+			Title string `json:"title" validate:"required,min=4"`
 			Text  string `json:"text"`
 		}{}
 
@@ -133,10 +133,11 @@ func UpdateNote(s NoteService) http.HandlerFunc {
 			httplib.JSON(w, httplib.Msg{"error": "internal error decoding Note struct"}, http.StatusInternalServerError)
 			return
 		}
-
-		if updateRequest.Title == "" {
-			l.Error().Err(err).Msgf("Title cannot be empty!")
-			httplib.JSON(w, httplib.Msg{"error": "title of a note cannot be empty"}, http.StatusBadRequest)
+		validate := validator.New()
+		err = validate.Struct(&updateRequest)
+		if err != nil {
+			l.Error().Err(err).Msgf("title must be more than 4 characters long!")
+			httplib.JSON(w, httplib.Msg{"error": "title of a note must be more than 4 characters long!"}, http.StatusBadRequest)
 			return
 		}
 
@@ -146,10 +147,6 @@ func UpdateNote(s NoteService) http.HandlerFunc {
 
 		id, err := s.UpdateNote(ctx, reqUUID, updateRequest.Title, updateRequest.Text, isTextValid)
 		switch {
-		case errors.Is(err, sql.ErrNoRows):
-			l.Info().Msg("User has no notes to delete from!")
-			httplib.JSON(w, httplib.Msg{"error": "user has no notes, so nothing to update"}, http.StatusBadRequest)
-			return
 		case errors.Is(err, note.ErrDBInternal):
 			l.Info().Err(err).Msgf("Could not update Note %v", reqUUID)
 			httplib.JSON(w, httplib.Msg{"error": "could not update note"}, http.StatusInternalServerError)
