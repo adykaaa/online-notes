@@ -48,7 +48,7 @@ func TestCreateNote(t *testing.T) {
 			},
 
 			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, n *models.Note) {
-				mocksvc.EXPECT().CreateNote(gomock.Any(), n.Title, n.User, n.Text).Times(1).Return(note.ID, nil)
+				mocksvc.EXPECT().CreateNote(gomock.Any(), n.Title, n.User, n.Text).Times(1).Return(n.ID, nil)
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
@@ -85,7 +85,7 @@ func TestCreateNote(t *testing.T) {
 			body: testNote,
 
 			validateJSON: func(t *testing.T, v *validator.Validate, n *models.Note) {
-				err := v.Struct(note)
+				err := v.Struct(n)
 				require.NoError(t, err)
 			},
 
@@ -223,22 +223,42 @@ func TestDeleteNote(t *testing.T) {
 	id := uuid.New()
 	testCases := []struct {
 		name          string
-		uuid          uuid.UUID
+		path          string
 		mockSvcCall   func(svcmock *mocksvc.MockNoteService)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request)
 	}{
 		{
 			name: "deleting note OK",
-			uuid: id,
+			path: id.String(),
 			mockSvcCall: func(mocksvc *mocksvc.MockNoteService) {
-				mocksvc.EXPECT().DeleteNote(gomock.Any(), id).Times(1).Return(nil, note.ErrDBInternal)
+				mocksvc.EXPECT().DeleteNote(gomock.Any(), id).Times(1).Return(id, nil)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
-
+				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+		{
+			name: "deleting note returns bad request - malformed uuid",
+			path: "invalid",
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService) {
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "deleting note returns bad request - malformed uuid",
+			path: id.String(),
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService) {
+				mocksvc.EXPECT().DeleteNote(gomock.Any(), id).Times(1).Return(uuid.Nil, note.ErrDBInternal)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
 	}
 	for c := range testCases {
+
 		tc := testCases[c]
 
 		t.Run(tc.name, func(t *testing.T) {
@@ -246,7 +266,7 @@ func TestDeleteNote(t *testing.T) {
 			mocksvc := mocksvc.NewMockNoteService(ctrl)
 
 			rec := httptest.NewRecorder()
-			req := httptest.NewRequest(http.MethodDelete, "/"+tc.uuid.String(), nil)
+			req := httptest.NewRequest(http.MethodDelete, "/notes/"+tc.path, nil)
 
 			tc.mockSvcCall(mocksvc)
 
@@ -259,4 +279,48 @@ func TestDeleteNote(t *testing.T) {
 
 func TestUpdateNote(t *testing.T) {
 
+	id := uuid.New()
+	updateRequest := struct {
+		Title string `json:"title"`
+		Text  string `json:"text"`
+	}{}
+
+	testCases := []struct {
+		name          string
+		path          string
+		body          *models.Note
+		validateJSON  func(t *testing.T, v *validator.Validate, note *models.Note)
+		mockSvcCall   func(mocksvc *mocksvc.MockNoteService, note *models.Note)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request)
+	}{
+		{
+			name: "updating note OK",
+			path: "invalid",
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, note *models.Note) {
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+	}
+	for c := range testCases {
+		tc := testCases[c]
+
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mocksvc := mocksvc.NewMockNoteService(ctrl)
+
+			b, err := json.Marshal(tc.body)
+			require.NoError(t, err)
+
+			rec := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodPut, "/notes/"+tc.path, nil)
+
+			tc.mockSvcCall(mocksvc)
+
+			handler := UpdateNote(mocksvc)
+			handler(rec, req)
+			tc.checkResponse(t, rec, req)
+		})
+	}
 }
