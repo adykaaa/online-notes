@@ -2,47 +2,21 @@ package server
 
 import (
 	"bytes"
-	"database/sql"
 	"encoding/json"
-	"errors"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"testing"
 	"time"
 
-	mockdb "github.com/adykaaa/online-notes/db/mock"
 	db "github.com/adykaaa/online-notes/db/sqlc"
+	note "github.com/adykaaa/online-notes/note"
 	mocksvc "github.com/adykaaa/online-notes/note/mock"
 	models "github.com/adykaaa/online-notes/server/http/models"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
-	"github.com/lib/pq"
 	"github.com/stretchr/testify/require"
 )
-
-type createNoteArgs db.CreateNoteParams
-
-func (a *createNoteArgs) Matches(x interface{}) bool {
-	reflectedValue := reflect.ValueOf(x).Elem()
-	if a.Username != reflectedValue.FieldByName("Username").String() {
-		return false
-	}
-	if a.Title != reflectedValue.FieldByName("Title").String() {
-		return false
-	}
-	if a.Text.String != reflectedValue.FieldByName("Text").FieldByName("String").String() {
-		return false
-	}
-
-	return true
-}
-
-func (a *createNoteArgs) String() string {
-	return fmt.Sprintf("ID: %v, Title: %s, Username: %s, Text: %s", a.ID, a.Title, a.Username, a.Text.String)
-}
 
 func TestCreateNote(t *testing.T) {
 	jsonValidator := validator.New()
@@ -57,11 +31,11 @@ func TestCreateNote(t *testing.T) {
 	}
 
 	testCases := []struct {
-		name             string
-		body             *models.Note
-		validateJSON     func(t *testing.T, v *validator.Validate, note *models.Note)
-		dbmockCreateNote func(mockdb *mockdb.MockQuerier, note *models.Note)
-		checkResponse    func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request)
+		name          string
+		body          *models.Note
+		validateJSON  func(t *testing.T, v *validator.Validate, note *models.Note)
+		mockSvcCall   func(mocksvc *mocksvc.MockNoteService, note *models.Note)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request)
 	}{
 		{
 			name: "note creation OK",
@@ -73,17 +47,8 @@ func TestCreateNote(t *testing.T) {
 				require.NoError(t, err)
 			},
 
-			dbmockCreateNote: func(mockdb *mockdb.MockQuerier, note *models.Note) {
-				args := createNoteArgs{
-					ID:        testNote.ID,
-					Title:     testNote.Title,
-					Username:  testNote.User,
-					Text:      sql.NullString{String: testNote.Text, Valid: true},
-					CreatedAt: testNote.CreatedAt,
-					UpdatedAt: testNote.UpdatedAt,
-				}
-
-				mockdb.EXPECT().CreateNote(gomock.Any(), &args).Times(1).Return(args.ID, nil)
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, n *models.Note) {
+				mocksvc.EXPECT().CreateNote(gomock.Any(), n.Title, n.User, n.Text).Times(1).Return(note.ID, nil)
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
@@ -107,7 +72,7 @@ func TestCreateNote(t *testing.T) {
 				require.Error(t, err)
 			},
 
-			dbmockCreateNote: func(mockdb *mockdb.MockQuerier, note *models.Note) {
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, n *models.Note) {
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
@@ -119,13 +84,13 @@ func TestCreateNote(t *testing.T) {
 
 			body: testNote,
 
-			validateJSON: func(t *testing.T, v *validator.Validate, note *models.Note) {
+			validateJSON: func(t *testing.T, v *validator.Validate, n *models.Note) {
 				err := v.Struct(note)
 				require.NoError(t, err)
 			},
 
-			dbmockCreateNote: func(mockdb *mockdb.MockQuerier, note *models.Note) {
-				mockdb.EXPECT().CreateNote(gomock.Any(), gomock.Any()).Times(1).Return(note.ID, &pq.Error{Code: "23505"})
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, n *models.Note) {
+				mocksvc.EXPECT().CreateNote(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(n.ID, note.ErrAlreadyExists)
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
@@ -142,8 +107,8 @@ func TestCreateNote(t *testing.T) {
 				require.NoError(t, err)
 			},
 
-			dbmockCreateNote: func(mockdb *mockdb.MockQuerier, note *models.Note) {
-				mockdb.EXPECT().CreateNote(gomock.Any(), gomock.Any()).Times(1).Return(note.ID, errors.New("internal error"))
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, n *models.Note) {
+				mocksvc.EXPECT().CreateNote(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(1).Return(n.ID, note.ErrDBInternal)
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
@@ -157,11 +122,10 @@ func TestCreateNote(t *testing.T) {
 
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
-			dbmock := mockdb.NewMockQuerier(ctrl)
 			mocksvc := mocksvc.NewMockNoteService(ctrl)
 
 			tc.validateJSON(t, jsonValidator, tc.body)
-			tc.dbmockCreateNote(dbmock, tc.body)
+			tc.mockSvcCall(mocksvc, tc.body)
 
 			b, err := json.Marshal(tc.body)
 			require.NoError(t, err)
@@ -179,10 +143,10 @@ func TestCreateNote(t *testing.T) {
 
 func TestGetAllNotesFromUser(t *testing.T) {
 	testCases := []struct {
-		name                      string
-		addQuery                  func(t *testing.T, r *http.Request)
-		dbmockGetAllNotesFromUser func(mockdb *mockdb.MockQuerier)
-		checkResponse             func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request)
+		name          string
+		addQuery      func(t *testing.T, r *http.Request)
+		mockSvcCall   func(svcmock *mocksvc.MockNoteService)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request)
 	}{
 		{
 			name: "gettings notes from user OK",
@@ -193,8 +157,8 @@ func TestGetAllNotesFromUser(t *testing.T) {
 				r.URL.RawQuery = q.Encode()
 			},
 
-			dbmockGetAllNotesFromUser: func(mockdb *mockdb.MockQuerier) {
-				mockdb.EXPECT().GetAllNotesFromUser(gomock.Any(), "testuser1").Times(1).Return([]db.Note{}, nil)
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService) {
+				mocksvc.EXPECT().GetAllNotesFromUser(gomock.Any(), "testuser1").Times(1).Return([]db.Note{}, nil)
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
@@ -207,7 +171,7 @@ func TestGetAllNotesFromUser(t *testing.T) {
 			addQuery: func(t *testing.T, r *http.Request) {
 			},
 
-			dbmockGetAllNotesFromUser: func(mockdb *mockdb.MockQuerier) {
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService) {
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
@@ -223,8 +187,8 @@ func TestGetAllNotesFromUser(t *testing.T) {
 				r.URL.RawQuery = q.Encode()
 			},
 
-			dbmockGetAllNotesFromUser: func(mockdb *mockdb.MockQuerier) {
-				mockdb.EXPECT().GetAllNotesFromUser(gomock.Any(), "testuser1").Times(1).Return(nil, errors.New("internal error"))
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService) {
+				mocksvc.EXPECT().GetAllNotesFromUser(gomock.Any(), "testuser1").Times(1).Return(nil, note.ErrDBInternal)
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
@@ -244,7 +208,7 @@ func TestGetAllNotesFromUser(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, "/notes", nil)
 
 			tc.addQuery(t, req)
-			tc.dbmockGetAllNotesFromUser(mocksvc)
+			tc.mockSvcCall(mocksvc)
 
 			handler := GetAllNotesFromUser(mocksvc)
 			handler(rec, req)
@@ -256,6 +220,44 @@ func TestGetAllNotesFromUser(t *testing.T) {
 
 func TestDeleteNote(t *testing.T) {
 
+	id := uuid.New()
+	testCases := []struct {
+		name          string
+		getReqID      func(t *testing.T, r *http.Request) uuid.UUID
+		mockSvcCall   func(svcmock *mocksvc.MockNoteService)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request)
+	}{
+		{
+			name: "deleting note OK",
+			getReqID: func(t *testing.T, r *http.Request) uuid.UUID {
+
+			},
+			mockSvcCall: func(svcmock *mocksvc.MockNoteService) {
+
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
+
+			},
+		},
+	}
+	for c := range testCases {
+		tc := testCases[c]
+
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mocksvc := mocksvc.NewMockNoteService(ctrl)
+
+			rec := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodDelete, "/"+id.String(), nil)
+
+			tc.getReqID(t, req)
+			tc.mockSvcCall(mocksvc)
+
+			handler := DeleteNote(mocksvc)
+			handler(rec, req)
+			tc.checkResponse(t, rec, req)
+		})
+	}
 }
 
 func TestUpdateNote(t *testing.T) {

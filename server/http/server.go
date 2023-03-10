@@ -71,7 +71,7 @@ func (s *HTTPServer) Start() {
 	case sig := <-interrupt:
 		s.logger.Info().Msgf("Server run interrupted by OS signal %s", sig.String())
 	case err := <-s.Notify():
-		s.logger.Info().Msgf("Server connection error %v", err)
+		s.logger.Error().Msgf("error during server connection %v", err)
 	}
 }
 

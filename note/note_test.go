@@ -29,7 +29,7 @@ func TestRegisterUser(t *testing.T) {
 		name              string
 		user              *db.User
 		mockdbCreateUser  func(mockdb *mockdb.MockQuerier, args *db.RegisterUserParams)
-		checkReturnValues func(t *testing.T, user *db.User, username string, err error)
+		checkReturnValues func(t *testing.T, username string, err error)
 	}{
 		{
 			name: "user registration OK",
@@ -37,7 +37,7 @@ func TestRegisterUser(t *testing.T) {
 			mockdbCreateUser: func(mockdb *mockdb.MockQuerier, args *db.RegisterUserParams) {
 				mockdb.EXPECT().RegisterUser(gomock.Any(), args).Times(1).Return(args.Username, nil)
 			},
-			checkReturnValues: func(t *testing.T, user *db.User, username string, err error) {
+			checkReturnValues: func(t *testing.T, username string, err error) {
 				require.Equal(t, username, user.Username)
 				require.Nil(t, err)
 			},
@@ -48,7 +48,7 @@ func TestRegisterUser(t *testing.T) {
 			mockdbCreateUser: func(mockdb *mockdb.MockQuerier, args *db.RegisterUserParams) {
 				mockdb.EXPECT().RegisterUser(gomock.Any(), args).Times(1).Return("", ErrUserAlreadyExists)
 			},
-			checkReturnValues: func(t *testing.T, user *db.User, username string, err error) {
+			checkReturnValues: func(t *testing.T, username string, err error) {
 				require.ErrorIs(t, err, ErrUserAlreadyExists)
 				require.Empty(t, username)
 			},
@@ -59,7 +59,7 @@ func TestRegisterUser(t *testing.T) {
 			mockdbCreateUser: func(mockdb *mockdb.MockQuerier, args *db.RegisterUserParams) {
 				mockdb.EXPECT().RegisterUser(gomock.Any(), args).Times(1).Return("", ErrDBInternal)
 			},
-			checkReturnValues: func(t *testing.T, user *db.User, username string, err error) {
+			checkReturnValues: func(t *testing.T, username string, err error) {
 				require.ErrorIs(t, err, ErrDBInternal)
 				require.Empty(t, username)
 			},
@@ -76,7 +76,7 @@ func TestRegisterUser(t *testing.T) {
 
 			tc.mockdbCreateUser(mockdb, &args)
 			u, err := ns.q.RegisterUser(context.Background(), &args)
-			tc.checkReturnValues(t, tc.user, u, err)
+			tc.checkReturnValues(t, u, err)
 		})
 	}
 }
@@ -97,7 +97,7 @@ func TestGetUser(t *testing.T) {
 				mockdb.EXPECT().GetUser(gomock.Any(), username).Times(1).Return(db.User{Username: username}, nil)
 			},
 			checkReturnValues: func(t *testing.T, user db.User, err error) {
-				require.Equal(t, username, user.Username)
+				require.Equal(t, user.Username, username)
 				require.Nil(t, err)
 			},
 		},
@@ -109,6 +109,8 @@ func TestGetUser(t *testing.T) {
 			},
 			checkReturnValues: func(t *testing.T, user db.User, err error) {
 				require.Empty(t, user.Email)
+				require.Empty(t, user.Password)
+				require.Empty(t, user.Username)
 				require.ErrorIs(t, err, ErrUserNotFound)
 			},
 		},
@@ -120,6 +122,8 @@ func TestGetUser(t *testing.T) {
 			},
 			checkReturnValues: func(t *testing.T, user db.User, err error) {
 				require.Empty(t, user.Email)
+				require.Empty(t, user.Password)
+				require.Empty(t, user.Username)
 				require.ErrorIs(t, err, ErrDBInternal)
 			},
 		},
