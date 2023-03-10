@@ -223,17 +223,15 @@ func TestDeleteNote(t *testing.T) {
 	id := uuid.New()
 	testCases := []struct {
 		name          string
-		getReqID      func(t *testing.T, r *http.Request) uuid.UUID
+		uuid          uuid.UUID
 		mockSvcCall   func(svcmock *mocksvc.MockNoteService)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request)
 	}{
 		{
 			name: "deleting note OK",
-			getReqID: func(t *testing.T, r *http.Request) uuid.UUID {
-
-			},
-			mockSvcCall: func(svcmock *mocksvc.MockNoteService) {
-
+			uuid: id,
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService) {
+				mocksvc.EXPECT().DeleteNote(gomock.Any(), id).Times(1).Return(nil, note.ErrDBInternal)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
 
@@ -248,9 +246,8 @@ func TestDeleteNote(t *testing.T) {
 			mocksvc := mocksvc.NewMockNoteService(ctrl)
 
 			rec := httptest.NewRecorder()
-			req := httptest.NewRequest(http.MethodDelete, "/"+id.String(), nil)
+			req := httptest.NewRequest(http.MethodDelete, "/"+tc.uuid.String(), nil)
 
-			tc.getReqID(t, req)
 			tc.mockSvcCall(mocksvc)
 
 			handler := DeleteNote(mocksvc)
