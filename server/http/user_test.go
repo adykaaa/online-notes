@@ -2,9 +2,7 @@ package server
 
 import (
 	"bytes"
-	"database/sql"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -14,6 +12,7 @@ import (
 
 	db "github.com/adykaaa/online-notes/db/sqlc"
 	"github.com/adykaaa/online-notes/lib/password"
+	"github.com/adykaaa/online-notes/note"
 	mocksvc "github.com/adykaaa/online-notes/note/mock"
 	auth "github.com/adykaaa/online-notes/server/http/auth"
 	models "github.com/adykaaa/online-notes/server/http/models"
@@ -52,7 +51,7 @@ func TestRegisterUser(t *testing.T) {
 		name          string
 		body          *models.User
 		validateJSON  func(t *testing.T, v *validator.Validate, user *models.User)
-		mockSvcCall   func(mockdb *mockdb.MockQuerier, user *models.User)
+		mockSvcCall   func(mocksvc *mocksvc.MockNoteService, note *models.User)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request)
 	}{
 		{
@@ -69,23 +68,18 @@ func TestRegisterUser(t *testing.T) {
 				require.NoError(t, err)
 			},
 
-			mockSvcCall: func(mockdb *mockdb.MockQuerier, user *models.User) {
-				args := regUserArgs{
-					Username: user.Username,
-					Password: user.Password,
-					Email:    user.Email,
-				}
-				mockdb.EXPECT().RegisterUser(gomock.Any(), &args).Times(1).Return(args.Username, nil)
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, user *models.User) {
+				mocksvc.EXPECT().RegisterUser(gomock.Any(), user.Username, user.Password, user.Email).Times(1).Return(user.Username, nil)
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
 				require.Equal(t, http.StatusCreated, recorder.Code)
 			},
 		}, {
-			name: "returns bad request because of short username",
+			name: "returns bad request - short username",
 
 			body: &models.User{
-				Username: "u1",
+				Username: "u",
 				Password: "password1",
 				Email:    "user1@user.com",
 			},
@@ -95,8 +89,7 @@ func TestRegisterUser(t *testing.T) {
 				require.Error(t, err)
 			},
 
-			mockSvcCall: func(mockdb *mockdb.MockQuerier, user *models.User) {
-				mockdb.EXPECT().RegisterUser(gomock.Any(), gomock.Any()).Times(0).Return("", nil)
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, user *models.User) {
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
@@ -104,7 +97,7 @@ func TestRegisterUser(t *testing.T) {
 			},
 		},
 		{
-			name: "returns bad request because of short password",
+			name: "returns bad request - short password",
 
 			body: &models.User{
 				Username: "username1",
@@ -117,8 +110,7 @@ func TestRegisterUser(t *testing.T) {
 				require.Error(t, err)
 			},
 
-			mockSvcCall: func(mockdb *mockdb.MockQuerier, user *models.User) {
-				mockdb.EXPECT().RegisterUser(gomock.Any(), gomock.Any()).Times(0).Return("", nil)
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, user *models.User) {
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
@@ -126,7 +118,7 @@ func TestRegisterUser(t *testing.T) {
 			},
 		},
 		{
-			name: "returns bad request because malformatted email",
+			name: "returns bad request - malformatted email",
 
 			body: &models.User{
 				Username: "username1",
@@ -139,8 +131,7 @@ func TestRegisterUser(t *testing.T) {
 				require.Error(t, err)
 			},
 
-			mockSvcCall: func(mockdb *mockdb.MockQuerier, user *models.User) {
-				mockdb.EXPECT().RegisterUser(gomock.Any(), gomock.Any()).Times(0).Return("", nil)
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, user *models.User) {
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
@@ -148,7 +139,7 @@ func TestRegisterUser(t *testing.T) {
 			},
 		},
 		{
-			name: "fails because of duplicate username",
+			name: "returns forbidden - duplicate username",
 
 			body: &models.User{
 				Username: "username1",
@@ -161,8 +152,8 @@ func TestRegisterUser(t *testing.T) {
 				require.NoError(t, err)
 			},
 
-			mockSvcCall: func(mockdb *mockdb.MockQuerier, user *models.User) {
-				mockdb.EXPECT().RegisterUser(gomock.Any(), gomock.Any()).Times(1).Return("", &pq.Error{Code: "23505"})
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, user *models.User) {
+				mocksvc.EXPECT().RegisterUser(gomock.Any(), user.Username, user.Password, user.Email).Times(1).Return("", &pq.Error{Code: "23505"})
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
@@ -170,7 +161,7 @@ func TestRegisterUser(t *testing.T) {
 			},
 		},
 		{
-			name: "returns internal error because of DB failure",
+			name: "returns internal error - DB failure",
 
 			body: &models.User{
 				Username: "username1",
@@ -183,8 +174,8 @@ func TestRegisterUser(t *testing.T) {
 				require.NoError(t, err)
 			},
 
-			mockSvcCall: func(mockdb *mockdb.MockQuerier, user *models.User) {
-				mockdb.EXPECT().RegisterUser(gomock.Any(), gomock.Any()).Times(1).Return("", errors.New("internal error"))
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, user *models.User) {
+				mocksvc.EXPECT().RegisterUser(gomock.Any(), user.Username, user.Password, user.Email).Times(1).Return("", note.ErrDBInternal)
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
@@ -198,10 +189,10 @@ func TestRegisterUser(t *testing.T) {
 
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
-			mocksvc := mocksvc.NewMockService(ctrl)
+			mocksvc := mocksvc.NewMockNoteService(ctrl)
 
 			tc.validateJSON(t, jsonValidator, tc.body)
-			tc.mockSvcCall(dbmock, tc.body)
+			tc.mockSvcCall(mocksvc, tc.body)
 
 			b, err := json.Marshal(tc.body)
 			require.NoError(t, err)
@@ -209,7 +200,7 @@ func TestRegisterUser(t *testing.T) {
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodPost, "/register", bytes.NewReader(b))
 
-			handler := RegisterUser(dbmock)
+			handler := RegisterUser(mocksvc)
 			handler(rec, req)
 			tc.checkResponse(t, rec, req)
 		})
@@ -227,7 +218,7 @@ func TestLoginUser(t *testing.T) {
 	testCases := []struct {
 		name             string
 		body             *loginUserReq
-		dbmockGetUser    func(t *testing.T, mockdb *mockdb.MockQuerier, user *loginUserReq) string
+		mockSvcCall      func(t *testing.T, mocksvc *mocksvc.MockNoteService, user *loginUserReq) string
 		validatePassword func(t *testing.T, user *loginUserReq, dbUserPassword string)
 		createToken      func(t *testing.T, tm auth.TokenManager, user *loginUserReq, duration time.Duration) string
 		checkResponse    func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request, token string)
@@ -240,7 +231,7 @@ func TestLoginUser(t *testing.T) {
 				Password: "password1",
 			},
 
-			dbmockGetUser: func(t *testing.T, mockdb *mockdb.MockQuerier, user *loginUserReq) string {
+			mockSvcCall: func(t *testing.T, mocksvc *mocksvc.MockNoteService, user *loginUserReq) string {
 				hashedPassword, err := password.Hash(user.Password)
 				require.NoError(t, err)
 
@@ -249,7 +240,7 @@ func TestLoginUser(t *testing.T) {
 					Password: hashedPassword,
 				}
 
-				mockdb.EXPECT().GetUser(gomock.Any(), user.Username).Times(1).Return(dbuser, nil)
+				mocksvc.EXPECT().GetUser(gomock.Any(), user.Username).Times(1).Return(dbuser, nil)
 				return hashedPassword
 			},
 
@@ -281,11 +272,11 @@ func TestLoginUser(t *testing.T) {
 				Password: "password1",
 			},
 
-			dbmockGetUser: func(t *testing.T, mockdb *mockdb.MockQuerier, user *loginUserReq) string {
+			mockSvcCall: func(t *testing.T, mocksvc *mocksvc.MockNoteService, user *loginUserReq) string {
 				hashedPassword, err := password.Hash(user.Password)
 				require.NoError(t, err)
 
-				mockdb.EXPECT().GetUser(gomock.Any(), user.Username).Times(1).Return(db.User{}, sql.ErrNoRows)
+				mocksvc.EXPECT().GetUser(gomock.Any(), user.Username).Times(1).Return(db.User{}, note.ErrNotFound)
 				return hashedPassword
 			},
 
@@ -308,7 +299,7 @@ func TestLoginUser(t *testing.T) {
 				Password: "password1",
 			},
 
-			dbmockGetUser: func(t *testing.T, mockdb *mockdb.MockQuerier, user *loginUserReq) string {
+			mockSvcCall: func(t *testing.T, mocksvc *mocksvc.MockNoteService, user *loginUserReq) string {
 				hashedPassword, err := password.Hash("wrongpassword")
 				require.NoError(t, err)
 
@@ -317,7 +308,7 @@ func TestLoginUser(t *testing.T) {
 					Password: hashedPassword,
 				}
 
-				mockdb.EXPECT().GetUser(gomock.Any(), user.Username).Times(1).Return(dbuser, nil)
+				mocksvc.EXPECT().GetUser(gomock.Any(), user.Username).Times(1).Return(dbuser, nil)
 				return hashedPassword
 			},
 
@@ -342,8 +333,8 @@ func TestLoginUser(t *testing.T) {
 				Password: "password1",
 			},
 
-			dbmockGetUser: func(t *testing.T, mockdb *mockdb.MockQuerier, user *loginUserReq) string {
-				mockdb.EXPECT().GetUser(gomock.Any(), user.Username).Times(1).Return(db.User{}, sql.ErrConnDone)
+			mockSvcCall: func(t *testing.T, mocksvc *mocksvc.MockNoteService, user *loginUserReq) string {
+				mocksvc.EXPECT().GetUser(gomock.Any(), user.Username).Times(1).Return(db.User{}, note.ErrDBInternal)
 				return ""
 			},
 
@@ -364,19 +355,19 @@ func TestLoginUser(t *testing.T) {
 
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
-			dbmock := mockdb.NewMockQuerier(ctrl)
+			mocksvc := mocksvc.NewMockNoteService(ctrl)
 
 			b, err := json.Marshal(tc.body)
 			require.NoError(t, err)
 
-			pw := tc.dbmockGetUser(t, dbmock, tc.body)
+			pw := tc.mockSvcCall(t, mocksvc, tc.body)
 			tc.validatePassword(t, tc.body, pw)
 			token := tc.createToken(t, tm, tc.body, 300)
 
 			rec := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodPost, "/login", bytes.NewReader(b))
 
-			handler := LoginUser(dbmock, tm, 300)
+			handler := LoginUser(mocksvc, tm, 300)
 			handler(rec, req)
 			tc.checkResponse(t, rec, req, token)
 		})

@@ -365,8 +365,8 @@ func TestUpdateNote(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mocksvc := mocksvc.NewMockNoteService(ctrl)
-			tc.mockSvcCall(mocksvc, tc.body)
 
+			tc.mockSvcCall(mocksvc, tc.body)
 			tc.validateJSON(t, jsonValidator, tc.body)
 
 			b, err := json.Marshal(tc.body)
