@@ -22,17 +22,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type regUserArgs db.RegisterUserParams
+type userMatcher models.User
 
-func (a *regUserArgs) Matches(x interface{}) bool {
+func (u *userMatcher) Matches(x interface{}) bool {
 	reflectedValue := reflect.ValueOf(x).Elem()
-	if a.Username != reflectedValue.FieldByName("Username").String() {
+	if u.Username != reflectedValue.FieldByName("Username").String() {
 		return false
 	}
-	if a.Email != reflectedValue.FieldByName("Email").String() {
+	if u.Email != reflectedValue.FieldByName("Email").String() {
 		return false
 	}
-	err := password.Validate(reflectedValue.FieldByName("Password").String(), a.Password)
+	err := password.Validate(reflectedValue.FieldByName("Password").String(), u.Password)
 	if err != nil {
 		return false
 	}
@@ -40,7 +40,7 @@ func (a *regUserArgs) Matches(x interface{}) bool {
 	return true
 }
 
-func (a *regUserArgs) String() string {
+func (a *userMatcher) String() string {
 	return fmt.Sprintf("Username: %s, Email: %s", a.Username, a.Email)
 }
 
@@ -50,8 +50,8 @@ func TestRegisterUser(t *testing.T) {
 	testCases := []struct {
 		name          string
 		body          *models.User
-		validateJSON  func(t *testing.T, v *validator.Validate, user *models.User)
-		mockSvcCall   func(mocksvc *mocksvc.MockNoteService, note *models.User)
+		validateJSON  func(t *testing.T, v *validator.Validate, u *models.User)
+		mockSvcCall   func(mocksvc *mocksvc.MockNoteService, u *userMatcher)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request)
 	}{
 		{
@@ -68,7 +68,7 @@ func TestRegisterUser(t *testing.T) {
 				require.NoError(t, err)
 			},
 
-			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, user *models.User) {
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, user *userMatcher) {
 				mocksvc.EXPECT().RegisterUser(gomock.Any(), user.Username, user.Password, user.Email).Times(1).Return(user.Username, nil)
 			},
 
@@ -89,7 +89,7 @@ func TestRegisterUser(t *testing.T) {
 				require.Error(t, err)
 			},
 
-			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, user *models.User) {
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, u *userMatcher) {
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
@@ -110,7 +110,7 @@ func TestRegisterUser(t *testing.T) {
 				require.Error(t, err)
 			},
 
-			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, user *models.User) {
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, u *userMatcher) {
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
@@ -131,7 +131,7 @@ func TestRegisterUser(t *testing.T) {
 				require.Error(t, err)
 			},
 
-			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, user *models.User) {
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, u *userMatcher) {
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
@@ -152,8 +152,8 @@ func TestRegisterUser(t *testing.T) {
 				require.NoError(t, err)
 			},
 
-			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, user *models.User) {
-				mocksvc.EXPECT().RegisterUser(gomock.Any(), user.Username, user.Password, user.Email).Times(1).Return("", &pq.Error{Code: "23505"})
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, u *userMatcher) {
+				mocksvc.EXPECT().RegisterUser(gomock.Any(), u.Username, u.Password, u.Email).Times(1).Return("", &pq.Error{Code: "23505"})
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
@@ -174,8 +174,8 @@ func TestRegisterUser(t *testing.T) {
 				require.NoError(t, err)
 			},
 
-			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, user *models.User) {
-				mocksvc.EXPECT().RegisterUser(gomock.Any(), user.Username, user.Password, user.Email).Times(1).Return("", note.ErrDBInternal)
+			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, u *userMatcher) {
+				mocksvc.EXPECT().RegisterUser(gomock.Any(), u.Username, u.Password, u.Email).Times(1).Return("", note.ErrDBInternal)
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
@@ -190,9 +190,14 @@ func TestRegisterUser(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mocksvc := mocksvc.NewMockNoteService(ctrl)
+			um := userMatcher{
+				Username: tc.body.Username,
+				Password: tc.body.Password,
+				Email:    tc.body.Email,
+			}
 
 			tc.validateJSON(t, jsonValidator, tc.body)
-			tc.mockSvcCall(mocksvc, tc.body)
+			tc.mockSvcCall(mocksvc, &um)
 
 			b, err := json.Marshal(tc.body)
 			require.NoError(t, err)
