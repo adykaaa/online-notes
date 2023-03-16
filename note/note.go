@@ -6,6 +6,7 @@ import (
 	"errors"
 	"time"
 
+	db "github.com/adykaaa/online-notes/db/sqlc"
 	sqlc "github.com/adykaaa/online-notes/db/sqlc"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
@@ -27,12 +28,8 @@ func NewService(q sqlc.Querier) *service {
 	return &service{q}
 }
 
-func (s *service) RegisterUser(ctx context.Context, username string, hashedPw string, email string) (string, error) {
-	uname, err := s.q.RegisterUser(ctx, &sqlc.RegisterUserParams{
-		Username: username,
-		Password: hashedPw,
-		Email:    email,
-	})
+func (s *service) RegisterUser(ctx context.Context, args *db.RegisterUserParams) (string, error) {
+	uname, err := s.q.RegisterUser(ctx, args)
 
 	switch {
 	case err.(*pq.Error).Code.Name() == "unique_violation":

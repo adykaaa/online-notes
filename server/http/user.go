@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	db "github.com/adykaaa/online-notes/db/sqlc"
 	httplib "github.com/adykaaa/online-notes/lib/http"
 	"github.com/adykaaa/online-notes/lib/password"
 	"github.com/adykaaa/online-notes/note"
@@ -48,7 +49,12 @@ func RegisterUser(s NoteService) http.HandlerFunc {
 			return
 		}
 
-		uname, err := s.RegisterUser(ctx, request.Username, hashedPassword, request.Email)
+		uname, err := s.RegisterUser(ctx, &db.RegisterUserParams{
+			Username: request.Username,
+			Password: hashedPassword,
+			Email:    request.Email,
+		})
+
 		switch {
 		case errors.Is(err, note.ErrAlreadyExists):
 			l.Error().Err(err).Msgf("registration failed, username or email already in use for user %s", request.Username)
