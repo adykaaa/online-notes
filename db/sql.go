@@ -13,7 +13,6 @@ const (
 	defaultConnTimeout  = 2 * time.Second
 )
 
-// sqlDB struct provides all functions to execute SQL queries using composition with the sqlc.Queries struct.
 type sqlDB struct {
 	logger *zerolog.Logger
 	*sqlc.Queries
@@ -28,10 +27,10 @@ func NewSQL(driver string, url string, l *zerolog.Logger) (*sqlDB, error) {
 		connTimeout:  defaultConnTimeout,
 		logger:       l,
 	}
+
 	var err error
 
 	for sqlDB.connAttempts > 0 {
-
 		sqlDB.db, err = sql.Open(driver, url)
 		if err != nil {
 			l.Error().Msgf("error trying to open DB. %v  Attempt: %d", err, sqlDB.connAttempts)
@@ -42,22 +41,20 @@ func NewSQL(driver string, url string, l *zerolog.Logger) (*sqlDB, error) {
 			l.Error().Msgf("error trying to connect to the DB: %v. Attempt: %d", err, sqlDB.connAttempts)
 		}
 
-		//if we could create the DB object and connect to the DB, we exit the loop
+		//if we could create the DB object and connect to the DB instance, we break from the loop
 		if err == nil {
 			break
 		}
-
 		time.Sleep(sqlDB.connTimeout)
 		sqlDB.connAttempts--
 
 		if sqlDB.connAttempts == 0 {
-			l.Error().Msgf("Could not establish connection to the database")
+			l.Error().Msgf("could not establish connection to the database")
 			return nil, err
 		}
 	}
 
 	sqlDB.Queries = sqlc.New(sqlDB.db)
-	l.Info().Msg("DB connection is successful.")
-
+	l.Info().Msg("db connection is successful.")
 	return sqlDB, nil
 }

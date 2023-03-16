@@ -268,7 +268,7 @@ func TestLoginUser(t *testing.T) {
 			},
 		},
 		{
-			name: "returns not found because user is not registered",
+			name: "returns not found - user not registered",
 
 			body: &loginUserReq{
 				Username: "user1",
@@ -291,11 +291,11 @@ func TestLoginUser(t *testing.T) {
 			},
 
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request, token string) {
-				require.Equal(t, http.StatusNotFound, recorder.Code)
+				require.Equal(t, http.StatusForbidden, recorder.Code)
 			},
 		},
 		{
-			name: "returns unauthorized because of wrong password",
+			name: "returns unauthorized - wrong password",
 
 			body: &loginUserReq{
 				Username: "user1",
@@ -329,7 +329,7 @@ func TestLoginUser(t *testing.T) {
 			},
 		},
 		{
-			name: "returns internal server error because of DB error",
+			name: "returns internal server error - DB error",
 
 			body: &loginUserReq{
 				Username: "user1",

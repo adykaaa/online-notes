@@ -21,8 +21,8 @@ func RegisterUser(s NoteService) http.HandlerFunc {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
 
-		var request models.User
-		err := json.NewDecoder(r.Body).Decode(&request)
+		var req models.User
+		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
 			l.Error().Err(err).Msgf("error decoding the User into JSON during registration. %v", err)
 			httplib.JSON(w, httplib.Msg{"error": "internal error decoding User struct"}, http.StatusInternalServerError)
@@ -30,14 +30,14 @@ func RegisterUser(s NoteService) http.HandlerFunc {
 		}
 
 		validate := validator.New()
-		err = validate.Struct(&request)
+		err = validate.Struct(&req)
 		if err != nil {
 			l.Error().Err(err).Msgf("error during User struct validation %v", err)
 			httplib.JSON(w, httplib.Msg{"error": "wrongly formatted or missing User parameter"}, http.StatusBadRequest)
 			return
 		}
 
-		hashedPassword, err := password.Hash(request.Password)
+		hashedPw, err := password.Hash(req.Password)
 		if err != nil {
 			if errors.Is(err, password.ErrTooShort) {
 				l.Error().Err(err).Msgf("The given password is too short%v", err)
@@ -50,14 +50,14 @@ func RegisterUser(s NoteService) http.HandlerFunc {
 		}
 
 		uname, err := s.RegisterUser(ctx, &db.RegisterUserParams{
-			Username: request.Username,
-			Password: hashedPassword,
-			Email:    request.Email,
+			Username: req.Username,
+			Password: hashedPw,
+			Email:    req.Email,
 		})
 
 		switch {
 		case errors.Is(err, note.ErrAlreadyExists):
-			l.Error().Err(err).Msgf("registration failed, username or email already in use for user %s", request.Username)
+			l.Error().Err(err).Msgf("registration failed, username or email already in use for user %s", req.Username)
 			httplib.JSON(w, httplib.Msg{"error": "username or email already in use"}, http.StatusForbidden)
 			return
 		case errors.Is(err, note.ErrDBInternal):
@@ -76,22 +76,22 @@ func LoginUser(s NoteService, t auth.TokenManager, tokenDuration time.Duration) 
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
 
-		request := struct {
+		req := struct {
 			Username string `json:"username"`
 			Password string `json:"password"`
 		}{}
 
-		err := json.NewDecoder(r.Body).Decode(&request)
+		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
 			l.Error().Err(err).Msgf("error decoding the User into JSON during registration. %v", err)
 			httplib.JSON(w, httplib.Msg{"error": "internal error decoding User struct"}, http.StatusInternalServerError)
 			return
 		}
 
-		dbuser, err := s.GetUser(ctx, request.Username)
+		user, err := s.GetUser(ctx, req.Username)
 		switch {
 		case errors.Is(err, note.ErrNotFound):
-			l.Error().Err(err).Msgf("user: %s is not found", request.Username)
+			l.Error().Err(err).Msgf("user: %s is not found", req.Username)
 			httplib.JSON(w, httplib.Msg{"error": "user is not found"}, http.StatusForbidden)
 			return
 		case errors.Is(err, note.ErrDBInternal):
@@ -100,14 +100,14 @@ func LoginUser(s NoteService, t auth.TokenManager, tokenDuration time.Duration) 
 			return
 		}
 
-		err = password.Validate(dbuser.Password, request.Password)
+		err = password.Validate(user.Password, req.Password)
 		if err != nil {
-			l.Info().Err(err).Msgf("Wrong password was provided for user %s", request.Username)
+			l.Info().Err(err).Msgf("Wrong password was provided for user %s", req.Username)
 			httplib.JSON(w, httplib.Msg{"error": "wrong password was provided"}, http.StatusUnauthorized)
 			return
 		}
 
-		token, payload, err := t.CreateToken(request.Username, tokenDuration)
+		token, payload, err := t.CreateToken(req.Username, tokenDuration)
 		if err != nil {
 			l.Info().Err(err).Msgf("Could not create PASETO for user. %v", err)
 			httplib.JSON(w, httplib.Msg{"error": "internal server error while creating the token"}, http.StatusInternalServerError)
@@ -116,7 +116,7 @@ func LoginUser(s NoteService, t auth.TokenManager, tokenDuration time.Duration) 
 
 		httplib.SetCookie(w, "paseto", token, payload.ExpiresAt)
 		httplib.JSON(w, httplib.Msg{"success": "login successful"}, http.StatusOK)
-		l.Info().Msgf("User login for %s was successful!", request.Username)
+		l.Info().Msgf("User login for %s was successful!", req.Username)
 	}
 }
 
@@ -125,7 +125,7 @@ func LogoutUser() http.HandlerFunc {
 		l, _, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
 
-		username, err := io.ReadAll(r.Body)
+		uname, err := io.ReadAll(r.Body)
 		if err != nil {
 			httplib.JSON(w, httplib.Msg{"error": "couldn't decode request body"}, http.StatusInternalServerError)
 			return
@@ -139,6 +139,6 @@ func LogoutUser() http.HandlerFunc {
 			Secure:   true,
 		})
 		httplib.JSON(w, httplib.Msg{"success": "user successfully logged out"}, http.StatusOK)
-		l.Info().Msgf("User logout for %s was successful!", string(username))
+		l.Info().Msgf("User logout for %s was successful!", string(uname))
 	}
 }

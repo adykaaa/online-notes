@@ -26,28 +26,29 @@ func RegisterChiMiddlewares(r *chi.Mux, l *zerolog.Logger) {
 		}))
 }
 
-func RegisterChiHandlers(router *chi.Mux, s NoteService, t auth.TokenManager, tokenDuration time.Duration, l *zerolog.Logger) {
-	router.Post("/register", RegisterUser(s))
-	router.Post("/login", LoginUser(s, t, tokenDuration))
-	router.Post("/logout", LogoutUser())
-	router.Route("/notes", func(router chi.Router) {
-		router.Use(auth.AuthMiddleware(t, l))
-		router.Post("/create", CreateNote(s))
-		router.Get("/", GetAllNotesFromUser(s))
-		router.Put("/{id}", UpdateNote(s))
-		router.Delete("/{id}", DeleteNote(s))
+func RegisterChiHandlers(r *chi.Mux, s NoteService, t auth.TokenManager, td time.Duration, l *zerolog.Logger) {
+	r.Post("/register", RegisterUser(s))
+	r.Post("/login", LoginUser(s, t, td))
+	r.Post("/logout", LogoutUser())
+	r.Route("/notes", func(r chi.Router) {
+		r.Use(auth.AuthMiddleware(t, l))
+		r.Post("/create", CreateNote(s))
+		r.Get("/", GetAllNotesFromUser(s))
+		r.Put("/{id}", UpdateNote(s))
+		r.Delete("/{id}", DeleteNote(s))
 	})
 }
 
-func NewChiRouter(s NoteService, symmetricKey string, tokenDuration time.Duration, l *zerolog.Logger) (*chi.Mux, error) {
-	tokenManager, err := auth.NewPasetoManager(symmetricKey)
+func NewChiRouter(s NoteService, symmetricKey string, td time.Duration, l *zerolog.Logger) (*chi.Mux, error) {
+	pm, err := auth.NewPasetoManager(symmetricKey)
 	if err != nil {
 		l.Err(err).Msgf("could not create a new PasetoCreator. %v", err)
 		return nil, err
 	}
-	router := chi.NewRouter()
-	RegisterChiMiddlewares(router, l)
-	RegisterChiHandlers(router, s, tokenManager, tokenDuration, l)
 
-	return router, nil
+	r := chi.NewRouter()
+	RegisterChiMiddlewares(r, l)
+	RegisterChiHandlers(r, s, pm, td, l)
+
+	return r, nil
 }

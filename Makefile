@@ -25,18 +25,17 @@ notesvcmock: # Generates the noteservice mocks
 	mockgen -package mocknote -destination note/mock/notemock.go  github.com/adykaaa/online-notes/server/http NoteService
 .PHONY: notemock
 
-
 build-backend: # Builds the backend Docker image
 	docker build . -t online-notes-backend
 .PHONY: build-backend
 
-run-backend: # Runs the backend Docker image
-	docker run -d -p 8080:8080 online-notes-backend
-.PHONY: run-backend
-
 build-frontend: # Builds the frontend Docker image
 	docker build ./web/ -t online-notes-frontend
 .PHONY: build-frontend
+
+run-backend: # Runs the backend Docker image
+	docker run -d -p 8080:8080 online-notes-backend
+.PHONY: run-backend
 
 run-frontend: # Runs the frontend Docker image
 	docker build ./web/ -t online-notes-frontend
