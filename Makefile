@@ -38,5 +38,9 @@ run-backend: # Runs the backend Docker image
 .PHONY: run-backend
 
 run-frontend: # Runs the frontend Docker image
-	docker build ./web/ -t online-notes-frontend
+	docker run -d -p 3000:3000 online-notes-frontend
 .PHONY: run-frontend
+
+run-app: # Runs the docker compose file with all the services necessary for the application
+	docker compose up -d
+.PHONY: run-app

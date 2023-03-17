@@ -65,9 +65,10 @@ func (s *service) CreateNote(ctx context.Context, title string, username string,
 	})
 
 	switch {
-	case err.(*pq.Error).Code.Name() == "unique_violation":
-		return uuid.Nil, ErrAlreadyExists
 	case err != nil:
+		if err.(*pq.Error).Code.Name() == "unique_violation" {
+			return uuid.Nil, ErrAlreadyExists
+		}
 		return uuid.Nil, ErrDBInternal
 	default:
 		return retID, nil
