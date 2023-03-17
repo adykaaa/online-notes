@@ -10,4 +10,6 @@ FROM nginx:1.23.3-alpine
 WORKDIR /usr/share/nginx/html
 RUN rm -rf ./*
 COPY --from=builder /app/build .
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 3000
 ENTRYPOINT ["nginx", "-g", "daemon off;"]
