@@ -32,9 +32,10 @@ func (s *service) RegisterUser(ctx context.Context, args *db.RegisterUserParams)
 	uname, err := s.q.RegisterUser(ctx, args)
 
 	switch {
-	case err.(*pq.Error).Code.Name() == "unique_violation":
-		return "", ErrUserAlreadyExists
 	case err != nil:
+		if err.(*pq.Error).Code.Name() == "unique_violation" {
+			return "", ErrUserAlreadyExists
+		}
 		return "", ErrDBInternal
 	default:
 		return uname, nil
