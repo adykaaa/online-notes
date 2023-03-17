@@ -7,7 +7,6 @@ import (
 	"time"
 
 	db "github.com/adykaaa/online-notes/db/sqlc"
-	sqlc "github.com/adykaaa/online-notes/db/sqlc"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
@@ -21,10 +20,10 @@ var (
 )
 
 type service struct {
-	q sqlc.Querier
+	q db.Querier
 }
 
-func NewService(q sqlc.Querier) *service {
+func NewService(q db.Querier) *service {
 	return &service{q}
 }
 
@@ -42,21 +41,21 @@ func (s *service) RegisterUser(ctx context.Context, args *db.RegisterUserParams)
 	}
 }
 
-func (s *service) GetUser(ctx context.Context, username string) (sqlc.User, error) {
+func (s *service) GetUser(ctx context.Context, username string) (db.User, error) {
 	user, err := s.q.GetUser(ctx, username)
 
 	switch {
 	case errors.Is(err, sql.ErrNoRows):
-		return sqlc.User{}, ErrUserNotFound
+		return db.User{}, ErrUserNotFound
 	case err != nil:
-		return sqlc.User{}, ErrDBInternal
+		return db.User{}, ErrDBInternal
 	default:
 		return user, nil
 	}
 }
 
 func (s *service) CreateNote(ctx context.Context, title string, username string, text string) (uuid.UUID, error) {
-	retID, err := s.q.CreateNote(ctx, &sqlc.CreateNoteParams{
+	retID, err := s.q.CreateNote(ctx, &db.CreateNoteParams{
 		ID:        uuid.New(),
 		Title:     title,
 		Username:  username,
@@ -76,7 +75,7 @@ func (s *service) CreateNote(ctx context.Context, title string, username string,
 	}
 }
 
-func (s *service) GetAllNotesFromUser(ctx context.Context, username string) ([]sqlc.Note, error) {
+func (s *service) GetAllNotesFromUser(ctx context.Context, username string) ([]db.Note, error) {
 	notes, err := s.q.GetAllNotesFromUser(ctx, username)
 
 	if err != nil {
@@ -99,7 +98,7 @@ func (s *service) DeleteNote(ctx context.Context, reqID uuid.UUID) (uuid.UUID, e
 }
 
 func (s *service) UpdateNote(ctx context.Context, reqID uuid.UUID, title string, text string, isTextValid bool) (uuid.UUID, error) {
-	id, err := s.q.UpdateNote(ctx, &sqlc.UpdateNoteParams{
+	id, err := s.q.UpdateNote(ctx, &db.UpdateNoteParams{
 		ID:        reqID,
 		Title:     sql.NullString{String: title, Valid: true},
 		Text:      sql.NullString{String: text, Valid: isTextValid},
