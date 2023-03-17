@@ -32,12 +32,12 @@ func main() {
 
 	s := note.NewService(sqldb)
 
-	router, err := server.NewChiRouter(s, config.PASETOSecret, config.AccessTokenDuration, &l)
+	r, err := server.NewChiRouter(s, config.PASETOSecret, config.AccessTokenDuration, &l)
 	if err != nil {
 		l.Fatal().Err(err).Send()
 	}
 
-	httpServer, err := server.NewHTTP(router, config.HTTPServerAddress, &l)
+	httpServer, err := server.NewHTTP(r, config.HTTPServerAddress, &l)
 	if err != nil {
 		l.Fatal().Err(err).Send()
 	}
