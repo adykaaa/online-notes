@@ -136,49 +136,44 @@ func TestGetUser(t *testing.T) {
 }
 
 func TestCreateNote(t *testing.T) {
-	note := random.NewDBNote(uuid.New())
 	args := db.CreateNoteParams{
-		ID:       note.ID,
-		Title:    note.Title,
-		Username: note.Username,
-		Text:     note.Text,
+		ID:       uuid.New(),
+		Title:    "testtitle1",
+		Username: "testuser1",
+		Text:     sql.NullString{String: "testtext", Valid: true},
 	}
 
 	testCases := []struct {
 		name              string
-		note              *db.Note
 		mockdbCreateNote  func(mockdb *mockdb.MockQuerier, args *db.CreateNoteParams)
-		checkReturnValues func(t *testing.T, note *db.Note, id uuid.UUID, err error)
+		checkReturnValues func(t *testing.T, args *db.CreateNoteParams, id uuid.UUID, err error)
 	}{
 		{
 			name: "creating note OK",
-			note: note,
 			mockdbCreateNote: func(mockdb *mockdb.MockQuerier, args *db.CreateNoteParams) {
-				mockdb.EXPECT().CreateNote(gomock.Any(), args).Times(1).Return(note.ID, nil)
+				mockdb.EXPECT().CreateNote(gomock.Any(), args).Times(1).Return(args.ID, nil)
 			},
-			checkReturnValues: func(t *testing.T, note *db.Note, id uuid.UUID, err error) {
-				require.Equal(t, note.ID, id)
+			checkReturnValues: func(t *testing.T, args *db.CreateNoteParams, id uuid.UUID, err error) {
+				require.Equal(t, args.ID, id)
 				require.Nil(t, err)
 			},
 		},
 		{
 			name: "creating note returns ErrAlreadyExist",
-			note: note,
 			mockdbCreateNote: func(mockdb *mockdb.MockQuerier, args *db.CreateNoteParams) {
 				mockdb.EXPECT().CreateNote(gomock.Any(), args).Times(1).Return(uuid.Nil, ErrAlreadyExists)
 			},
-			checkReturnValues: func(t *testing.T, note *db.Note, id uuid.UUID, err error) {
+			checkReturnValues: func(t *testing.T, args *db.CreateNoteParams, id uuid.UUID, err error) {
 				require.Equal(t, id, uuid.Nil)
 				require.ErrorIs(t, err, ErrAlreadyExists)
 			},
 		},
 		{
 			name: "creating note returns ErrDBInternal",
-			note: note,
 			mockdbCreateNote: func(mockdb *mockdb.MockQuerier, args *db.CreateNoteParams) {
 				mockdb.EXPECT().CreateNote(gomock.Any(), args).Times(1).Return(uuid.Nil, ErrDBInternal)
 			},
-			checkReturnValues: func(t *testing.T, note *db.Note, id uuid.UUID, err error) {
+			checkReturnValues: func(t *testing.T, args *db.CreateNoteParams, id uuid.UUID, err error) {
 				require.Equal(t, id, uuid.Nil)
 				require.ErrorIs(t, err, ErrDBInternal)
 			},
@@ -195,12 +190,12 @@ func TestCreateNote(t *testing.T) {
 
 			tc.mockdbCreateNote(mockdb, &args)
 			id, err := ns.q.CreateNote(context.Background(), &args)
-			tc.checkReturnValues(t, tc.note, id, err)
+			tc.checkReturnValues(t, &args, id, err)
 		})
 	}
 }
 
-func TestGetAllNotesFromUSer(t *testing.T) {
+func TestGetAllNotesFromUser(t *testing.T) {
 	const username = "user1"
 
 	testCases := []struct {
