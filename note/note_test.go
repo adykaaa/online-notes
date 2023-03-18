@@ -7,7 +7,6 @@ import (
 
 	mockdb "github.com/adykaaa/online-notes/db/mock"
 	db "github.com/adykaaa/online-notes/db/sqlc"
-	"github.com/adykaaa/online-notes/lib/random"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
@@ -285,48 +284,43 @@ func TestDeleteNote(t *testing.T) {
 }
 
 func TestUpdateNote(t *testing.T) {
-	note := random.NewDBNote(uuid.New())
 	args := db.UpdateNoteParams{
-		ID:    note.ID,
-		Title: sql.NullString{String: note.Title, Valid: true},
-		Text:  note.Text,
+		ID:    uuid.New(),
+		Title: sql.NullString{String: "testtitle1", Valid: true},
+		Text:  sql.NullString{String: "testtext", Valid: true},
 	}
 
 	testCases := []struct {
 		name              string
-		note              *db.Note
 		mockdbUpdateNote  func(mockdb *mockdb.MockQuerier, args *db.UpdateNoteParams)
-		checkReturnValues func(t *testing.T, note *db.Note, id uuid.UUID, err error)
+		checkReturnValues func(t *testing.T, args *db.UpdateNoteParams, id uuid.UUID, err error)
 	}{
 		{
 			name: "updating note OK",
-			note: note,
 			mockdbUpdateNote: func(mockdb *mockdb.MockQuerier, args *db.UpdateNoteParams) {
 				mockdb.EXPECT().UpdateNote(gomock.Any(), args).Times(1).Return(note.ID, nil)
 			},
-			checkReturnValues: func(t *testing.T, note *db.Note, id uuid.UUID, err error) {
-				require.Equal(t, note.ID, id)
+			checkReturnValues: func(t *testing.T, args *db.UpdateNoteParams, id uuid.UUID, err error) {
+				require.Equal(t, args.ID, id)
 				require.Nil(t, err)
 			},
 		},
 		{
 			name: "updating note returns ErrNotFound",
-			note: note,
 			mockdbUpdateNote: func(mockdb *mockdb.MockQuerier, args *db.UpdateNoteParams) {
 				mockdb.EXPECT().UpdateNote(gomock.Any(), args).Times(1).Return(uuid.Nil, ErrNotFound)
 			},
-			checkReturnValues: func(t *testing.T, note *db.Note, id uuid.UUID, err error) {
+			checkReturnValues: func(t *testing.T, args *db.UpdateNoteParams, id uuid.UUID, err error) {
 				require.Equal(t, uuid.Nil, id)
 				require.ErrorIs(t, err, ErrNotFound)
 			},
 		},
 		{
 			name: "updating note returns ErrDBInternal",
-			note: note,
 			mockdbUpdateNote: func(mockdb *mockdb.MockQuerier, args *db.UpdateNoteParams) {
 				mockdb.EXPECT().UpdateNote(gomock.Any(), args).Times(1).Return(uuid.Nil, ErrDBInternal)
 			},
-			checkReturnValues: func(t *testing.T, note *db.Note, id uuid.UUID, err error) {
+			checkReturnValues: func(t *testing.T, args *db.UpdateNoteParams, id uuid.UUID, err error) {
 				require.Equal(t, uuid.Nil, id)
 				require.ErrorIs(t, err, ErrDBInternal)
 			},
@@ -342,7 +336,7 @@ func TestUpdateNote(t *testing.T) {
 
 			tc.mockdbUpdateNote(mockdb, &args)
 			id, err := ns.q.UpdateNote(context.Background(), &args)
-			tc.checkReturnValues(t, tc.note, id, err)
+			tc.checkReturnValues(t, &args, id, err)
 		})
 	}
 }
