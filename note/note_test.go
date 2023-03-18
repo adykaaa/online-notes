@@ -298,7 +298,7 @@ func TestUpdateNote(t *testing.T) {
 		{
 			name: "updating note OK",
 			mockdbUpdateNote: func(mockdb *mockdb.MockQuerier, args *db.UpdateNoteParams) {
-				mockdb.EXPECT().UpdateNote(gomock.Any(), args).Times(1).Return(note.ID, nil)
+				mockdb.EXPECT().UpdateNote(gomock.Any(), args).Times(1).Return(args.ID, nil)
 			},
 			checkReturnValues: func(t *testing.T, args *db.UpdateNoteParams, id uuid.UUID, err error) {
 				require.Equal(t, args.ID, id)
