@@ -15,7 +15,7 @@ func JSON(w http.ResponseWriter, payload interface{}, code int) {
 	response, err := json.Marshal(payload)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Internal server error while waiting for the response"))
+		w.Write([]byte("Internal server error while marshalling the response"))
 		return
 	}
 	w.WriteHeader(code)
