@@ -14,37 +14,29 @@ import (
 )
 
 func TestRegisterUser(t *testing.T) {
-	user := &db.User{
+	args := db.RegisterUserParams{
 		Username: "user1",
 		Password: "password1",
 		Email:    "user1@user.com",
 	}
-	args := db.RegisterUserParams{
-		Username: user.Username,
-		Password: user.Password,
-		Email:    user.Email,
-	}
 
 	testCases := []struct {
 		name              string
-		user              *db.User
 		mockdbCreateUser  func(mockdb *mockdb.MockQuerier, args *db.RegisterUserParams)
 		checkReturnValues func(t *testing.T, username string, err error)
 	}{
 		{
 			name: "user registration OK",
-			user: user,
 			mockdbCreateUser: func(mockdb *mockdb.MockQuerier, args *db.RegisterUserParams) {
 				mockdb.EXPECT().RegisterUser(gomock.Any(), args).Times(1).Return(args.Username, nil)
 			},
 			checkReturnValues: func(t *testing.T, username string, err error) {
-				require.Equal(t, username, user.Username)
+				require.Equal(t, username, args.Username)
 				require.Nil(t, err)
 			},
 		},
 		{
 			name: "user registration returns ErrUserAlreadyExists",
-			user: user,
 			mockdbCreateUser: func(mockdb *mockdb.MockQuerier, args *db.RegisterUserParams) {
 				mockdb.EXPECT().RegisterUser(gomock.Any(), args).Times(1).Return("", ErrUserAlreadyExists)
 			},
@@ -55,7 +47,6 @@ func TestRegisterUser(t *testing.T) {
 		},
 		{
 			name: "user registration returns ErrDBInternal",
-			user: user,
 			mockdbCreateUser: func(mockdb *mockdb.MockQuerier, args *db.RegisterUserParams) {
 				mockdb.EXPECT().RegisterUser(gomock.Any(), args).Times(1).Return("", ErrDBInternal)
 			},
