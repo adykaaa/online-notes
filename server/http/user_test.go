@@ -51,7 +51,7 @@ func TestRegisterUser(t *testing.T) {
 		body          *models.User
 		validateJSON  func(t *testing.T, v *validator.Validate, u *models.User)
 		mockSvcCall   func(mocksvc *mocksvc.MockNoteService, u *models.User)
-		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name: "user registration OK",
@@ -75,7 +75,7 @@ func TestRegisterUser(t *testing.T) {
 				}).Times(1).Return(u.Username, nil)
 			},
 
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusCreated, recorder.Code)
 			},
 		}, {
@@ -95,7 +95,7 @@ func TestRegisterUser(t *testing.T) {
 			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, u *models.User) {
 			},
 
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
@@ -116,7 +116,7 @@ func TestRegisterUser(t *testing.T) {
 			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, u *models.User) {
 			},
 
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
@@ -137,7 +137,7 @@ func TestRegisterUser(t *testing.T) {
 			mockSvcCall: func(mocksvc *mocksvc.MockNoteService, u *models.User) {
 			},
 
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
@@ -159,7 +159,7 @@ func TestRegisterUser(t *testing.T) {
 				mocksvc.EXPECT().RegisterUser(gomock.Any(), gomock.Any()).Times(1).Return("", note.ErrAlreadyExists)
 			},
 
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusForbidden, recorder.Code)
 			},
 		},
@@ -181,7 +181,7 @@ func TestRegisterUser(t *testing.T) {
 				mocksvc.EXPECT().RegisterUser(gomock.Any(), gomock.Any()).Times(1).Return("", note.ErrDBInternal)
 			},
 
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, request *http.Request) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
@@ -205,7 +205,7 @@ func TestRegisterUser(t *testing.T) {
 
 			handler := RegisterUser(mocksvc)
 			handler(rec, req)
-			tc.checkResponse(t, rec, req)
+			tc.checkResponse(t, rec)
 		})
 	}
 }
