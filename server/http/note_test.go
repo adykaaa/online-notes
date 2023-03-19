@@ -142,6 +142,9 @@ func TestCreateNote(t *testing.T) {
 }
 
 func TestGetAllNotesFromUser(t *testing.T) {
+
+	const username = "testuser1"
+
 	testCases := []struct {
 		name          string
 		addQuery      func(t *testing.T, r *http.Request)
@@ -158,7 +161,7 @@ func TestGetAllNotesFromUser(t *testing.T) {
 			},
 
 			mockSvcCall: func(mocksvc *mocksvc.MockNoteService) {
-				mocksvc.EXPECT().GetAllNotesFromUser(gomock.Any(), "testuser1").Times(1).Return([]db.Note{}, nil)
+				mocksvc.EXPECT().GetAllNotesFromUser(gomock.Any(), username).Times(1).Return([]db.Note{}, nil)
 			},
 
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
@@ -183,12 +186,12 @@ func TestGetAllNotesFromUser(t *testing.T) {
 
 			addQuery: func(t *testing.T, r *http.Request) {
 				q := r.URL.Query()
-				q.Add("username", "testuser1")
+				q.Add("username", username)
 				r.URL.RawQuery = q.Encode()
 			},
 
 			mockSvcCall: func(mocksvc *mocksvc.MockNoteService) {
-				mocksvc.EXPECT().GetAllNotesFromUser(gomock.Any(), "testuser1").Times(1).Return(nil, note.ErrDBInternal)
+				mocksvc.EXPECT().GetAllNotesFromUser(gomock.Any(), username).Times(1).Return(nil, note.ErrDBInternal)
 			},
 
 			checkResponse: func(t *testing.T, rec *httptest.ResponseRecorder) {
@@ -215,7 +218,6 @@ func TestGetAllNotesFromUser(t *testing.T) {
 			tc.checkResponse(t, rec)
 		})
 	}
-
 }
 
 func TestDeleteNote(t *testing.T) {
