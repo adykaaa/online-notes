@@ -28,7 +28,7 @@ func RegisterChiMiddlewares(r *chi.Mux, l *zerolog.Logger) {
 
 func RegisterChiHandlers(r *chi.Mux, s NoteService, t auth.TokenManager, tokenDuration time.Duration, l *zerolog.Logger) {
 	r.Post("/register", RegisterUser(s))
-	r.Post("/login", LoginUser(s, t, td))
+	r.Post("/login", LoginUser(s, t, tokenDuration))
 	r.Post("/logout", LogoutUser())
 	r.Route("/notes", func(r chi.Router) {
 		r.Use(auth.AuthMiddleware(t, l))
