@@ -39,7 +39,7 @@ func RegisterChiHandlers(r *chi.Mux, s NoteService, t auth.TokenManager, td time
 	})
 }
 
-func NewChiRouter(s NoteService, symmetricKey string, td time.Duration, l *zerolog.Logger) (*chi.Mux, error) {
+func NewChiRouter(s NoteService, symmetricKey string, tokenDuration time.Duration, l *zerolog.Logger) (*chi.Mux, error) {
 	pm, err := auth.NewPasetoManager(symmetricKey)
 	if err != nil {
 		l.Err(err).Msgf("could not create a new PasetoCreator. %v", err)
@@ -48,7 +48,7 @@ func NewChiRouter(s NoteService, symmetricKey string, td time.Duration, l *zerol
 
 	r := chi.NewRouter()
 	RegisterChiMiddlewares(r, l)
-	RegisterChiHandlers(r, s, pm, td, l)
+	RegisterChiHandlers(r, s, pm, tokenDuration, l)
 
 	return r, nil
 }
