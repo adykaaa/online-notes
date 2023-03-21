@@ -11,7 +11,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func RegisterChiMiddlewares(r *chi.Mux, l *zerolog.Logger) {
+func registerChiMiddlewares(r *chi.Mux, l *zerolog.Logger) {
 	// Request logger has middleware.Recoverer and RequestID baked into it.
 	r.Use(httplog.RequestLogger(l),
 		middleware.Heartbeat("/ping"),
@@ -26,7 +26,7 @@ func RegisterChiMiddlewares(r *chi.Mux, l *zerolog.Logger) {
 		}))
 }
 
-func RegisterChiHandlers(r *chi.Mux, s NoteService, t auth.TokenManager, tokenDuration time.Duration, l *zerolog.Logger) {
+func registerChiHandlers(r *chi.Mux, s NoteService, t auth.TokenManager, tokenDuration time.Duration, l *zerolog.Logger) {
 	r.Post("/register", RegisterUser(s))
 	r.Post("/login", LoginUser(s, t, tokenDuration))
 	r.Post("/logout", LogoutUser())
@@ -47,8 +47,8 @@ func NewChiRouter(s NoteService, symmetricKey string, tokenDuration time.Duratio
 	}
 
 	r := chi.NewRouter()
-	RegisterChiMiddlewares(r, l)
-	RegisterChiHandlers(r, s, pm, tokenDuration, l)
+	registerChiMiddlewares(r, l)
+	registerChiHandlers(r, s, pm, tokenDuration, l)
 
 	return r, nil
 }
