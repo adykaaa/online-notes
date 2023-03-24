@@ -12,5 +12,7 @@ This project aims to be the a fullstack note-taking application using React for 
 
 # Part 4 - [router, handlers and testing them](https://medium.com/@adykaaa/onlinenotez-part-4-router-handlers-and-testing-them-788f56420d7f)
 
+# Part 5 - [authentication, middleware, and tests of course!](https://medium.com/@adykaaa/onlinenotez-part-5-client-side-authentication-middleware-and-tests-of-course-84c904f683ce)
+
 ![](https://github.com/adykaaa/online-notes/blob/main/web/public/onlinenotes.gif)
 
