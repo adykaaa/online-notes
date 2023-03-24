@@ -23,7 +23,7 @@ type PasetoPayload struct {
 	ExpiresAt time.Time `json:"expiresAt"`
 }
 
-func NewPasetoPayload(username string, duration time.Duration) (*PasetoPayload, error) {
+func NewPasetoPayload(username string, tokenDuration time.Duration) (*PasetoPayload, error) {
 	tokenID, err := uuid.NewRandom()
 	if err != nil {
 		fmt.Errorf("Could not generate a random token ID! %v", err)
@@ -34,7 +34,7 @@ func NewPasetoPayload(username string, duration time.Duration) (*PasetoPayload, 
 		ID:        tokenID,
 		Username:  username,
 		IssuedAt:  time.Now(),
-		ExpiresAt: time.Now().Add(duration * time.Second),
+		ExpiresAt: time.Now().Add(tokenDuration * time.Second),
 	}
 
 	return payload, nil
