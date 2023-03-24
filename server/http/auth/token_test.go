@@ -31,7 +31,7 @@ func TestPasetoManager(t *testing.T) {
 
 	t.Run("fails because of invalid key length", func(t *testing.T) {
 		pc, err := NewPasetoManager("wrongkeylength")
-		require.Error(t, err)
+		require.ErrorIs(t, err, ErrInvalidSymmetricKeySize)
 		require.Nil(t, pc)
 	})
 

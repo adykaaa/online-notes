@@ -11,9 +11,10 @@ import (
 )
 
 var (
-	ErrTokenExpired = errors.New("the PASETO has expired")
-	ErrTokenInvalid = errors.New("the PASETO is not valid")
-	ErrTokenMissing = errors.New("the PASETO is missing")
+	ErrTokenExpired            = errors.New("the PASETO has expired")
+	ErrTokenInvalid            = errors.New("the PASETO is not valid")
+	ErrTokenMissing            = errors.New("the PASETO is missing")
+	ErrInvalidSymmetricKeySize = errors.New("the symmetric key size is invalid")
 )
 
 type PasetoPayload struct {
@@ -47,14 +48,14 @@ type PasetoManager struct {
 
 func NewPasetoManager(symmetricKey string) (*PasetoManager, error) {
 	if len(symmetricKey) != chacha20poly1305.KeySize {
-		return nil, fmt.Errorf("invalid key size, must be %d bytes", chacha20poly1305.KeySize)
+		return nil, ErrInvalidSymmetricKeySize
 	}
 
-	pc := &PasetoManager{
+	pm := &PasetoManager{
 		symmetricKey: []byte(symmetricKey),
 		paseto:       paseto.NewV2(),
 	}
-	return pc, nil
+	return pm, nil
 }
 
 func (c *PasetoManager) CreateToken(username string, duration time.Duration) (string, *PasetoPayload, error) {
