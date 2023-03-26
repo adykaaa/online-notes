@@ -14,6 +14,8 @@ type Config struct {
 	HTTPServerAddress   string        `mapstructure:"HTTP_SERVER_ADDRESS"`
 	PASETOSecret        string        `mapstructure:"PASETO_SYMMETRIC_KEY"`
 	AccessTokenDuration time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
+	RedisAddress        string        `mapstructure:"REDIS_CONN_STRING"`
+	RedisPassword       string        `mapstructure:"REDIS_PW"`
 }
 
 // Load reads configuration from file or environment variables.
