@@ -13,11 +13,10 @@ import (
 	"github.com/adykaaa/online-notes/note"
 	auth "github.com/adykaaa/online-notes/server/http/auth"
 	models "github.com/adykaaa/online-notes/server/http/models"
-	router "github.com/adykaaa/online-notes/server/http/router"
 	"github.com/go-playground/validator/v10"
 )
 
-func RegisterUser(s router.NoteService) http.HandlerFunc {
+func RegisterUser(s NoteService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
@@ -72,7 +71,7 @@ func RegisterUser(s router.NoteService) http.HandlerFunc {
 	}
 }
 
-func LoginUser(s router.NoteService, t auth.TokenManager, tokenDuration time.Duration) http.HandlerFunc {
+func LoginUser(s NoteService, t auth.TokenManager, tokenDuration time.Duration) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
