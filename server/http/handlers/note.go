@@ -1,4 +1,4 @@
-package server
+package handlers
 
 import (
 	"database/sql"
@@ -10,11 +10,12 @@ import (
 	httplib "github.com/adykaaa/online-notes/lib/http"
 	"github.com/adykaaa/online-notes/note"
 	models "github.com/adykaaa/online-notes/server/http/models"
+	server "github.com/adykaaa/online-notes/server/http/server"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
 
-func CreateNote(s NoteService) http.HandlerFunc {
+func CreateNote(s server.NoteService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
@@ -53,7 +54,7 @@ func CreateNote(s NoteService) http.HandlerFunc {
 	}
 }
 
-func GetAllNotesFromUser(s NoteService) http.HandlerFunc {
+func GetAllNotesFromUser(s server.NoteService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
@@ -80,7 +81,7 @@ func GetAllNotesFromUser(s NoteService) http.HandlerFunc {
 	}
 }
 
-func DeleteNote(s NoteService) http.HandlerFunc {
+func DeleteNote(s server.NoteService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()
@@ -108,7 +109,7 @@ func DeleteNote(s NoteService) http.HandlerFunc {
 	}
 }
 
-func UpdateNote(s NoteService) http.HandlerFunc {
+func UpdateNote(s server.NoteService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l, ctx, cancel := httplib.SetupHandler(w, r.Context())
 		defer cancel()

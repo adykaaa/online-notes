@@ -1,15 +1,28 @@
 package server
 
 import (
+	"context"
 	"time"
 
 	"github.com/adykaaa/httplog"
+	db "github.com/adykaaa/online-notes/db/sqlc"
 	auth "github.com/adykaaa/online-notes/server/http/auth"
+	handlers "github.com/adykaaa/online-notes/server/http/handlers"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 )
+
+type NoteService interface {
+	CreateNote(ctx context.Context, title string, username string, text string) (uuid.UUID, error)
+	GetAllNotesFromUser(ctx context.Context, username string) ([]db.Note, error)
+	DeleteNote(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
+	UpdateNote(ctx context.Context, reqID uuid.UUID, title string, text string, isTextEmpty bool) (uuid.UUID, error)
+	RegisterUser(ctx context.Context, args *db.RegisterUserParams) (string, error)
+	GetUser(ctx context.Context, username string) (db.User, error)
+}
 
 func registerChiMiddlewares(r *chi.Mux, l *zerolog.Logger) {
 	// Request logger has middleware.Recoverer and RequestID baked into it.
@@ -27,15 +40,15 @@ func registerChiMiddlewares(r *chi.Mux, l *zerolog.Logger) {
 }
 
 func registerChiHandlers(r *chi.Mux, s NoteService, t auth.TokenManager, tokenDuration time.Duration, l *zerolog.Logger) {
-	r.Post("/register", RegisterUser(s))
-	r.Post("/login", LoginUser(s, t, tokenDuration))
-	r.Post("/logout", LogoutUser())
+	r.Post("/register", handlers.RegisterUser(s))
+	r.Post("/login", handlers.LoginUser(s, t, tokenDuration))
+	r.Post("/logout", handlers.LogoutUser())
 	r.Route("/notes", func(r chi.Router) {
 		r.Use(auth.AuthMiddleware(t, l))
-		r.Post("/create", CreateNote(s))
-		r.Get("/", GetAllNotesFromUser(s))
-		r.Put("/{id}", UpdateNote(s))
-		r.Delete("/{id}", DeleteNote(s))
+		r.Post("/create", handlers.CreateNote(s))
+		r.Get("/", handlers.GetAllNotesFromUser(s))
+		r.Put("/{id}", handlers.UpdateNote(s))
+		r.Delete("/{id}", handlers.DeleteNote(s))
 	})
 }
 
