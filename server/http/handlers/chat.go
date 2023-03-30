@@ -10,9 +10,10 @@ import (
 
 // conn, _, _, err := ws.UpgradeHTTP(r, w)
 type Room struct {
-	ID      uuid.UUID
-	Name    string
-	Clients map[net.Conn]bool
+	ID        uuid.UUID
+	Name      string
+	CreatedBy string
+	Clients   map[net.Conn]bool
 }
 
 func CreateRoom() http.HandlerFunc {
