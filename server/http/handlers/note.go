@@ -1,18 +1,29 @@
 package handlers
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
 	"net/http"
 	"strings"
 
+	db "github.com/adykaaa/online-notes/db/sqlc"
 	httplib "github.com/adykaaa/online-notes/lib/http"
 	"github.com/adykaaa/online-notes/note"
 	models "github.com/adykaaa/online-notes/server/http/models"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
+
+type NoteService interface {
+	CreateNote(ctx context.Context, title string, username string, text string) (uuid.UUID, error)
+	GetAllNotesFromUser(ctx context.Context, username string) ([]db.Note, error)
+	DeleteNote(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
+	UpdateNote(ctx context.Context, reqID uuid.UUID, title string, text string, isTextEmpty bool) (uuid.UUID, error)
+	RegisterUser(ctx context.Context, args *db.RegisterUserParams) (string, error)
+	GetUser(ctx context.Context, username string) (db.User, error)
+}
 
 func CreateNote(s NoteService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
